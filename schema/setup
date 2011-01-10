@@ -1,0 +1,9 @@
+#!/bin/bash
+
+su - postgres -c '
+    createuser -SDR mallard && \
+    createuser -SDR gadwall && \
+    createdb -O mallard gadwall
+' || exit
+
+psql gadwall mallard -f gadwall.sql

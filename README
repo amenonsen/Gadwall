@@ -14,7 +14,8 @@ whose name does not resemble anything else on Github.
 This program expects to run on a Unix system with:
 
 - Perl 5.10.1+
-- Perl modules: Mojolicious
+- PostgreSQL 8.4+
+- Perl modules: Mojolicious, DBI, DBD::Pg
 
 (Mojolicious and associated modules are under active development, and
 may be version-sensitive. If necessary, specific versions of these or
@@ -24,7 +25,10 @@ them in the top-level deps directory.)
 
 » Installation
 
-- Edit gadwall.conf to set the "secret" used to sign session cookies.
+- First, set up the database. See schema/setup
+
+- Edit gadwall.conf to set db-name/db-user/db-pass if necessary, and also
+  to set the "secret" used to sign session cookies.
 
 - In production, this application should be deployed behind a web server
   such as Apache using secure HTTP only. Here is an example VirtualHost
