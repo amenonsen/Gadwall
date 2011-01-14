@@ -25,7 +25,7 @@ them in the top-level deps directory.)
 
 » Installation
 
-- First, set up the database. See schema/setup
+- First, set up the database. See utils/setup-schema
 
 - Edit gadwall.conf to set db-name/db-user/db-pass if necessary, and also
   to set the "secret" used to sign session cookies.

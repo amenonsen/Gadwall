@@ -1,0 +1,19 @@
+#!/bin/bash
+
+DB=gadwall
+USER=gadwall
+ADMIN=mallard
+
+echo "Creating users, database, and schema..."
+su - postgres -c "
+    createuser -SDR $ADMIN && \
+    createuser -SDR $USER && \
+    createdb -O $ADMIN $DB
+" && \
+psql $DB $ADMIN <<SQL
+\set ON_ERROR_STOP
+SET client_min_messages TO 'error';
+begin;
+$(for i in schema/*.sql; do echo "\\i $i"; done)
+commit;
+SQL
