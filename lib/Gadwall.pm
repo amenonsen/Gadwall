@@ -8,21 +8,25 @@ use DBI;
 use base 'Mojolicious';
 
 sub development_mode {
-    my $self = shift;
-    $self->log->path(undef);
+    my $app = shift;
+    $app->log->path(undef);
 }
 
-sub startup {
+sub config_defaults {
+    my $self = shift;
+    my $name = lc ref $self;
+
+    return {
+        "db-name" => $name, "db-user" => $name, "db-pass" => "",
+        secret => $main::random_secret
+    };
+}
+
+sub gadwall_setup {
     my $app = shift;
 
     my $conf = $app->plugin(
-        json_config => {
-            ext => 'conf',
-            default => {
-                "db-name" => "gadwall", "db-user" => "gadwall", "db-pass" => "",
-                secret => $main::random_secret
-            }
-        }
+        json_config => { ext => 'conf', default => $app->config_defaults }
     );
 
     $app->secret($conf->{secret});
@@ -37,9 +41,12 @@ sub startup {
             return $dbh;
         }
     );
+}
 
-    # Don't show anything sensitive in case of exceptions
-    delete @$conf{qw/secret db-pass/};
+sub startup {
+    my $app = shift;
+
+    $app->gadwall_setup;
 
     my $r = $app->routes;
 
