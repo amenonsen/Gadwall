@@ -41,13 +41,29 @@ sub json_error {
     }
     else {
         %error = (
-            message => $error || "Unknown error", @_
+            message => $error || $self->message('bad'), @_
         );
     }
 
     return $self->json_fragment(
         status => 'error', %error
     );
+}
+
+# Any framework code that wants to display a message about "x" will use
+# the text returned by message("x"). Subclasses must override messages()
+# to return a hash of messages.
+
+sub messages {
+    return (
+        bad => "Invalid request"
+    );
+}
+
+sub message {
+    my ($self, $name) = @_;
+    my %messages = $self->messages;
+    return $messages{$name} || $name;
 }
 
 1;
