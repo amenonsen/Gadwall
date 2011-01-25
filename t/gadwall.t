@@ -6,8 +6,12 @@ use warnings;
 use Test::More;
 use Test::Mojo;
 use Data::Dumper;
+use File::Basename 'dirname';
+use File::Spec;
 
-use_ok('Gadwall');
+use lib join '/', File::Spec->splitdir(dirname(__FILE__)), 'testlib';
+
+use_ok('Wigeon');
 use_ok('Gadwall::Validator');
 
 # Test the support modules
@@ -59,12 +63,67 @@ is_deeply(
 
 # Test the application itself
 
-my $t = Test::Mojo->new(app => "Gadwall");
+my $t = Test::Mojo->new(app => "Wigeon");
 
 $t->get_ok('/')
     ->status_is(200)
     ->content_type_is('text/plain')
     ->content_is("Quack!");
+
+$t->get_ok('/startup')
+    ->status_is(200)
+    ->content_type_is('text/plain')
+    ->content_is("Welcome!");
+
+$t->get_ok('/sprockets')
+    ->status_is(200)
+    ->content_type_is('application/json')
+    ->content_is(qq!{"rows":[{"colour":"red","teeth":42,"sprocket_name":"a","sprocket_id":1},{"colour":"green","teeth":64,"sprocket_name":"b","sprocket_id":2},{"colour":"blue","teeth":256,"sprocket_name":"c","sprocket_id":3}]}!);
+
+$t->get_ok('/sprockets/list?id=1')
+    ->status_is(200)
+    ->content_type_is('application/json')
+    ->content_is(qq!{"rows":[{"colour":"red","teeth":42,"sprocket_name":"a","sprocket_id":1}]}!);
+
+$t->post_form_ok('/sprockets/create', {sprocket_name => "d", colour => "red", teeth => 128})
+    ->status_is(200)
+    ->content_type_is('application/json')
+    ->content_is(qq!{"status":"ok","message":"Sprocket created"}!);
+
+$t->get_ok('/sprockets/list?id=4')
+    ->status_is(200)
+    ->content_type_is('application/json')
+    ->content_is(qq!{"rows":[{"colour":"red","teeth":128,"sprocket_name":"d","sprocket_id":4}]}!);
+
+$t->post_form_ok('/sprockets/4/update', {sprocket_name => "q", colour => "black"})
+    ->status_is(200)
+    ->content_type_is('application/json')
+    ->content_is(qq!{"errors":{"colour":"colour is invalid"},"status":"error","message":"Please correct the following errors"}!);
+
+$t->post_form_ok('/sprockets/4/update', {sprocket_name => "e", colour => "blue", teeth => 128})
+    ->status_is(200)
+    ->content_type_is('application/json')
+    ->content_is(qq!{"status":"ok","message":"Sprocket updated"}!);
+
+$t->get_ok('/sprockets/list?id=4')
+    ->status_is(200)
+    ->content_type_is('application/json')
+    ->content_is(qq!{"rows":[{"colour":"blue","teeth":128,"sprocket_name":"e","sprocket_id":4}]}!);
+
+$t->post_ok('/sprockets/4/delete')
+    ->status_is(200)
+    ->content_type_is('application/json')
+    ->content_is(qq!{"status":"ok","message":"Sprocket deleted"}!);
+
+$t->get_ok('/sprockets/list?id=4')
+    ->status_is(200)
+    ->content_type_is('application/json')
+    ->content_is(qq!{"rows":[]}!);
+
+$t->get_ok('/shutdown')
+    ->status_is(200)
+    ->content_type_is('text/plain')
+    ->content_is("Goodbye!");
 
 $t->get_ok('/nonesuch')
     ->status_is(404);
