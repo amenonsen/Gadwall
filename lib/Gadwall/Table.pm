@@ -8,6 +8,14 @@ use base 'Gadwall::Controller';
 # These functions (are Mojolicious "actions" that) act on the table and
 # return a suitable JSON response. They validate parameters, but do not
 # know anything about users and authorization.
+#
+# list() returns rows matching a query. create() takes a set of values
+# and creates a new row. update() takes a set of values and updates one
+# row identified by its id. delete() takes an id and deletes the row.
+# The row id must be a stash value rather than a parameter; it can be
+# set by the router as follows:
+#
+# $r->route('/widgets/:widget_id/delete')->to('widgets#delete')
 
 sub list {
     my $self = shift;
@@ -24,7 +32,7 @@ sub create {
         return $self->json_error;
     }
 
-    return $self->json_ok($self->message('create'));
+    return $self->json_ok($self->message('created'));
 }
 
 sub update {
@@ -40,7 +48,7 @@ sub update {
         return $self->json_error;
     }
 
-    return $self->json_ok($self->message('update'));
+    return $self->json_ok($self->message('updated'));
 }
 
 sub delete {
@@ -51,7 +59,7 @@ sub delete {
         return $self->json_error;
     }
 
-    return $self->json_ok($self->message('delete'));
+    return $self->json_ok($self->message('deleted'));
 }
 
 # This function must generate a SELECT query to retrieve rows based on
@@ -201,9 +209,9 @@ sub messages {
 
     return (
         $self->SUPER::messages,
-        create => "$singular created",
-        update => "$singular updated",
-        delete => "$singular deleted",
+        created => "$singular created",
+        updated => "$singular updated",
+        deleted => "$singular deleted",
         missing => "Please supply all required values",
         invalid => "Please correct the following errors",
         none => "No validated column values available"

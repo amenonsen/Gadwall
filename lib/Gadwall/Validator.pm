@@ -15,8 +15,8 @@ sub new {
 
 # This function takes a set of values and validates them according to
 # the column specification given above. If it returns 'ok', values()
-# returns a hash of column names and values. Otherwise it returns an
-# error and errors() returns a hashref of column names and errors.
+# returns a hash of column names and values. Otherwise errors() will
+# return a hashref of column names and errors.
 
 sub validate {
     my ($self, $values, %opts) = @_;
