@@ -179,4 +179,17 @@ sub values {
     return %{shift->{values}};
 }
 
+# A collection of useful validation patterns
+
+my %patterns = (
+    number => qr/^[0-9]+$/,
+    nznumber => qr/^[1-9][0-9]*$/
+);
+
+sub patterns {
+    my ($class, $name) = @_;
+
+    return $patterns{$name};
+}
+
 1;

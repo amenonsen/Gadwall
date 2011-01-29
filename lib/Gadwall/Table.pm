@@ -218,4 +218,12 @@ sub messages {
     );
 }
 
+# A shortcut to import named patterns for validation.
+
+sub valid {
+    my ($self, $name) = @_;
+
+    return Gadwall::Validator->patterns($name);
+}
+
 1;

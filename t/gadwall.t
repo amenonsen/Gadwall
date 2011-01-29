@@ -23,7 +23,8 @@ my $v = Gadwall::Validator->new({
     d => {
         validate => sub{
             my %v = @_;
-            return (d => $v{d}-1) if $v{d} =~ /^[1-9][0-9]*$/;
+            return (d => $v{d}-1)
+                if $v{d} =~ Gadwall::Validator->patterns('nznumber');
         }},
     e => {validate => qr/^[a-z]+$/},
     f => {multiple => 1, validate => qr/^\d+$/, required => 1},
