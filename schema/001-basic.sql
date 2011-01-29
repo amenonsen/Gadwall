@@ -1,2 +1,2 @@
-create table schema (revision integer not null);
-insert into schema (revision) values (0);
+create table schema (name text primary key, version integer not null);
+insert into schema (name, version) values ('gadwall', 0);
