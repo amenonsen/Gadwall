@@ -20,7 +20,7 @@ use base 'Gadwall::Controller';
 sub list {
     my $self = shift;
     return $self->render(
-        json => { rows => $self->rows($self->query) }
+        json => { rows => $self->select($self->rows) }
     );
 }
 
@@ -66,18 +66,26 @@ sub delete {
 # the request parameters. It must return a query string and a list of
 # bind values. The default version knows how to retrieve all rows, an
 # individual row identified by primary key value, and (for subclasses
-# that define a limit) to LIMIT/OFFSET the result set.
+# that define a limit) to LIMIT/OFFSET the result set. (This is split
+# across two functions to avoid repeating the LIMIT code.)
 
 sub query {
     my $self = shift;
-    my ($query, @values);
+    my $query = "select * from " . $self->table_name;
 
-    $query = "select * from " . $self->table_name;
-
+    my @values;
     if (my $id = $self->param('id')) {
         $query .= " where ". $self->primary_key ."=?";
         push @values, $id;
     }
+
+    return ($query, @values);
+}
+
+sub rows {
+    my $self = shift;
+
+    my ($query, @values) = $self->query(@_);
 
     if (my $n = $self->limit) {
         $query .= " LIMIT $n";
@@ -91,11 +99,26 @@ sub query {
 
 sub limit {}
 
-sub rows {
-    return shift->app->db->selectall_arrayref(
+# This function takes a query string and an array of bind parameters and
+# executes the query, returning the results as a reference to an array
+# of hashrefs, each representing a single row with named columns. If a
+# subclass defines a rowclass(), each row is blessed into this class.
+
+sub select {
+    my $self = shift;
+    my $rows = $self->app->db->selectall_arrayref(
         shift, { Slice => {} }, @_
     );
+
+    my $class = $self->rowclass;
+    if ($class) {
+        $rows = [ map { bless $_, $class } @$rows ];
+    }
+
+    return $rows;
 }
+
+sub rowclass {}
 
 # Subclasses should return a hash of column names and specifications
 # from columns(), which can be used to validate request parameters.
