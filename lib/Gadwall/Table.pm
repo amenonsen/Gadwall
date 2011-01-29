@@ -39,12 +39,8 @@ sub update {
     my $self = shift;
 
     my $id = $self->stash($self->primary_key);
-    unless ($id) {
-        return $self->json_error;
-    }
-
     my %set = $self->column_values();
-    unless (%set && $self->_update($id, %set)) {
+    unless ($id && %set && $self->_update($id, %set)) {
         return $self->json_error;
     }
 
