@@ -13,8 +13,12 @@ use lib join '/', File::Spec->splitdir(dirname(__FILE__)), 'testlib';
 
 use_ok('Wigeon');
 use_ok('Gadwall::Validator');
+use_ok('Gadwall::Util', qw(bcrypt));
 
 # Test the support modules
+
+ok(Gadwall::Util::bcrypt('s3kr1t', '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC') eq '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC', "Bcrypt");
+ok(bcrypt('s3kr1t', '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC') eq '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC', "Bcrypt imported");
 
 my $v = Gadwall::Validator->new({
     a => {},
