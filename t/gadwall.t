@@ -81,7 +81,7 @@ $t->get_ok('/startup')
 $t->get_ok('/sprockets')
     ->status_is(200)
     ->content_type_is('application/json')
-    ->content_is(qq!{"rows":[{"colour":"red","teeth":42,"sprocket_name":"a","sprocket_id":1},{"colour":"green","teeth":64,"sprocket_name":"b","sprocket_id":2},{"colour":"blue","teeth":256,"sprocket_name":"c","sprocket_id":3}]}!);
+    ->content_is(qq!{"rows":[{"colour":"blue","teeth":256,"sprocket_name":"c","sprocket_id":3},{"colour":"green","teeth":64,"sprocket_name":"b","sprocket_id":2},{"colour":"red","teeth":42,"sprocket_name":"a","sprocket_id":1}]}!);
 
 $t->get_ok('/sprockets/list?id=1')
     ->status_is(200)

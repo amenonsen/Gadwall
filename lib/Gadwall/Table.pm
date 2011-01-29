@@ -61,9 +61,8 @@ sub delete {
 # This function must generate a SELECT query to retrieve rows based on
 # the request parameters. It must return a query string and a list of
 # bind values. The default version knows how to retrieve all rows, an
-# individual row identified by primary key value, and (for subclasses
-# that define a limit) to LIMIT/OFFSET the result set. (This is split
-# across two functions to avoid repeating the LIMIT code.)
+# individual row identified by primary key value. rows() then applies
+# ORDER BY and LIMIT/OFFSET clauses to this query.
 
 sub query {
     my $self = shift;
@@ -83,6 +82,10 @@ sub rows {
 
     my ($query, @values) = $self->query(@_);
 
+    if (my $o = $self->order) {
+        $query .= " ORDER BY $o";
+    }
+
     if (my $n = $self->limit) {
         $query .= " LIMIT $n";
         if (my $o = $self->param('start')) {
@@ -93,6 +96,7 @@ sub rows {
     return ($query, @values);
 }
 
+sub order { shift->primary_key ." DESC" }
 sub limit {}
 
 # This function takes a query string and an array of bind parameters and
