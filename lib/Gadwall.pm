@@ -78,17 +78,4 @@ sub gadwall_setup {
     );
 }
 
-sub startup {
-    my $app = shift;
-
-    $app->gadwall_setup;
-
-    my $r = $app->routes;
-
-    $r->any('/' => sub {
-        shift->render_text("Quack!", format => 'txt')
-    });
-    $r->any('/(*whatever)' => sub { shift->render_not_found });
-}
-
 1;

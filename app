@@ -25,6 +25,6 @@ our $random_secret = sub {
     die "/dev/urandom: $!\n";
 }->();
 
-$ENV{MOJO_APP} ||= 'Gadwall';
+$ENV{MOJO_APP} ||= 'App';
 
 Mojolicious::Commands->start;
