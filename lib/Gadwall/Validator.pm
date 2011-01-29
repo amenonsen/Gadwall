@@ -3,6 +3,8 @@ package Gadwall::Validator;
 use strict;
 use warnings;
 
+use Time::Local ();
+
 # This function takes a column specification as a hashref and creates a
 # new validator.
 
@@ -179,17 +181,33 @@ sub values {
     return %{shift->{values}};
 }
 
-# A collection of useful validation patterns
+# A collection of useful validation patterns and functions
 
 my %patterns = (
     number => qr/^[0-9]+$/,
-    nznumber => qr/^[1-9][0-9]*$/
+    nznumber => qr/^[1-9][0-9]*$/,
+    date => sub {
+        my %args = @_;
+        foreach my $k (keys %args) {
+            return if $args{$k} !~ /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/;
+            eval {
+                Time::Local::timegm(0, 0, 0, $3, $2-1, $1);
+            };
+            return if $@;
+        }
+        return %args;
+    }
 );
 
 sub patterns {
-    my ($class, $name) = @_;
+    my ($class, $name, @args) = @_;
 
-    return $patterns{$name};
+    my $p = $patterns{$name};
+    if (ref $p eq 'ARRAY') {
+        $p = shift @$p;
+        $p = $p->(@args);
+    }
+    return $p;
 }
 
 1;

@@ -39,13 +39,14 @@ my $v = Gadwall::Validator->new({
             my %v = @_;
             return (l => $v{_l}.$v{_m});
         }},
+    m => { required => 1, validate => Gadwall::Validator->patterns('date') }
 });
 ok($v);
 
 my $r = $v->validate({
     a => 1, b => 'a', c => " ", d => 3, e => "  foo  ", f => [1," 2 "],
     G => [1,2,3], H => 4, I => 3, J => undef, K => "	", _l => "foo",
-    _m => "bar"
+    _m => "bar", m => "2011-01-33"
 }, all => 1);
 ok($r eq 'invalid', 'validation status');
 
@@ -53,7 +54,8 @@ is_deeply(
     $v->errors, {
         b => "b is invalid", c => "c is required",
         g => "Invalid field specification (#B)",
-        h => "h is required", i => "i is required"
+        h => "h is required", i => "i is required",
+        m => "m is invalid"
     }
 );
 is_deeply(
