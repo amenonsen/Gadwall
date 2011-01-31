@@ -29,9 +29,7 @@ sub cache_rows { 1 }
 
 sub approximate_blueness {
     my $self = shift;
-    my $s = $self->select_by_key(
-        sprocket_name => $self->param("sprocket_name")
-    );
+    my $s = $self->select_by_key($self->param("sprocket_id"));
     $self->render(
         text => $s && $s->is_red ? "not blue" : "maybe blue",
         format => 'txt'

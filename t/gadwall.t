@@ -133,22 +133,22 @@ $t->get_ok('/widgets/sprocket_colours')
     ->content_type_is('text/plain')
     ->content_is("red green");
 
-$t->get_ok('/sprockets/approximate_blueness?sprocket_name=a')
+$t->get_ok('/sprockets/approximate_blueness?sprocket_id=1')
     ->status_is(200)
     ->content_type_is('text/plain')
     ->content_is("not blue");
 
-$t->get_ok('/sprockets/approximate_blueness?sprocket_name=b')
+$t->get_ok('/sprockets/approximate_blueness?sprocket_id=2')
     ->status_is(200)
     ->content_type_is('text/plain')
     ->content_is("maybe blue");
 
-$t->get_ok('/widgets/sprocket_redness?sprocket_name=a')
+$t->get_ok('/widgets/sprocket_redness?sprocket_id=1')
     ->status_is(200)
     ->content_type_is('text/plain')
     ->content_is("red");
 
-$t->get_ok('/widgets/sprocket_redness?sprocket_name=b')
+$t->get_ok('/widgets/sprocket_redness?sprocket_id=2')
     ->status_is(200)
     ->content_type_is('text/plain')
     ->content_is("not red");

@@ -120,29 +120,24 @@ sub select {
 
 sub rowclass {}
 
-# This function fetches a single row by a key (primary or otherwise). If
-# the subclass overrides cache_rows to return true, the row is stored in
-# the cache (i.e. memcached) under "table/key/value", and returned from
-# there on future requests. Rows are blessed into rowclass() as usual.
+# This function fetches a single row by its primary key. If the subclass
+# has defined cache_rows to be true, the selected row is memcached under
+# "table/key/value", and future requests will return the cached row.
+# Rows are blessed into rowclass() as usual.
 
 sub select_by_key {
-    my ($self, $key, $value) = @_;
+    my ($self, $id) = @_;
 
-    my $row;
-    my $cache = $self->app->cache;
-    my $ckey = $self->table_name ."/". $key ."/". $value;
-
-    $row = $cache->get($ckey) if $cache && $self->cache_rows;
-
+    my $row = $self->_cache_get($id);
     unless ($row) {
         my $table = $self->table_name;
+        my $key = $self->primary_key;
+
         $row = $self->app->db->selectrow_hashref(
-            "select * from $table where $key=?", {}, $value
+            "select * from $table where $key=?", {}, $id
         );
 
-        if ($row && $cache && $self->cache_rows) {
-            $cache->set($ckey, $row);
-        }
+        $self->_cache_set($id, $row) if $row;
     }
 
     my $class = $self->rowclass;
@@ -216,6 +211,7 @@ sub _update {
     my $fields = join ",", map { "$_=?" } keys %set;
     my @values = values %set;
 
+    $self->_cache_delete($id);
     my $rv = $dbh->do(
         "update $table set $fields where $key=?", {}, @values, $id
     );
@@ -232,11 +228,53 @@ sub _delete {
     my $table = $self->table_name;
     my $key = $self->primary_key;
 
+    $self->_cache_delete($id);
     my $rv = $dbh->do("delete from $table where $key=?", {}, $id);
     unless ($rv) {
         $self->stash(error => $dbh->errstr);
     }
     return $rv;
+}
+
+# Low-level cache access functions: get, set, delete
+#
+# These functions act only if a cache is configured and the subclass has
+# defined cache_rows to be true. Otherwise they act as if the cache were
+# a bottomless pit.
+
+sub _cache_get {
+    my ($self, $id) = @_;
+
+    my $cache = $self->app->cache if $self->cache_rows;
+    if ($cache) {
+        return $cache->get(
+            join("/", $self->table_name, $self->primary_key, $id)
+        );
+    }
+    return;
+}
+
+sub _cache_set {
+    my ($self, $id) = @_;
+
+    my $cache = $self->app->cache if $self->cache_rows;
+    if ($cache) {
+        $cache->set(
+            join("/", $self->table_name, $self->primary_key, $id),
+            shift
+        );
+    }
+}
+
+sub _cache_delete {
+    my ($self, $id) = @_;
+
+    my $cache = $self->app->cache if $self->cache_rows;
+    if ($cache) {
+        $cache->delete(
+            join("/", $self->table_name, $self->primary_key, $id)
+        );
+    }
 }
 
 # By default, entities of type Foo are represented by a subclass named
