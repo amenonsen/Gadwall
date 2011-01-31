@@ -120,6 +120,40 @@ sub select {
 
 sub rowclass {}
 
+# This function fetches a single row by a key (primary or otherwise). If
+# the subclass overrides cache_rows to return true, the row is stored in
+# the cache (i.e. memcached) under "table/key/value", and returned from
+# there on future requests. Rows are blessed into rowclass() as usual.
+
+sub select_by_key {
+    my ($self, $key, $value) = @_;
+
+    my $row;
+    my $cache = $self->app->cache;
+    my $ckey = $self->table_name ."/". $key ."/". $value;
+
+    $row = $cache->get($ckey) if $cache && $self->cache_rows;
+
+    unless ($row) {
+        my $table = $self->table_name;
+        $row = $self->app->db->selectrow_hashref(
+            "select * from $table where $key=?", {}, $value
+        );
+
+        if ($row && $cache && $self->cache_rows) {
+            $cache->set($ckey, $row);
+        }
+    }
+
+    my $class = $self->rowclass;
+    if ($row && $class) {
+        $row = bless $row, $class;
+    }
+    return $row;
+}
+
+sub cache_rows { 0 }
+
 # Subclasses should return a hash of column names and specifications
 # from columns(), which can be used to validate request parameters.
 
