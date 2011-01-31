@@ -47,6 +47,7 @@ sub startup {
         $self->render(text => "Welcome!", format => 'txt');
     });
 
+    $r->route('/widgets/:action')->to(controller => 'widgets');
     $r->route('/sprockets/:action')->to(controller => 'sprockets', action => 'list');
 
     $r->route('/sprockets/:sprocket_id/:action')->to(controller => 'sprockets', action => 'update');

@@ -12,6 +12,7 @@ use File::Spec;
 use lib join '/', File::Spec->splitdir(dirname(__FILE__)), 'testlib';
 
 use_ok('Wigeon');
+use_ok('Gadwall::Users');
 use_ok('Gadwall::Validator');
 use_ok('Gadwall::Util', qw(bcrypt));
 
@@ -60,12 +61,12 @@ is_deeply(
         g => "Invalid field specification (#B)",
         h => "h is required", i => "i is required",
         m => "m is invalid"
-    }
+    }, "validation errors"
 );
 is_deeply(
     {$v->values}, {
         a => 1, d => 2, e => "foo", f => [1,2], j => 3, l => "foobar"
-    }
+    }, "validated values"
 );
 
 # Test the application itself
@@ -126,6 +127,31 @@ $t->get_ok('/sprockets/list?id=4')
     ->status_is(200)
     ->content_type_is('application/json')
     ->content_is(qq!{"rows":[]}!);
+
+$t->get_ok('/widgets/sprocket_colours')
+    ->status_is(200)
+    ->content_type_is('text/plain')
+    ->content_is("red green");
+
+$t->get_ok('/sprockets/approximate_blueness?sprocket_name=a')
+    ->status_is(200)
+    ->content_type_is('text/plain')
+    ->content_is("not blue");
+
+$t->get_ok('/sprockets/approximate_blueness?sprocket_name=b')
+    ->status_is(200)
+    ->content_type_is('text/plain')
+    ->content_is("maybe blue");
+
+$t->get_ok('/widgets/sprocket_redness?sprocket_name=a')
+    ->status_is(200)
+    ->content_type_is('text/plain')
+    ->content_is("red");
+
+$t->get_ok('/widgets/sprocket_redness?sprocket_name=b')
+    ->status_is(200)
+    ->content_type_is('text/plain')
+    ->content_is("not red");
 
 $t->get_ok('/shutdown')
     ->status_is(200)
