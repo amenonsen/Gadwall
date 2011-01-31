@@ -5,6 +5,34 @@ use warnings;
 
 use base 'Mojolicious::Controller';
 
+use Mojo::Loader;
+
+# Returns a new controller initialised with the app, stash, and tx of
+# the current controller. The controller to create may be identified by
+# its full package name (e.g. "Gadwall::Users") or just the unique part
+# (i.e. "Users" in this case).
+
+sub new_controller {
+    my ($self, $class) = @_;
+
+    my $pkg = ref $self;
+    if ($class !~ /::/ && $pkg =~ /::/) {
+        $pkg =~ s/::[^:]+$/::$class/;
+        $class = $pkg;
+    }
+
+    Mojo::Loader->load($class);
+
+    return $class->new(
+        app => $self->app, stash => $self->stash, tx => $self->tx
+    );
+}
+
+# Helper functions to return JSON responses
+#
+# return $self->json_fragment(a => 1, b => "two")
+# => {"a": 1, "b": "two"}
+
 sub json_fragment {
     return shift->render(json => { @_ })
 }
