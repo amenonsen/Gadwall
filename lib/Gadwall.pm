@@ -32,10 +32,16 @@ sub new_dbh {
     return $dbh;
 }
 
+# This function returns a Cache::Memcached-compatible object. Whether
+# this object actually talks to a running memcached depends on whether
+# memcached-port is set in the config file and whether Cache::Memcached
+# (or an equivalent) is available.
+
 sub new_cache {
     my ($port, $namespace) = @_;
 
-    return unless $port;
+    # Is caching explicitly disabled?
+    return if defined $port && $port == 0;
 
     my @options = qw(
         Cache::Memcached::libmemcached
@@ -54,10 +60,13 @@ sub new_cache {
         die "Cache::Memcached::libmemcached (or equivalent) is not available\n";
     }
 
-    return $class->new({
-        servers => ["127.0.0.1:$port"],
-        namespace => "$namespace:"
-    });
+    # Create a cache object: real if port is specified, dummy otherwise
+    my $cache = $class->new({servers => [], namespace => "$namespace:"});
+    if ($port) {
+        $cache->set_servers(["127.0.0.1:$port"]);
+    }
+
+    return $cache;
 }
 
 sub gadwall_setup {

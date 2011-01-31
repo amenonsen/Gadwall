@@ -245,23 +245,20 @@ sub _delete {
 sub _cache_get {
     my ($self, $id) = @_;
 
-    my $cache = $self->app->cache if $self->cache_rows;
-    if ($cache) {
-        return $cache->get(
+    if ($self->cache_rows) {
+        return $self->app->cache->get(
             join("/", $self->table_name, $self->primary_key, $id)
         );
     }
-    return;
+    return undef;
 }
 
 sub _cache_set {
-    my ($self, $id) = @_;
+    my ($self, $id, $row) = @_;
 
-    my $cache = $self->app->cache if $self->cache_rows;
-    if ($cache) {
-        $cache->set(
-            join("/", $self->table_name, $self->primary_key, $id),
-            shift
+    if ($self->cache_rows) {
+        $self->app->cache->set(
+            join("/", $self->table_name, $self->primary_key, $id), $row
         );
     }
 }
@@ -269,9 +266,8 @@ sub _cache_set {
 sub _cache_delete {
     my ($self, $id) = @_;
 
-    my $cache = $self->app->cache if $self->cache_rows;
-    if ($cache) {
-        $cache->delete(
+    if ($self->cache_rows) {
+        $self->app->cache->delete(
             join("/", $self->table_name, $self->primary_key, $id)
         );
     }
