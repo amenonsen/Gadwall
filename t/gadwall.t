@@ -86,12 +86,12 @@ $t->get_ok('/startup')
 $t->get_ok('/sprockets')
     ->status_is(200)
     ->content_type_is('application/json')
-    ->content_is(qq!{"rows":[{"colour":"blue","teeth":256,"sprocket_name":"c","sprocket_id":3},{"colour":"green","teeth":64,"sprocket_name":"b","sprocket_id":2},{"colour":"red","teeth":42,"sprocket_name":"a","sprocket_id":1}]}!);
+    ->json_content_is({rows => [{colour => "blue", teeth => 256, sprocket_name => "c", sprocket_id => 3},{colour => "green", teeth => 64, sprocket_name => "b", sprocket_id => 2},{colour => "red", teeth => 42, sprocket_name => "a", sprocket_id => 1}]});
 
 $t->get_ok('/sprockets/list?id=1')
     ->status_is(200)
     ->content_type_is('application/json')
-    ->content_is(qq!{"rows":[{"colour":"red","teeth":42,"sprocket_name":"a","sprocket_id":1}]}!);
+    ->json_content_is({rows => [{colour => "red", teeth => 42, sprocket_name => "a", sprocket_id => 1}]});
 
 $t->post_form_ok('/sprockets/create', {sprocket_name => "d", colour => "red", teeth => 128})
     ->status_is(200)
@@ -101,7 +101,7 @@ $t->post_form_ok('/sprockets/create', {sprocket_name => "d", colour => "red", te
 $t->get_ok('/sprockets/list?id=4')
     ->status_is(200)
     ->content_type_is('application/json')
-    ->content_is(qq!{"rows":[{"colour":"red","teeth":128,"sprocket_name":"d","sprocket_id":4}]}!);
+    ->json_content_is({rows => [{colour => "red", teeth => 128, sprocket_name => "d", sprocket_id => 4}]});
 
 $t->post_form_ok('/sprockets/4/update', {sprocket_name => "q", colour => "black"})
     ->status_is(200)
@@ -116,7 +116,7 @@ $t->post_form_ok('/sprockets/4/update', {sprocket_name => "e", colour => "blue",
 $t->get_ok('/sprockets/list?id=4')
     ->status_is(200)
     ->content_type_is('application/json')
-    ->content_is(qq!{"rows":[{"colour":"blue","teeth":128,"sprocket_name":"e","sprocket_id":4}]}!);
+    ->json_content_is({rows => [{colour => "blue", teeth => 128, sprocket_name => "e", sprocket_id => 4}]});
 
 $t->post_ok('/sprockets/4/delete')
     ->status_is(200)
@@ -126,7 +126,7 @@ $t->post_ok('/sprockets/4/delete')
 $t->get_ok('/sprockets/list?id=4')
     ->status_is(200)
     ->content_type_is('application/json')
-    ->content_is(qq!{"rows":[]}!);
+    ->json_content_is({rows => []});
 
 $t->get_ok('/widgets/sprocket_colours')
     ->status_is(200)

@@ -3,7 +3,15 @@ package Gadwall::User;
 use strict;
 use warnings;
 
+use base "Gadwall::Row";
+
 use Gadwall::Util qw(bcrypt);
+
+sub display_hash {
+    my $hash = shift->SUPER::display_hash();
+    delete $hash->{password};
+    return $hash;
+}
 
 # Takes a password and returns true if it is the user's password, and
 # false otherwise.

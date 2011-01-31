@@ -20,7 +20,13 @@ use base 'Gadwall::Controller';
 sub list {
     my $self = shift;
     return $self->render(
-        json => { rows => $self->select($self->rows) }
+        json => {
+            rows => [
+                map { $_->display_hash } @{
+                    $self->select($self->rows)
+                }
+            ]
+        }
     );
 }
 
