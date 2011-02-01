@@ -158,6 +158,12 @@ $t->get_ok('/shutdown')
     ->content_type_is('text/plain')
     ->content_is("Goodbye!");
 
+$t->get_ok('/foo')
+    ->status_is(200)
+    ->content_type_is('text/html;charset=UTF-8')
+    ->text_is('html head title' => 'Foo!')
+    ->text_like('html body' => qr/Foo bar!/);
+
 $t->get_ok('/nonesuch')
     ->status_is(404);
 

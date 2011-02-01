@@ -16,11 +16,20 @@ sub startup {
     my $app = shift;
     $app->gadwall_setup();
 
+    $app->renderer->root($app->home->rel_dir('../../templates'));
+
     my $r = $app->routes();
 
     $r->any('/' => sub {
         shift->render_text("Quack!", format => 'txt')
     });
+
+    $r->any(
+        '/foo' => sub {
+            my $self = shift;
+            $self->render(template => "foo", template_class => __PACKAGE__);
+        }
+    );
 
     $r->any('/startup' => sub {
         my $self = shift;
@@ -89,3 +98,9 @@ sub startup {
 }
 
 1;
+
+__DATA__
+
+@@ foo.html.ep
+% layout 'default', title => "Foo!";
+Foo bar!
