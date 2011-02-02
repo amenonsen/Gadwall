@@ -17,11 +17,17 @@ sub new_controller {
 
     my $pkg = ref $self;
     if ($class !~ /::/ && $pkg =~ /::/) {
-        $pkg =~ s/::[^:]+$/::$class/;
-        $class = $pkg;
+        $pkg =~ s/::[^:]+$//;
+        for my $p ($pkg, "Gadwall") {
+            unless (Mojo::Loader->load("${p}::$class")) {
+                $class = "${p}::$class";
+                last;
+            }
+        }
     }
-
-    Mojo::Loader->load($class);
+    else {
+        Mojo::Loader->load($class);
+    }
 
     return $class->new(
         app => $self->app, stash => $self->stash, tx => $self->tx
