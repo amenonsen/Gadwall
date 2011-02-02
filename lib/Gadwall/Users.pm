@@ -25,8 +25,8 @@ sub columns {
             validate => sub {
                 my (%set) = @_;
 
-                my $i = 31;
-                my @roles = (0)x32;
+                my $i = 30;
+                my @roles = (0)x31;
                 foreach my $r (Gadwall::User->roles()) {
                     if ($set{"is_$r"}) {
                         $roles[$i] = 1;

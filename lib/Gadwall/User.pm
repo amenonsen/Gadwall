@@ -22,9 +22,10 @@ sub has_password {
     return bcrypt($p, $self->{password}) eq $self->{password};
 }
 
-# A user's roles are represented in the database as a 32-bit vector.
+# A user's roles are represented in the database as a 31-bit vector.
 # Each bit corresponds to one of the following roles numbered from 0
-# upwards. An unprivileged user has no bits set.
+# upwards. An unprivileged user has no bits set. (31 so that integer
+# arithmetic with 32 bits is good enough.)
 #
 # Don't try to reorder role names.
 

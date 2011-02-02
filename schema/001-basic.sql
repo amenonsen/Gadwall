@@ -9,5 +9,5 @@ create table users (
     email text not null unique,
     password text not null,
     is_active bool not null default true,
-    roles bit(32) not null default B'0'::bit(32)
+    roles bit(31) not null default B'0'::bit(31)
 );
