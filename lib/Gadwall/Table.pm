@@ -117,7 +117,7 @@ sub select {
     );
 
     my $class = $self->rowclass;
-    if ($class) {
+    if ($rows && $class) {
         $rows = [ map { bless $_, $class } @$rows ];
     }
 
@@ -125,6 +125,23 @@ sub select {
 }
 
 sub rowclass {}
+
+# select_one returns a single row as a (blessed) hashref directly,
+# rather than wrapping it in an array. Just a convenience.
+
+sub select_one {
+    my $self = shift;
+    my $row = $self->app->db->selectrow_hashref(
+        shift, {}, @_
+    );
+
+    my $class = $self->rowclass;
+    if ($row && $class) {
+        $row = bless $row, $class;
+    }
+
+    return $row;
+}
 
 # This function fetches a single row by its primary key. If the subclass
 # has defined cache_rows to be true, the selected row is memcached under
