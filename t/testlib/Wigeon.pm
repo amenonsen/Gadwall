@@ -32,7 +32,7 @@ sub startup {
     );
 
     $r->route('/login')->via('post')->to('auth#login', namespace => "Gadwall");
-    my $auth = $r->bridge->to('auth#check', namespace => "Gadwall");
+    my $auth = $r->bridge->to('auth#allow_users', namespace => "Gadwall");
     $auth->route('/bar')->to(cb => sub {
         shift->render_text("This is not a bar", format => 'txt');
     });

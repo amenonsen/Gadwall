@@ -9,17 +9,18 @@ use warnings;
 
 use base 'Gadwall::Controller';
 
-# This function makes sure that there is an (already validated) session
-# cookie that identifies a user. If so, that user is known to have made
-# the request. If not, access to anything protected by this function is
-# denied until the user logs in (see below).
+# This bridge function returns 1 only if there is an (already validated)
+# session cookie that identifies a user. Otherwise it returns 0, thereby
+# denying access to anything protected by the bridge. In the former case
+# it stores a User object in the stash. In the latter case, it displays
+# a login form.
 #
 # To require authentication to access /foo, you can do this:
 #
-# $auth = $r->bridge->to('auth#check')
+# $auth = $r->bridge->to('auth#allow_users')
 # $auth->route('/foo')->to(...)
 
-sub check {
+sub allow_users {
     my $self = shift;
 
     my $user = $self->session('user');
