@@ -153,18 +153,48 @@ $t->get_ok('/widgets/sprocket_redness?sprocket_id=2')
     ->content_type_is('text/plain')
     ->content_is("not red");
 
+$t->get_ok('/foo')
+    ->status_is(200)
+    ->content_type_is("text/html;charset=UTF-8")
+    ->text_is('html head title' => 'Foo!')
+    ->text_like('html body' => qr/Foo bar!/);
+
+$t->get_ok('/bar')
+    ->status_is(403)
+    ->content_type_is("text/html;charset=UTF-8")
+    ->text_is('html body form label', 'Login:');
+
+$t->post_form_ok('/login', {__login => "dummy", __passwd => "user"})
+    ->status_is(200)
+    ->content_type_is("text/html;charset=UTF-8")
+    ->text_like('#msg', qr/Incorrect username or password/);
+
+$t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __source => "/bar"})
+    ->status_is(302)
+    ->content_type_is("text/plain")
+    ->content_is("Redirecting to /bar");
+
+$t->get_ok('/bar')
+    ->status_is(200)
+    ->content_type_is("text/plain")
+    ->content_is("This is not a bar");
+
+$t->get_ok('/logout')
+    ->status_is(200)
+    ->content_type_is("text/html;charset=UTF-8")
+    ->text_like('#msg', qr/You have been logged out/);
+
+$t->get_ok('/bar')
+    ->status_is(403)
+    ->content_type_is("text/html;charset=UTF-8")
+    ->text_is('html body form label', 'Login:');
+
+$t->get_ok('/nonesuch')
+    ->status_is(404);
+
 $t->get_ok('/shutdown')
     ->status_is(200)
     ->content_type_is('text/plain')
     ->content_is("Goodbye!");
-
-$t->get_ok('/foo')
-    ->status_is(200)
-    ->content_type_is('text/html;charset=UTF-8')
-    ->text_is('html head title' => 'Foo!')
-    ->text_like('html body' => qr/Foo bar!/);
-
-$t->get_ok('/nonesuch')
-    ->status_is(404);
 
 done_testing();

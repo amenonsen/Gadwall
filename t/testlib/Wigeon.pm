@@ -31,6 +31,13 @@ sub startup {
         }
     );
 
+    $r->route('/login')->via('post')->to('auth#login', namespace => "Gadwall");
+    my $auth = $r->bridge->to('auth#check', namespace => "Gadwall");
+    $auth->route('/bar')->to(cb => sub {
+        shift->render_text("This is not a bar", format => 'txt');
+    });
+    $auth->route('/logout')->to('auth#logout', namespace => "Gadwall");
+
     $r->any('/startup' => sub {
         my $self = shift;
         my $dbh = $self->app->db;
@@ -49,6 +56,21 @@ sub startup {
                 "insert into sprockets (sprocket_name, colour, teeth) ".
                 "values ('a','red',42), ('b','green',64), ('c','blue',256)"
             );
+            $dbh->do(
+                "create table users (user_id serial primary key, ".
+                "login text unique, email text not null unique, ".
+                "password text not null, is_active bool not null ".
+                "default true, roles bit(32) not null default ".
+                "B'0'::bit(32))"
+            );
+            $dbh->do(
+                "insert into users (email,password) values ".
+                q{('foo@example.org', '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC')}
+            );
+            $dbh->do(
+                "insert into users (login,email,password) values ".
+                q{('bar', 'bar@example.org', '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC')}
+            );
             $dbh->commit;
         };
         if ($@) {
@@ -66,6 +88,7 @@ sub startup {
     $r->any('/shutdown' => sub {
         my $self = shift;
         $self->app->db->do("drop table sprockets");
+        $self->app->db->do("drop table users");
         $self->render(text => "Goodbye!", format => 'txt');
     });
 
