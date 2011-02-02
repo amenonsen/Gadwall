@@ -47,6 +47,27 @@ sub allow_users {
     return 0;
 }
 
+# This bridge function, which depends on the above function to have run
+# first and set stash('user'), allows users to pass if they have one or
+# more of the specified roles. If not, it displays a rude message. For
+# anything more complicated, write a new bridge using a callback.
+#
+# $auth->bridge->to('auth#allow_roles', roles => [qw/cook dishwasher/])
+# $auth->bridge->to('auth#allow_roles', roles => "admin")
+
+sub allow_roles {
+    my $self = shift;
+
+    my $r = $self->stash('roles');
+    my @r = ref $r ? @$r : $r;
+    if ($self->stash('user')->has_any_role(@r)) {
+        return 1;
+    }
+
+    $self->render(status => 403, text => "Permission denied");
+    return 0;
+}
+
 # This function takes a username and password and, if the password is
 # valid for the named user, issues a signed cookie that will pass the
 # check above. If not, it displays the login form and an error. This

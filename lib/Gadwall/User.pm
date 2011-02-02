@@ -43,10 +43,20 @@ sub role_bit {
 }
 
 sub has_role {
-    my ($self, $r) = @_;
+    return shift->has_any_role(@_);
+}
 
-    $r = $self->role_bit($r);
-    return $r && $self->{roles} & (1<<$r);
+sub has_any_role {
+    my $self = shift;
+
+    my $n = 0;
+    foreach (@_) {
+        if (my $r = $self->role_bit($_)) {
+            $n |= (1 << $r);
+        }
+    }
+
+    return $n && $self->{roles} & $n;
 }
 
 1;

@@ -68,8 +68,9 @@ sub startup {
                 q{('foo@example.org', '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC')}
             );
             $dbh->do(
-                "insert into users (login,email,password) values ".
-                q{('bar', 'bar@example.org', '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC')}
+                "insert into users (login,email,password,roles) values ".
+                q{('bar', 'bar@example.org', '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC', }.
+                q{B'1010100'::bit(31))}
             );
             $dbh->commit;
         };

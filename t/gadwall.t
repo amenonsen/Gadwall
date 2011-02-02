@@ -12,6 +12,7 @@ use File::Spec;
 use lib join '/', File::Spec->splitdir(dirname(__FILE__)), 'testlib';
 
 use_ok('Wigeon');
+use_ok('Wigeon::User');
 use_ok('Gadwall::Users');
 use_ok('Gadwall::Validator');
 use_ok('Gadwall::Util', qw(bcrypt));
@@ -20,6 +21,12 @@ use_ok('Gadwall::Util', qw(bcrypt));
 
 ok(Gadwall::Util::bcrypt('s3kr1t', '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC') eq '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC', "Bcrypt");
 ok(bcrypt('s3kr1t', '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC') eq '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC', "Bcrypt imported");
+
+my $x = bless {roles => 1<<6|1<<3}, "Wigeon::User";
+ok($x->has_role('bitcounter'), 'has_role bitcounter');
+ok($x->has_role('birdwatcher'), 'has_role birdwatcher');
+ok(!$x->has_role('bearfighter'), '!has_role bearfighter');
+ok(!$x->has_any_role('admin','cook'), "!has_any_roles admin,cook");
 
 my $v = Gadwall::Validator->new({
     a => {},
