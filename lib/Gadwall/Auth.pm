@@ -102,7 +102,7 @@ sub login {
 
     $self->render(
         login => $login, source => $source,
-        errmsg => "Incorrect username or password",
+        errmsg => $self->message('badlogin'),
         template_class => __PACKAGE__
     );
 }
@@ -116,8 +116,17 @@ sub logout {
     $self->render(
         template => "auth/login",
         login => "", source => "/",
-        errmsg => "You have been logged out",
+        errmsg => $self->message('loggedout'),
         template_class => __PACKAGE__
+    );
+}
+
+sub messages {
+    my $self = shift;
+    return (
+        $self->SUPER::messages(),
+        badlogin => "Incorrect username or password",
+        loggedout => "You have been logged out",
     );
 }
 
