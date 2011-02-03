@@ -103,18 +103,17 @@ sub _shadow_controllers {
     }
 
     my $names = join "|", @names;
-    my $ours = qr#${class}/($names)\.pm#;
 
     push @INC, sub {
         my ($ref, $filename) = @_;
-        return unless $filename =~ $ours;
+        return unless $filename =~ /$class\/(?:$names)\.pm/;
         my $i = 0;
         return (sub {
             my ($ref, $state) = @_;
             if ($$state++ == 0) { $_ = "1;"; return 1; }
             else { return 0; }
         }, \$i );
-    }
+    };
 }
 
 sub gadwall_setup {
