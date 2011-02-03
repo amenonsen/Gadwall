@@ -38,4 +38,6 @@ sub columns {
     );
 }
 
+sub extra_columns { qw(roles::int) }
+
 1;

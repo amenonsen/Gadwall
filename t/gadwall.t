@@ -182,6 +182,11 @@ $t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __source => 
     ->content_type_is("text/plain")
     ->content_is("Redirecting to /bar");
 
+$t->get_ok('/blurfl')
+    ->status_is(200)
+    ->content_type_is("text/plain")
+    ->content_is("birdwatcher:bearfighter:bitcounter");
+
 $t->get_ok('/bar')
     ->status_is(200)
     ->content_type_is("text/plain")

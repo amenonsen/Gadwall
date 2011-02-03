@@ -48,6 +48,14 @@ sub startup {
     my $never = $auth->bridge->to('auth#allow_if', cond => sub {0});
     $never->get('/flirbl' => sub { shift->render(text => "Sometimes", format => 'txt') });
 
+    $auth->get('/blurfl' => sub {
+        my $self = shift;
+        my $u = $self->stash('user');
+        $self->render(
+            text => join(":",$u->roles()), format => 'txt'
+        );
+    });
+
     $r->any('/startup' => sub {
         my $self = shift;
         my $dbh = $self->app->db;
@@ -80,7 +88,7 @@ sub startup {
             $dbh->do(
                 "insert into users (login,email,password,roles) values ".
                 q{('bar', 'bar@example.org', '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC', }.
-                q{B'1010100'::bit(31))}
+                q{B'0000000000000000000000001011000'::bit(31))}
             );
             $dbh->commit;
         };

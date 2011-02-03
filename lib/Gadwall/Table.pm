@@ -72,7 +72,8 @@ sub delete {
 
 sub query {
     my $self = shift;
-    my $query = "select * from " . $self->table_name;
+    my $cols = join ",", "*", $self->extra_columns();
+    my $query = "select $cols from " . $self->table_name;
 
     my @values;
     if (my $id = $self->param('id')) {
@@ -102,6 +103,7 @@ sub rows {
     return ($query, @values);
 }
 
+sub extra_columns {()}
 sub order { shift->primary_key ." DESC" }
 sub limit {}
 
@@ -154,8 +156,9 @@ sub select_by_key {
         my $table = $self->table_name;
         my $key = $self->primary_key;
 
+        my $cols = join ",", "*", $self->extra_columns();
         $row = $self->app->db->selectrow_hashref(
-            "select * from $table where $key=?", {}, $id
+            "select $cols from $table where $key=?", {}, $id
         );
 
         $self->_cache_set($id, $row) if $row;
