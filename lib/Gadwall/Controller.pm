@@ -7,6 +7,33 @@ use base 'Mojolicious::Controller';
 
 use Mojo::Loader;
 
+# Takes the name of a class, like Sprockets, and returns its full name,
+# like Wigeon::Sprockets (or Gadwall::Sprockets, if that is not found).
+# Returns undef if neither is found.
+
+sub class_name {
+    my ($self, $name) = @_;
+
+    if (!defined $name || $name =~ /::/) {
+        return $name;
+    }
+
+    my $class;
+    for my $p (ref $self->app, "Gadwall") {
+        my $s = "${p}::$name";
+        unless (my $e = Mojo::Loader->load($s)) {
+            $class = $s;
+            last;
+        }
+        else {
+            die $e if ref $e;
+        }
+    }
+
+    return $class;
+}
+
+
 # Returns a new controller initialised with the app, stash, and tx of
 # the current controller. The controller to create may be identified by
 # its full package name (e.g. "Gadwall::Users") or just the unique part
@@ -15,20 +42,7 @@ use Mojo::Loader;
 sub new_controller {
     my ($self, $class) = @_;
 
-    my $pkg = ref $self;
-    if ($class !~ /::/ && $pkg =~ /::/) {
-        $pkg =~ s/::[^:]+$//;
-        for my $p ($pkg, "Gadwall") {
-            unless (Mojo::Loader->load("${p}::$class")) {
-                $class = "${p}::$class";
-                last;
-            }
-        }
-    }
-    else {
-        Mojo::Loader->load($class);
-    }
-
+    $class = $self->class_name($class);
     return $class->new(
         app => $self->app, stash => $self->stash, tx => $self->tx
     );

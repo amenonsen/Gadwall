@@ -176,20 +176,7 @@ sub cache_rows { 0 }
 
 sub rowclass {
     my $self = shift;
-    my $class;
-
-    my $s = $self->singular;
-    foreach my $p (ref $self->app, "Gadwall") {
-        if (my $e = Mojo::Loader->load("${p}::$s")) {
-            die $e if ref $e;
-        }
-        else {
-            $class = "${p}::$s";
-            last;
-        }
-    }
-
-    return $class;
+    return $self->class_name($self->singular);
 }
 
 # Subclasses should return a hash of column names and specifications
