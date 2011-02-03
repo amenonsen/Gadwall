@@ -17,8 +17,8 @@ use base 'Gadwall::Controller';
 #
 # To require authentication to access /foo, you can do this:
 #
-# $auth = $r->bridge->to('auth#allow_users')
-# $auth->route('/foo')->to(...)
+# $auth = $r->bridge->to('auth#allow_users');
+# $auth->route('/foo')->to(...);
 
 sub allow_users {
     my $self = shift;
@@ -50,10 +50,10 @@ sub allow_users {
 # This bridge function, which depends on the above function to have run
 # first and set stash('user'), allows users to pass if they have one or
 # more of the specified roles. If not, it displays a rude message. For
-# anything more complicated, write a new bridge using a callback.
+# anything more complicated, use allow_if and a callback.
 #
-# $auth->bridge->to('auth#allow_roles', roles => [qw/cook dishwasher/])
-# $auth->bridge->to('auth#allow_roles', roles => "admin")
+# $auth->bridge->to('auth#allow_roles', roles => [qw/cook dishwasher/]);
+# $auth->bridge->to('auth#allow_roles', roles => "admin");
 
 sub allow_roles {
     my $self = shift;
@@ -64,8 +64,28 @@ sub allow_roles {
         return 1;
     }
 
-    $self->render(status => 403, text => "Permission denied");
+    $self->render(
+        status => 403, text => "Permission denied", format => 'txt'
+    );
     return 0;
+}
+
+# This is just a helper function to write authentication bridges. It
+# expects stash('cond') to be a callback, to which it passes the user
+# object. If the callback returns 1, so does this function. Otherwise,
+# it displays a rude error message (which is the convenient part).
+#
+# $auth->bridge->to('auth#allow_if', cond => sub { ... });
+
+sub allow_if {
+    my $self = shift;
+    my $allow = $self->stash('cond')->($self->stash('user'));
+    unless ($allow) {
+        $self->render(
+            status => 403, text => "Permission denied", format => 'txt'
+        );
+    }
+    return $allow;
 }
 
 # This function takes a username and password and, if the password is
@@ -132,7 +152,9 @@ sub su {
     }
 
     unless (@v) {
-        $self->render(status => 403, text => "Permission denied");
+        $self->render(
+            status => 403, text => "Permission denied", format => 'txt'
+        );
         return;
     }
 

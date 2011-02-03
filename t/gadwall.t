@@ -221,6 +221,11 @@ $t->get_ok('/baz')
     ->content_type_is("text/plain")
     ->content_is("This is not a baz");
 
+$t->get_ok('/flirbl')
+    ->status_is(403)
+    ->content_type_is("text/plain")
+    ->content_is("Permission denied");
+
 $t->get_ok('/logout')
     ->status_is(200)
     ->content_type_is("text/html;charset=UTF-8")

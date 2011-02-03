@@ -45,6 +45,9 @@ sub startup {
         $self->render_text($self->stash('user')->{email}, format => 'txt');
     });
 
+    my $never = $auth->bridge->to('auth#allow_if', cond => sub {0});
+    $never->get('/flirbl' => sub { shift->render(text => "Sometimes", format => 'txt') });
+
     $r->any('/startup' => sub {
         my $self = shift;
         my $dbh = $self->app->db;
