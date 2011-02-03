@@ -31,8 +31,7 @@ sub startup {
         }
     );
 
-    $r->route('/login')->via('post')->to('auth#login', namespace => "Gadwall");
-    my $auth = $r->bridge->to('auth#allow_users', namespace => "Gadwall");
+    my $auth = $app->plugin('login');
     $auth->route('/bar')->to(cb => sub {
         shift->render_text("This is not a bar", format => 'txt');
     });
@@ -45,7 +44,6 @@ sub startup {
         my $self = shift;
         $self->render_text($self->stash('user')->{email}, format => 'txt');
     });
-    $auth->route('/logout')->to('auth#logout', namespace => "Gadwall");
 
     $r->any('/startup' => sub {
         my $self = shift;
