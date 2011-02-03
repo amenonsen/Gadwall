@@ -27,6 +27,7 @@ ok($x->has_role('bitcounter'), 'has_role bitcounter');
 ok($x->has_role('birdwatcher'), 'has_role birdwatcher');
 ok(!$x->has_role('bearfighter'), '!has_role bearfighter');
 ok(!$x->has_any_role('admin','cook'), "!has_any_roles admin,cook");
+is_deeply([$x->roles()], [qw(birdwatcher bitcounter)], "list roles");
 
 my $v = Gadwall::Validator->new({
     a => {},

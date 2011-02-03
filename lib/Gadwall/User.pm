@@ -29,7 +29,7 @@ sub has_password {
 #
 # Don't try to reorder role names.
 
-sub roles {
+sub role_names {
     qw(admin)
 }
 
@@ -37,7 +37,7 @@ sub role_bit {
     my ($self, $r) = @_;
 
     my $i = 0;
-    my %roles = map { $_ => $i++ } $self->roles();
+    my %roles = map { $_ => $i++ } $self->role_names();
 
     return $roles{$r};
 }
@@ -57,6 +57,23 @@ sub has_any_role {
     }
 
     return $n && $self->{roles} & $n;
+}
+
+sub roles {
+    my $self = shift;
+
+    my $i = 0;
+    my %roles = map { $_ => $i++ } $self->role_names();
+
+    my @roles;
+    my $roles = $self->{roles};
+    foreach my $r ($self->role_names) {
+        if ($roles & 1<<$roles{$r}) {
+            push @roles, $r;
+        }
+    }
+
+    return @roles;
 }
 
 1;

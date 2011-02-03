@@ -25,7 +25,7 @@ sub columns {
 
                 my $i = 30;
                 my @roles = (0)x31;
-                foreach my $r (Gadwall::User->roles()) {
+                foreach my $r (Gadwall::User->role_names()) {
                     if ($set{"is_$r"}) {
                         $roles[$i] = 1;
                     }

@@ -5,7 +5,7 @@ use warnings;
 
 use base "Gadwall::User";
 
-sub roles {qw(
+sub role_names {qw(
     admin cook bottlewasher birdwatcher bearfighter backstabber bitcounter
 )}
 
