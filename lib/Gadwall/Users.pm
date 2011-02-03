@@ -3,8 +3,6 @@ package Gadwall::Users;
 use strict;
 use warnings;
 
-use Gadwall::User;
-
 use base 'Gadwall::Table';
 
 sub columns {
@@ -38,10 +36,6 @@ sub columns {
             }
         }
     );
-}
-
-sub rowclass {
-    "Gadwall::User"
 }
 
 1;

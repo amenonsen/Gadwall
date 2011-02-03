@@ -107,8 +107,8 @@ sub limit {}
 
 # This function takes a query string and an array of bind parameters and
 # executes the query, returning the results as a reference to an array
-# of hashrefs, each representing a single row with named columns. If a
-# subclass defines a rowclass(), each row is blessed into this class.
+# of hashrefs, each representing a single row with named columns. Each
+# row is blessed into the class name returned by rowclass(), if any.
 
 sub select {
     my $self = shift;
@@ -123,8 +123,6 @@ sub select {
 
     return $rows;
 }
-
-sub rowclass {}
 
 # select_one returns a single row as a (blessed) hashref directly,
 # rather than wrapping it in an array. Just a convenience.
@@ -171,6 +169,28 @@ sub select_by_key {
 }
 
 sub cache_rows { 0 }
+
+# This function must return the name of a package into which rows from
+# the database are blessed. By default, it looks for a package with the
+# singular form of the table's name.
+
+sub rowclass {
+    my $self = shift;
+    my $class;
+
+    my $s = $self->singular;
+    foreach my $p (ref $self->app, "Gadwall") {
+        if (my $e = Mojo::Loader->load("${p}::$s")) {
+            die $e if ref $e;
+        }
+        else {
+            $class = "${p}::$s";
+            last;
+        }
+    }
+
+    return $class;
+}
 
 # Subclasses should return a hash of column names and specifications
 # from columns(), which can be used to validate request parameters.

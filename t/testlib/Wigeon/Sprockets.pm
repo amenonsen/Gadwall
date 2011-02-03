@@ -5,7 +5,7 @@ use warnings;
 
 use base 'Gadwall::Table';
 
-use Wigeon::Sprocket;
+sub cache_rows { 1 }
 
 sub columns {
     my $self = shift;
@@ -23,9 +23,6 @@ sub columns {
         }
     );
 }
-
-sub rowclass { "Wigeon::Sprocket" }
-sub cache_rows { 1 }
 
 sub approximate_blueness {
     my $self = shift;

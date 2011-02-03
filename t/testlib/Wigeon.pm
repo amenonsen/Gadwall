@@ -36,6 +36,10 @@ sub startup {
     $auth->route('/bar')->to(cb => sub {
         shift->render_text("This is not a bar", format => 'txt');
     });
+    my $bird = $auth->bridge->to('auth#allow_roles', namespace => "Gadwall", roles => "birdwatcher");
+    $bird->route('/baz')->to(cb => sub {
+        shift->render_text("This is not a baz", format => 'txt');
+    });
     $auth->route('/logout')->to('auth#logout', namespace => "Gadwall");
 
     $r->any('/startup' => sub {

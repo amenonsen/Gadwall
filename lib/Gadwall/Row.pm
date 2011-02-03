@@ -7,6 +7,10 @@ use warnings;
 # in a Gadwall::Table subclass. It doesn't do much, and that's probably
 # the way it should be.
 
+sub new {
+    # Defined only to make Mojo::Loader happy.
+}
+
 # This function returns an unblessed hash of display fields for
 # conversion to JSON.
 

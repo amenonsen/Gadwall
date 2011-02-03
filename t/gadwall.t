@@ -186,6 +186,11 @@ $t->get_ok('/bar')
     ->content_type_is("text/plain")
     ->content_is("This is not a bar");
 
+$t->get_ok('/baz')
+    ->status_is(200)
+    ->content_type_is("text/plain")
+    ->content_is("This is not a baz");
+
 $t->get_ok('/logout')
     ->status_is(200)
     ->content_type_is("text/html;charset=UTF-8")
