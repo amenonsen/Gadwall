@@ -85,6 +85,11 @@ sub _shadow_controllers {
     my ($app, @names) = @_;
 
     my $class = ref $app;
+    $app->log->debug(
+        "Creating shadow classes under ${class}:: for Gadwall::".
+        join(",", @names)
+    );
+
     foreach my $name (@names) {
         if (my $e = Mojo::Loader->load("${class}::$name")) {
             die $e if ref $e;
@@ -95,6 +100,20 @@ sub _shadow_controllers {
                 @{"${class}::${name}::ISA"} = ($ours);
             }
         }
+    }
+
+    my $names = join "|", @names;
+    my $ours = qr#${class}/($names)\.pm#;
+
+    push @INC, sub {
+        my ($ref, $filename) = @_;
+        return unless $filename =~ $ours;
+        my $i = 0;
+        return (sub {
+            my ($ref, $state) = @_;
+            if ($$state++ == 0) { $_ = "1;"; return 1; }
+            else { return 0; }
+        }, \$i );
     }
 }
 
