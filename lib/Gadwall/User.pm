@@ -49,10 +49,13 @@ sub has_role {
 sub has_any_role {
     my $self = shift;
 
+    my $i = 0;
+    my %roles = map { $_ => $i++ } $self->role_names();
+
     my $n = 0;
     foreach (@_) {
-        if (my $r = $self->role_bit($_)) {
-            $n |= (1 << $r);
+        if (exists $roles{$_}) {
+            $n |= (1 << $roles{$_});
         }
     }
 
