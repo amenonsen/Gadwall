@@ -107,10 +107,61 @@ sub login {
     );
 }
 
+# This function allows a user to act as another user. For obvious
+# reasons, it should be exposed through an admin-only route.
+
+sub su {
+    my $self = shift;
+
+    my @v;
+    my $query = "select * from users where ";
+    if ($self->req->method eq 'POST') {
+        foreach my $p (qw(user_id login email username)) {
+            if (my $v = $self->param($p)) {
+                if ($p eq 'username') {
+                    $query .= "login=? or email=?";
+                    push @v, $v;
+                }
+                else {
+                    $query .= "$p=?";
+                }
+                push @v, $v;
+                last;
+            }
+        }
+    }
+
+    unless (@v) {
+        $self->render(status => 403, text => "Permission denied");
+        return;
+    }
+
+    my $u = $self->new_controller('Users')->select_one($query, @v);
+    if ($u) {
+        $self->session(suser => $self->session('user'));
+        $self->session(user => $u->{user_id});
+    }
+    else {
+        $self->flash(errmsg => $self->message('badsu'));
+    }
+
+    $self->redirect_to('/')->render_text(
+        "Redirecting to /", format => 'txt'
+    );
+}
+
 # This function revokes the cookie issued by login.
 
 sub logout {
     my $self = shift;
+
+    if ($self->session('suser')) {
+        $self->session(user => delete $self->session->{suser});
+        $self->redirect_to('/')->render_text(
+            "Redirecting to /", format => 'txt'
+        );
+        return;
+    }
 
     $self->session(expires => 1);
     $self->render(
@@ -125,6 +176,7 @@ sub messages {
     my $self = shift;
     return (
         $self->SUPER::messages(),
+        badsu => "Sorry, you can't act as that user",
         badlogin => "Incorrect username or password",
         loggedout => "You have been logged out",
     );

@@ -191,6 +191,36 @@ $t->get_ok('/baz')
     ->content_type_is("text/plain")
     ->content_is("This is not a baz");
 
+$t->get_ok('/quux')
+    ->status_is(200)
+    ->content_type_is("text/plain")
+    ->content_is('bar@example.org');
+
+$t->post_form_ok('/su', {user_id => 1})
+    ->status_is(302)
+    ->content_type_is("text/plain")
+    ->content_is("Redirecting to /");
+
+$t->get_ok('/quux')
+    ->status_is(200)
+    ->content_type_is("text/plain")
+    ->content_is('foo@example.org');
+
+$t->get_ok('/logout')
+    ->status_is(302)
+    ->content_type_is("text/plain")
+    ->content_is("Redirecting to /");
+
+$t->get_ok('/quux')
+    ->status_is(200)
+    ->content_type_is("text/plain")
+    ->content_is('bar@example.org');
+
+$t->get_ok('/baz')
+    ->status_is(200)
+    ->content_type_is("text/plain")
+    ->content_is("This is not a baz");
+
 $t->get_ok('/logout')
     ->status_is(200)
     ->content_type_is("text/html;charset=UTF-8")

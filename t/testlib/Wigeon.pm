@@ -40,6 +40,11 @@ sub startup {
     $bird->route('/baz')->to(cb => sub {
         shift->render_text("This is not a baz", format => 'txt');
     });
+    $bird->route('/su')->via('post')->to('auth#su');
+    $auth->route('/quux')->to(cb => sub {
+        my $self = shift;
+        $self->render_text($self->stash('user')->{email}, format => 'txt');
+    });
     $auth->route('/logout')->to('auth#logout', namespace => "Gadwall");
 
     $r->any('/startup' => sub {
