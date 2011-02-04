@@ -57,8 +57,12 @@ sub password {
     my $self = shift;
 
     my $u = $self->stash('user');
+    my $id = $self->stash($self->primary_key);
     my $passwd = $self->param('password');
-    unless ($passwd && $u->has_password($passwd)) {
+
+    unless (($u->has_role("admin") && $u->{user_id} != $id) ||
+            ($passwd && $u->has_password($passwd)))
+    {
         return $self->json_error("Incorrect password");
     }
 
@@ -69,11 +73,14 @@ sub password {
         }
     );
 
-    my $id = $self->stash($self->primary_key);
     unless (%set && $self->_update($id, %set)) {
         return $self->json_error;
     }
 
+    $self->app->log->info(
+        "Password changed by $u->{email}".
+        $u->{user_id} ne $id ? " (for user $id)" : ""
+    );
     return $self->json_ok("Password changed");
 }
 
