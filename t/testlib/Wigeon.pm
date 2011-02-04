@@ -25,7 +25,7 @@ sub startup {
     });
 
     $r->any(
-        '/foo' => sub {
+        '/from-template' => sub {
             my $self = shift;
             $self->render(template => "foo", template_class => __PACKAGE__);
         }
@@ -76,29 +76,28 @@ sub startup {
     $r->route('/sprockets/:sprocket_id/:action')->to(controller => 'sprockets', action => 'update');
 
     my $auth = $app->plugin('login');
-    $auth->route('/bar')->to(cb => sub {
+    $auth->route('/users-only')->to(cb => sub {
         shift->render_text("This is not a bar", format => 'txt');
     });
     my $bird = $auth->bridge->to('auth#allow_roles', namespace => "Gadwall", roles => "birdwatcher");
-    $bird->route('/baz')->to(cb => sub {
+    $bird->route('/birdwatchers-only')->to(cb => sub {
         shift->render_text("This is not a baz", format => 'txt');
     });
     $bird->route('/su')->via('post')->to('auth#su');
-    $auth->route('/quux')->to(cb => sub {
+    $auth->route('/my-email')->to(cb => sub {
         my $self = shift;
         $self->render_text($self->stash('user')->{email}, format => 'txt');
     });
-
-    my $never = $auth->bridge->to('auth#allow_if', cond => sub {0});
-    $never->get('/flirbl' => sub { shift->render(text => "Sometimes", format => 'txt') });
-
-    $auth->get('/blurfl' => sub {
+    $auth->get('/my-roles' => sub {
         my $self = shift;
         my $u = $self->stash('user');
         $self->render(
             text => join(":",$u->roles()), format => 'txt'
         );
     });
+
+    my $never = $auth->bridge->to('auth#allow_if', cond => sub {0});
+    $never->get('/never' => sub { shift->render(text => "Sometimes", format => 'txt') });
 
     $auth->route('/users/create')->via('post')->to('users#create');
     $auth->route('/users/:user_id/password')->via('post')->to('users#password');

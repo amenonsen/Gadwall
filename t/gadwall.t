@@ -17,10 +17,12 @@ use_ok('Gadwall::Users');
 use_ok('Gadwall::Validator');
 use_ok('Gadwall::Util', qw(bcrypt));
 
-# Test the support modules
+# Make sure both imported and non-imported forms of bcrypt work
 
 ok(Gadwall::Util::bcrypt('s3kr1t', '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC') eq '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC', "Bcrypt");
 ok(bcrypt('s3kr1t', '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC') eq '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC', "Bcrypt imported");
+
+# Test the bit-twiddling code for role checking in ::User
 
 my $x = bless {roles => 1<<6|1<<3}, "Wigeon::User";
 ok($x->has_role('bitcounter'), 'has_role bitcounter');
@@ -31,6 +33,8 @@ is_deeply([$x->roles()], [qw(birdwatcher bitcounter)], "list roles");
 $x = bless {roles => 1}, "Wigeon::User";
 ok($x->has_role("admin"), 'has_role admin');
 is_deeply([$x->roles()], [qw(admin)], "list roles");
+
+# Test the validator with a complex set of fields and values
 
 my $v = Gadwall::Validator->new({
     a => {},
@@ -164,13 +168,13 @@ $t->get_ok('/widgets/sprocket_redness?sprocket_id=2')
     ->content_type_is('text/plain')
     ->content_is("not red");
 
-$t->get_ok('/foo')
+$t->get_ok('/from-template')
     ->status_is(200)
     ->content_type_is("text/html;charset=UTF-8")
     ->text_is('html head title' => 'Foo!')
     ->text_like('html body' => qr/Foo bar!/);
 
-$t->get_ok('/bar')
+$t->get_ok('/users-only')
     ->status_is(403)
     ->content_type_is("text/html;charset=UTF-8")
     ->text_is('html body form label', 'Login:');
@@ -180,30 +184,30 @@ $t->post_form_ok('/login', {__login => "dummy", __passwd => "user"})
     ->content_type_is("text/html;charset=UTF-8")
     ->text_like('#msg', qr/Incorrect username or password/);
 
-$t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __source => "/bar"})
+$t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __source => "/users-only"})
     ->status_is(302)
     ->content_type_is("text/plain")
-    ->content_is("Redirecting to /bar");
+    ->content_is("Redirecting to /users-only");
 
-$t->get_ok('/blurfl')
-    ->status_is(200)
-    ->content_type_is("text/plain")
-    ->content_is("birdwatcher:bearfighter:bitcounter");
-
-$t->get_ok('/bar')
+$t->get_ok('/users-only')
     ->status_is(200)
     ->content_type_is("text/plain")
     ->content_is("This is not a bar");
 
-$t->get_ok('/baz')
-    ->status_is(200)
-    ->content_type_is("text/plain")
-    ->content_is("This is not a baz");
-
-$t->get_ok('/quux')
+$t->get_ok('/my-email')
     ->status_is(200)
     ->content_type_is("text/plain")
     ->content_is('bar@example.org');
+
+$t->get_ok('/my-roles')
+    ->status_is(200)
+    ->content_type_is("text/plain")
+    ->content_is("birdwatcher:bearfighter:bitcounter");
+
+$t->get_ok('/birdwatchers-only')
+    ->status_is(200)
+    ->content_type_is("text/plain")
+    ->content_is("This is not a baz");
 
 $t->post_form_ok('/users/create', {
         email => 'foo@example.org',
@@ -219,32 +223,42 @@ $t->post_form_ok('/su', {user_id => 2})
     ->content_type_is("text/plain")
     ->content_is("Redirecting to /");
 
-$t->get_ok('/quux')
+$t->get_ok('/my-email')
     ->status_is(200)
     ->content_type_is("text/plain")
     ->content_is('foo@example.org');
 
-$t->get_ok('/blurfl')
+$t->get_ok('/my-roles')
     ->status_is(200)
     ->content_type_is("text/plain")
     ->content_is("admin:backstabber");
+
+$t->get_ok('/birdwatchers-only')
+    ->status_is(403)
+    ->content_type_is("text/plain")
+    ->content_is("Permission denied");
 
 $t->get_ok('/logout')
     ->status_is(302)
     ->content_type_is("text/plain")
     ->content_is("Redirecting to /");
 
-$t->get_ok('/quux')
+$t->get_ok('/my-email')
     ->status_is(200)
     ->content_type_is("text/plain")
     ->content_is('bar@example.org');
 
-$t->get_ok('/baz')
+$t->get_ok('/my-roles')
+    ->status_is(200)
+    ->content_type_is("text/plain")
+    ->content_is("birdwatcher:bearfighter:bitcounter");
+
+$t->get_ok('/birdwatchers-only')
     ->status_is(200)
     ->content_type_is("text/plain")
     ->content_is("This is not a baz");
 
-$t->get_ok('/flirbl')
+$t->get_ok('/never')
     ->status_is(403)
     ->content_type_is("text/plain")
     ->content_is("Permission denied");
@@ -261,20 +275,20 @@ $t->get_ok('/logout')
     ->content_type_is("text/html;charset=UTF-8")
     ->text_like('#msg', qr/You have been logged out/);
 
-$t->get_ok('/bar')
+$t->get_ok('/users-only')
     ->status_is(403)
     ->content_type_is("text/html;charset=UTF-8")
     ->text_is('html body form label', 'Login:');
 
-$t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __source => "/bar"})
+$t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __source => "/users-only"})
     ->status_is(200)
     ->content_type_is("text/html;charset=UTF-8")
     ->text_like('#msg', qr/Incorrect username or password/);
 
-$t->post_form_ok('/login', {__login => "bar", __passwd => "secret", __source => "/bar"})
+$t->post_form_ok('/login', {__login => "bar", __passwd => "secret", __source => "/users-only"})
     ->status_is(302)
     ->content_type_is("text/plain")
-    ->content_is("Redirecting to /bar");
+    ->content_is("Redirecting to /users-only");
 
 $t->get_ok('/logout')
     ->status_is(200)
