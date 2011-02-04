@@ -47,4 +47,34 @@ sub columns {
 
 sub extra_columns { qw(roles::int) }
 
+# Takes the current password and (two copies of) a new password and
+# changes the user's password. Expects the router to set user_id in
+# the stash. Users should have access to only their own password.
+#
+# $auth->route('/users/:user_id/password')->to('users#password');
+
+sub password {
+    my $self = shift;
+
+    my $u = $self->stash('user');
+    my $passwd = $self->param('password');
+    unless ($passwd && $u->has_password($passwd)) {
+        return $self->json_error("Incorrect password");
+    }
+
+    my %set = $self->_validate(
+        { $self->columns }, {
+            pass1 => $self->param('pass1'),
+            pass2 => $self->param('pass2')
+        }
+    );
+
+    my $id = $self->stash($self->primary_key);
+    unless (%set && $self->_update($id, %set)) {
+        return $self->json_error;
+    }
+
+    return $self->json_ok("Password changed");
+}
+
 1;

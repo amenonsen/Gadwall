@@ -77,8 +77,10 @@ sub validate {
         }
 
         unless (@fields) {
-            $self->{errors}->{$c} = "Invalid field specification (#A)";
-            $status = 'invalid';
+            if ($required) {
+                $self->{errors}->{$c} = "Invalid field specification (#A)";
+                $status = 'invalid';
+            }
             next COLUMN;
         }
 

@@ -249,6 +249,13 @@ $t->get_ok('/flirbl')
     ->content_type_is("text/plain")
     ->content_is("Permission denied");
 
+$t->post_form_ok('/users/1/password', {
+        password => "s3kr1t", pass1 => "secret", pass2 => "secret"
+    })
+    ->status_is(200)
+    ->content_type_is("application/json")
+    ->json_content_is({status => "ok", message => "Password changed"});
+
 $t->get_ok('/logout')
     ->status_is(200)
     ->content_type_is("text/html;charset=UTF-8")
@@ -258,6 +265,21 @@ $t->get_ok('/bar')
     ->status_is(403)
     ->content_type_is("text/html;charset=UTF-8")
     ->text_is('html body form label', 'Login:');
+
+$t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __source => "/bar"})
+    ->status_is(200)
+    ->content_type_is("text/html;charset=UTF-8")
+    ->text_like('#msg', qr/Incorrect username or password/);
+
+$t->post_form_ok('/login', {__login => "bar", __passwd => "secret", __source => "/bar"})
+    ->status_is(302)
+    ->content_type_is("text/plain")
+    ->content_is("Redirecting to /bar");
+
+$t->get_ok('/logout')
+    ->status_is(200)
+    ->content_type_is("text/html;charset=UTF-8")
+    ->text_like('#msg', qr/You have been logged out/);
 
 $t->get_ok('/nonesuch')
     ->status_is(404);

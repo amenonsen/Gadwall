@@ -101,6 +101,7 @@ sub startup {
     });
 
     $auth->route('/users/create')->via('post')->to('users#create');
+    $auth->route('/users/:user_id/password')->via('post')->to('users#password');
 
     $r->any('/shutdown' => sub {
         my $self = shift;
