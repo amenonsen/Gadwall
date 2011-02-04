@@ -64,10 +64,7 @@ sub allow_roles {
         return 1;
     }
 
-    $self->render(
-        status => 403, text => "Permission denied", format => 'txt'
-    );
-    return 0;
+    return $self->denied;
 }
 
 # This is just a helper function to write authentication bridges. It
@@ -79,13 +76,12 @@ sub allow_roles {
 
 sub allow_if {
     my $self = shift;
-    my $allow = $self->stash('cond')->($self->stash('user'));
-    unless ($allow) {
-        $self->render(
-            status => 403, text => "Permission denied", format => 'txt'
-        );
+
+    if (my $allow = $self->stash('cond')->($self->stash('user'))) {
+        return 1;
     }
-    return $allow;
+
+    return $self->denied;
 }
 
 # This function takes a username and password and, if the password is
@@ -152,10 +148,7 @@ sub su {
     }
 
     unless (@v) {
-        $self->render(
-            status => 403, text => "Permission denied", format => 'txt'
-        );
-        return;
+        return $self->denied;
     }
 
     my $u = $self->new_controller('Users')->select_one($query, @v);
@@ -202,6 +195,14 @@ sub messages {
         badlogin => "Incorrect username or password",
         loggedout => "You have been logged out",
     );
+}
+
+sub denied {
+    my $self = shift;
+    $self->render(
+        status => 403, text => "Permission denied", format => 'txt'
+    );
+    return 0;
 }
 
 1;
