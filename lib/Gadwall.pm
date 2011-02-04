@@ -23,6 +23,28 @@ sub config_defaults {
     };
 }
 
+sub gadwall_setup {
+    my $app = shift;
+
+    my $conf = $app->plugin(
+        json_config => { ext => 'conf', default => $app->config_defaults }
+    );
+
+    $app->secret($conf->{secret});
+
+    (ref $app)->attr(
+        db => sub { new_dbh(@$conf{qw/db-name db-user db-pass/}) }
+    );
+
+    (ref $app)->attr(
+        cache => sub { new_cache(@$conf{qw/memcached-port memcached-namespace/}) }
+    );
+
+    $app->_shadow_controllers(qw(Auth Users));
+}
+
+# This function returns a new database handle.
+
 sub new_dbh {
     my ($db, $user, $pass) = @_;
     my $dbh = DBI->connect(
@@ -114,26 +136,6 @@ sub _shadow_controllers {
             else { return 0; }
         }, \$i );
     };
-}
-
-sub gadwall_setup {
-    my $app = shift;
-
-    my $conf = $app->plugin(
-        json_config => { ext => 'conf', default => $app->config_defaults }
-    );
-
-    $app->secret($conf->{secret});
-
-    (ref $app)->attr(
-        db => sub { new_dbh(@$conf{qw/db-name db-user db-pass/}) }
-    );
-
-    (ref $app)->attr(
-        cache => sub { new_cache(@$conf{qw/memcached-port memcached-namespace/}) }
-    );
-
-    $app->_shadow_controllers(qw(Auth Users));
 }
 
 1;
