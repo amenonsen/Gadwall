@@ -30,6 +30,8 @@ sub allow_users {
             $self->stash(user => $u);
             return 1;
         }
+        $self->app->log->error("Can't load user $user despite valid cookie");
+        $self->session(expires => 1);
     }
 
     my $source = $self->req->url;
@@ -108,6 +110,7 @@ sub login {
             "coalesce(login,email)=? and is_active", $login
         );
         if ($u && $u->has_password($passwd)) {
+            $self->app->log->info("Login: " . $u->{email});
             $self->session(user => $u->{user_id});
             $self->redirect_to($source)->render_text(
                 "Redirecting to $source", format => 'txt'
@@ -153,6 +156,9 @@ sub su {
 
     my $u = $self->new_controller('Users')->select_one($query, @v);
     if ($u) {
+        $self->app->log->info(
+            "su: ". $self->stash('user')->{email} ." to ". $u->{email}
+        );
         $self->session(suser => $self->session('user'));
         $self->session(user => $u->{user_id});
     }
@@ -169,6 +175,9 @@ sub su {
 
 sub logout {
     my $self = shift;
+
+    my $u = $self->stash('user');
+    $self->app->log->info("Logout: " . $u->{email});
 
     if ($self->session('suser')) {
         $self->session(user => delete $self->session->{suser});
