@@ -15,7 +15,8 @@ This program expects to run on a Unix system with:
 
 - Perl 5.10.1+
 - PostgreSQL 8.4+
-- Perl modules: Mojolicious, DBI, DBD::Pg, Crypt::Eksblowfish::Bcrypt
+- Perl modules: Mojolicious, DBI, DBD::Pg, Crypt::Eksblowfish::Bcrypt,
+  Data::Entropy, Crypt::Rijndael
 
 (Mojolicious and associated modules are under active development, and
 may be version-sensitive. If necessary, specific versions of these or
