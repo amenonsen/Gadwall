@@ -205,7 +205,16 @@ $t->get_ok('/quux')
     ->content_type_is("text/plain")
     ->content_is('bar@example.org');
 
-$t->post_form_ok('/su', {user_id => 1})
+$t->post_form_ok('/users/create', {
+        email => 'foo@example.org',
+        pass1 => 's3kr1t', pass2 => 's3kr1t',
+        is_admin => 1, is_backstabber => 1
+    })
+    ->status_is(200)
+    ->content_type_is("application/json")
+    ->json_content_is({status => "ok", message => "User created"});
+
+$t->post_form_ok('/su', {user_id => 2})
     ->status_is(302)
     ->content_type_is("text/plain")
     ->content_is("Redirecting to /");
@@ -214,6 +223,11 @@ $t->get_ok('/quux')
     ->status_is(200)
     ->content_type_is("text/plain")
     ->content_is('foo@example.org');
+
+$t->get_ok('/blurfl')
+    ->status_is(200)
+    ->content_type_is("text/plain")
+    ->content_is("admin:backstabber");
 
 $t->get_ok('/logout')
     ->status_is(302)

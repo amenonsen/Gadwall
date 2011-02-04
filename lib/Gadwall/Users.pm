@@ -5,7 +5,10 @@ use warnings;
 
 use base 'Gadwall::Table';
 
+use Gadwall::Util qw(bcrypt);
+
 sub columns {
+    my $self = shift;
     return (
         login => {},
         email => {
@@ -15,6 +18,9 @@ sub columns {
             fields => [qw/pass1 pass2/],
             required => 1,
             validate => sub {
+                my (%p) = @_;
+                return unless $p{pass1} eq $p{pass2};
+                return (password => bcrypt($p{pass1}));
             },
             error => "Please enter the same password twice"
         },
@@ -25,7 +31,8 @@ sub columns {
 
                 my $i = 30;
                 my @roles = (0)x31;
-                foreach my $r (Gadwall::User->role_names()) {
+                my $class = $self->class_name($self->rowclass);
+                foreach my $r ($class->role_names()) {
                     if ($set{"is_$r"}) {
                         $roles[$i] = 1;
                     }

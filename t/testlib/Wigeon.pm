@@ -31,31 +31,6 @@ sub startup {
         }
     );
 
-    my $auth = $app->plugin('login');
-    $auth->route('/bar')->to(cb => sub {
-        shift->render_text("This is not a bar", format => 'txt');
-    });
-    my $bird = $auth->bridge->to('auth#allow_roles', namespace => "Gadwall", roles => "birdwatcher");
-    $bird->route('/baz')->to(cb => sub {
-        shift->render_text("This is not a baz", format => 'txt');
-    });
-    $bird->route('/su')->via('post')->to('auth#su');
-    $auth->route('/quux')->to(cb => sub {
-        my $self = shift;
-        $self->render_text($self->stash('user')->{email}, format => 'txt');
-    });
-
-    my $never = $auth->bridge->to('auth#allow_if', cond => sub {0});
-    $never->get('/flirbl' => sub { shift->render(text => "Sometimes", format => 'txt') });
-
-    $auth->get('/blurfl' => sub {
-        my $self = shift;
-        my $u = $self->stash('user');
-        $self->render(
-            text => join(":",$u->roles()), format => 'txt'
-        );
-    });
-
     $r->any('/startup' => sub {
         my $self = shift;
         my $dbh = $self->app->db;
@@ -82,10 +57,6 @@ sub startup {
                 "B'0'::bit(31))"
             );
             $dbh->do(
-                "insert into users (email,password) values ".
-                q{('foo@example.org', '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC')}
-            );
-            $dbh->do(
                 "insert into users (login,email,password,roles) values ".
                 q{('bar', 'bar@example.org', '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC', }.
                 q{B'0000000000000000000000001011000'::bit(31))}
@@ -103,6 +74,33 @@ sub startup {
     $r->route('/sprockets/:action')->to(controller => 'sprockets', action => 'list');
 
     $r->route('/sprockets/:sprocket_id/:action')->to(controller => 'sprockets', action => 'update');
+
+    my $auth = $app->plugin('login');
+    $auth->route('/bar')->to(cb => sub {
+        shift->render_text("This is not a bar", format => 'txt');
+    });
+    my $bird = $auth->bridge->to('auth#allow_roles', namespace => "Gadwall", roles => "birdwatcher");
+    $bird->route('/baz')->to(cb => sub {
+        shift->render_text("This is not a baz", format => 'txt');
+    });
+    $bird->route('/su')->via('post')->to('auth#su');
+    $auth->route('/quux')->to(cb => sub {
+        my $self = shift;
+        $self->render_text($self->stash('user')->{email}, format => 'txt');
+    });
+
+    my $never = $auth->bridge->to('auth#allow_if', cond => sub {0});
+    $never->get('/flirbl' => sub { shift->render(text => "Sometimes", format => 'txt') });
+
+    $auth->get('/blurfl' => sub {
+        my $self = shift;
+        my $u = $self->stash('user');
+        $self->render(
+            text => join(":",$u->roles()), format => 'txt'
+        );
+    });
+
+    $auth->route('/users/create')->via('post')->to('users#create');
 
     $r->any('/shutdown' => sub {
         my $self = shift;
