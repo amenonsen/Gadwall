@@ -16,8 +16,6 @@ sub startup {
     my $app = shift;
     $app->gadwall_setup();
 
-    $app->renderer->root($app->home->rel_dir('../../templates'));
-
     my $r = $app->routes();
 
     $r->any('/' => sub {
