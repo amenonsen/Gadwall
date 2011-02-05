@@ -1,0 +1,72 @@
+Gadwall and security
+
+
+This is a collection of notes about Gadwall and various security issues.
+See also the Open Web Application Security Project's "Top 10 Risks" 2010
+at http://www.owasp.org/index.php/Top_10_2010
+
+1. SQL injection resistance
+
+   Gadwall always uses bind variables to pass untrusted user input to
+   the database.
+
+2. XSS (cross-site scripting) resistance
+
+   Gadwall always validates untrusted user input before storing it in
+   the database, and (through Mojolicious) escapes all output properly.
+   It also uses only validated inputs to construct links.
+
+3. Signed session cookies
+
+   Mojolicious provides cryptographically signed session cookies. The
+   cookie values are protected against tampering or forgery by an HMAC
+   keyed with a secret password (and Gadwall provides a random secret
+   by default). Session data are accepted only through the cookie, and
+   not from GET or POST parameters. Session cookies are never included
+   in pages or forms or links.
+
+4. Encrypted passwords
+
+   Gadwall uses Crypt::Eksblowfish::Bcrypt to encrypt all passwords for
+   storage in the database. The encrypted password resists brute-force
+   attacks due to the slow key scheduling stage and repeated rounds of
+   encryption.
+
+5. HTTPS deployment
+
+   Gadwall applications should be deployed using HTTPS to avoid leakage
+   of plaintext passwords (as submitted to the login form) and session
+   cookies (which are equivalent to authenticators).
+
+6. CSRF (cross-site request forgery) resistance
+
+   Gadwall resists CSRF attacks using a random double-submit token that
+   is set in the session cookie and in every POST form. If the values do
+   not match for a POST request, the request is rejected very early. The
+   login form is also protected, and the signature on the session cookie
+   prevents active network attacks against the CSRF token.
+   
+   Of course, GET requests are idempotent, as recommended by HTTP.
+
+7. Route-based authorisation
+
+   Gadwall performs user authorisation tests at the routing stage, so
+   that these tests need not be repeated in each handler. Thus users can
+   not gain access to administrative pages or even other users' pages by
+   tweaking the URL.
+
+8. Re-authentication required to change user data
+
+   Someone who gains unauthorised access to a user's active browser
+   session cannot use this to change the user's password, email address,
+   or other sensitive details, because the user's password is required
+   to confirm these actions.
+
+9. Cryptographically secure random number generation
+
+   Gadwall configures Data::Entropy to seed an AES-CTR generator with a
+   256-bit key from /dev/random, and uses its output whenever randomness
+   is required. (But it derives the initial seed from /dev/urandom during
+   development and testing).
+
+(This document is only an overview, not a complete security analysis.)
