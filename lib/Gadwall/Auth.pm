@@ -206,14 +206,6 @@ sub messages {
     );
 }
 
-sub denied {
-    my $self = shift;
-    $self->render(
-        status => 403, text => "Permission denied", format => 'txt'
-    );
-    return 0;
-}
-
 1;
 
 __DATA__

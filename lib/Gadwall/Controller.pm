@@ -48,6 +48,17 @@ sub new_controller {
     );
 }
 
+# This function may be used by any controller/action/bridge at any time
+# if it thinks something shady is going on.
+
+sub denied {
+    my $self = shift;
+    $self->render(
+        status => 403, text => "Permission denied", format => 'txt'
+    );
+    return 0;
+}
+
 # Helper functions to return JSON responses
 #
 # return $self->json_fragment(a => 1, b => "two")
