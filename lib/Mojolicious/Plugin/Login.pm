@@ -12,6 +12,29 @@ use base 'Mojolicious::Plugin';
 sub register {
     my ($self, $app, $conf) = @_;
 
+    $app->hook(
+        after_static_dispatch => sub {
+            my ($c) = @_;
+
+            return if $c->res->code;
+            return unless $c->req->method eq 'POST';
+
+            my $ctoken = $c->session('token');
+            my $ptoken = $c->param('__token');
+            return if $ctoken && $ptoken && $ctoken eq $ptoken;
+
+            $c->app->log->error(
+                "CSRF: POST ". $c->req->url->path .
+                " from ". $c->tx->remote_address .
+                " (". ($c->req->headers->user_agent||"no user-agent") .
+                ", ". ($c->req->headers->referrer||"no referrer") .")"
+            );
+            $c->render(
+                status => 403, format => 'txt', text => "Permission denied"
+            );
+        }
+    );
+
     my $r = $app->routes;
     $r->route('/login')->via('post')->to('auth#login')->name('login');
     my $auth = $r->bridge->to('auth#allow_users');

@@ -9,6 +9,8 @@ use warnings;
 
 use base 'Gadwall::Controller';
 
+use Gadwall::Util;
+
 # This bridge function returns 1 only if there is an (already validated)
 # session cookie that identifies a user. Otherwise it returns 0, thereby
 # denying access to anything protected by the bridge. In the former case
@@ -39,6 +41,7 @@ sub allow_users {
         $source = "/";
     }
 
+    $self->session(token => Gadwall::Util->csrf_token());
     $self->render(
         status => 403,
         template => "auth/login",
@@ -213,6 +216,7 @@ __DATA__
 @@ auth/login.html.ep
 % layout 'default', title => "Login";
 <%= form_for login => (method => 'post', class => 'login') => begin %>
+  <%= hidden_field '__token' => session 'token' %>
   <%= hidden_field '__source' => stash 'source' %>
   <label for="__login">Login:</label><br>
   <%= text_field '__login', value => stash 'login' %><br>
