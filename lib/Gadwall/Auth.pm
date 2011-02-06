@@ -41,6 +41,9 @@ sub allow_users {
         $source = "/";
     }
 
+    # Here we should check if this request was made via HTTPS, and if
+    # not, redirect to HTTPS before exposing the login form. But how?
+
     $self->session(token => Gadwall::Util->csrf_token());
     $self->render(
         status => 403,
