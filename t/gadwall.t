@@ -125,6 +125,14 @@ $t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __source => 
     ->content_type_is("text/plain")
     ->content_is("Redirecting to /users-only");
 
+$t->get_ok('/my-token')
+    ->status_is(200)
+    ->content_type_is("text/plain");
+
+my $newtoken = $t->tx->res->body;
+ok($newtoken ne $token, "CSRF token changed");
+$token = $newtoken;
+
 $t->get_ok('/users-only')
     ->status_is(200)
     ->content_type_is("text/plain")
@@ -216,8 +224,8 @@ $t->get_ok('/users-only')
     ->content_type_is("text/html;charset=UTF-8")
     ->text_is('html body form label', 'Login:');
 
-my $newtoken = $t->tx->res->dom('input[name="__token"]')->[0]->attrs->{value};
-ok($newtoken, "New CSRF token");
+$newtoken = $t->tx->res->dom('input[name="__token"]')->[0]->attrs->{value};
+ok($newtoken ne $token, "New CSRF token");
 
 $t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __source => "/users-only", __token => $token})
     ->status_is(403)
@@ -235,6 +243,14 @@ $t->post_form_ok('/login', {__login => "bar", __passwd => "secret", __source => 
     ->status_is(302)
     ->content_type_is("text/plain")
     ->content_is("Redirecting to /users-only");
+
+$t->get_ok('/my-token')
+    ->status_is(200)
+    ->content_type_is("text/plain");
+
+$newtoken = $t->tx->res->body;
+ok($newtoken ne $token, "CSRF token changed");
+$token = $newtoken;
 
 $t->get_ok('/sprockets')
     ->status_is(200)

@@ -74,6 +74,10 @@ sub startup {
     $r->route('/sprockets/:sprocket_id/:action')->to(controller => 'sprockets', action => 'update');
 
     my $auth = $app->plugin('login');
+    $auth->route('/my-token')->to(cb => sub {
+        my $self = shift;
+        $self->render_text($self->session('token'), format => 'txt');
+    });
     $auth->route('/users-only')->to(cb => sub {
         shift->render_text("This is not a bar", format => 'txt');
     });

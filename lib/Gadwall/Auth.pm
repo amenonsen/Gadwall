@@ -118,6 +118,7 @@ sub login {
         if ($u && $u->has_password($passwd)) {
             $self->app->log->info("Login: " . $u->{email});
             $self->session(user => $u->{user_id});
+            $self->session(token => Gadwall::Util->csrf_token());
             $self->redirect_to($source)->render_text(
                 "Redirecting to $source", format => 'txt'
             );
