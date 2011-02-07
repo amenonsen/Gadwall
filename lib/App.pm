@@ -8,10 +8,10 @@ use base 'Gadwall';
 sub config_defaults {
     my $app = shift;
 
-    return {
-        %{ $app->SUPER::config_defaults() }
+    return (
+        $app->SUPER::config_defaults(),
         # ...more values here...
-    };
+    );
 }
 
 sub startup {

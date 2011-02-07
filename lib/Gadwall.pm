@@ -22,11 +22,11 @@ sub config_defaults {
     my $self = shift;
     my $name = lc ref $self;
 
-    return {
+    return (
         "db-name" => $name, "db-user" => $name, "db-pass" => "",
         "memcached-namespace" => $name,
         secret => $main::random_secret
-    };
+    );
 }
 
 sub gadwall_setup {
@@ -35,7 +35,7 @@ sub gadwall_setup {
     $app->setup_random_source;
 
     my $conf = $app->plugin(
-        json_config => { ext => 'conf', default => $app->config_defaults }
+        json_config => { ext => 'conf', default => { $app->config_defaults } }
     );
 
     $app->secret($conf->{secret});

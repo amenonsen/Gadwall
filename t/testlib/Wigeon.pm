@@ -7,10 +7,10 @@ use base 'Gadwall';
 
 use Mojolicious::Controller;
 
-sub config_defaults {+{
-    %{ shift->SUPER::config_defaults() },
+sub config_defaults {(
+    shift->SUPER::config_defaults(),
     "db-name" => "gadwall", "db-user" => "gadwall"
-}}
+)}
 
 sub startup {
     my $app = shift;
