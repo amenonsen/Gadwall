@@ -108,6 +108,13 @@ $t->get_ok('/from-template')
     ->text_like('html body' => qr/Foo bar!/);
 
 $t->get_ok('/users-only')
+    ->status_is(302)
+    ->content_type_is("text/plain")
+    ->content_is("Redirecting to https");
+
+my $h = { "X-Forwarded-Protocol" => "https" };
+
+$t->get_ok('/users-only', $h)
     ->status_is(403)
     ->content_type_is("text/html;charset=UTF-8")
     ->text_is('html body form label', 'Login:');
@@ -115,17 +122,17 @@ $t->get_ok('/users-only')
 my $token = $t->tx->res->dom('input[name="__token"]')->[0]->attrs->{value};
 ok($token, "CSRF token");
 
-$t->post_form_ok('/login', {__login => "dummy", __passwd => "user", __token => $token})
+$t->post_form_ok('/login', {__login => "dummy", __passwd => "user", __token => $token}, $h)
     ->status_is(200)
     ->content_type_is("text/html;charset=UTF-8")
     ->text_like('#msg', qr/Incorrect username or password/);
 
-$t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __source => "/users-only", __token => $token})
+$t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __source => "/users-only", __token => $token}, $h)
     ->status_is(302)
     ->content_type_is("text/plain")
     ->content_is("Redirecting to /users-only");
 
-$t->get_ok('/my-token')
+$t->get_ok('/my-token', $h)
     ->status_is(200)
     ->content_type_is("text/plain");
 
@@ -133,22 +140,22 @@ my $newtoken = $t->tx->res->body;
 ok($newtoken ne $token, "CSRF token changed");
 $token = $newtoken;
 
-$t->get_ok('/users-only')
+$t->get_ok('/users-only', $h)
     ->status_is(200)
     ->content_type_is("text/plain")
     ->content_is("This is not a bar");
 
-$t->get_ok('/my-email')
+$t->get_ok('/my-email', $h)
     ->status_is(200)
     ->content_type_is("text/plain")
     ->content_is('bar@example.org');
 
-$t->get_ok('/my-roles')
+$t->get_ok('/my-roles', $h)
     ->status_is(200)
     ->content_type_is("text/plain")
     ->content_is("birdwatcher:bearfighter:bitcounter");
 
-$t->get_ok('/birdwatchers-only')
+$t->get_ok('/birdwatchers-only', $h)
     ->status_is(200)
     ->content_type_is("text/plain")
     ->content_is("This is not a baz");
@@ -156,52 +163,52 @@ $t->get_ok('/birdwatchers-only')
 $t->post_form_ok('/users/create', {
         email => 'foo@example.org', pass1 => 's3kr1t', pass2 => 's3kr1t',
         is_admin => 1, is_backstabber => 1, __token => $token
-    })
+    }, $h)
     ->status_is(200)
     ->content_type_is("application/json")
     ->json_content_is({status => "ok", message => "User created"});
 
-$t->post_form_ok('/su', {user_id => 2, __token => $token})
+$t->post_form_ok('/su', {user_id => 2, __token => $token}, $h)
     ->status_is(302)
     ->content_type_is("text/plain")
     ->content_is("Redirecting to /");
 
-$t->get_ok('/my-email')
+$t->get_ok('/my-email', $h)
     ->status_is(200)
     ->content_type_is("text/plain")
     ->content_is('foo@example.org');
 
-$t->get_ok('/my-roles')
+$t->get_ok('/my-roles', $h)
     ->status_is(200)
     ->content_type_is("text/plain")
     ->content_is("admin:backstabber");
 
-$t->get_ok('/birdwatchers-only')
+$t->get_ok('/birdwatchers-only', $h)
     ->status_is(403)
     ->content_type_is("text/plain")
     ->content_is("Permission denied");
 
-$t->get_ok('/logout')
+$t->get_ok('/logout', $h)
     ->status_is(302)
     ->content_type_is("text/plain")
     ->content_is("Redirecting to /");
 
-$t->get_ok('/my-email')
+$t->get_ok('/my-email', $h)
     ->status_is(200)
     ->content_type_is("text/plain")
     ->content_is('bar@example.org');
 
-$t->get_ok('/my-roles')
+$t->get_ok('/my-roles', $h)
     ->status_is(200)
     ->content_type_is("text/plain")
     ->content_is("birdwatcher:bearfighter:bitcounter");
 
-$t->get_ok('/birdwatchers-only')
+$t->get_ok('/birdwatchers-only', $h)
     ->status_is(200)
     ->content_type_is("text/plain")
     ->content_is("This is not a baz");
 
-$t->get_ok('/never')
+$t->get_ok('/never', $h)
     ->status_is(403)
     ->content_type_is("text/plain")
     ->content_is("Permission denied");
@@ -209,17 +216,17 @@ $t->get_ok('/never')
 $t->post_form_ok('/users/1/password', {
         password => "s3kr1t", pass1 => "secret", pass2 => "secret",
         __token => $token
-    })
+    }, $h)
     ->status_is(200)
     ->content_type_is("application/json")
     ->json_content_is({status => "ok", message => "Password changed"});
 
-$t->get_ok('/logout')
+$t->get_ok('/logout', $h)
     ->status_is(200)
     ->content_type_is("text/html;charset=UTF-8")
     ->text_like('#msg', qr/You have been logged out/);
 
-$t->get_ok('/users-only')
+$t->get_ok('/users-only', $h)
     ->status_is(403)
     ->content_type_is("text/html;charset=UTF-8")
     ->text_is('html body form label', 'Login:');
@@ -227,24 +234,24 @@ $t->get_ok('/users-only')
 $newtoken = $t->tx->res->dom('input[name="__token"]')->[0]->attrs->{value};
 ok($newtoken ne $token, "New CSRF token");
 
-$t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __source => "/users-only", __token => $token})
+$t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __source => "/users-only", __token => $token}, $h)
     ->status_is(403)
     ->content_type_is("text/plain")
     ->content_is("Permission denied");
 
 $token = $newtoken;
 
-$t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __source => "/users-only", __token => $token})
+$t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __source => "/users-only", __token => $token}, $h)
     ->status_is(200)
     ->content_type_is("text/html;charset=UTF-8")
     ->text_like('#msg', qr/Incorrect username or password/);
 
-$t->post_form_ok('/login', {__login => "bar", __passwd => "secret", __source => "/users-only", __token => $token})
+$t->post_form_ok('/login', {__login => "bar", __passwd => "secret", __source => "/users-only", __token => $token}, $h)
     ->status_is(302)
     ->content_type_is("text/plain")
     ->content_is("Redirecting to /users-only");
 
-$t->get_ok('/my-token')
+$t->get_ok('/my-token', $h)
     ->status_is(200)
     ->content_type_is("text/plain");
 
@@ -322,7 +329,7 @@ $t->get_ok('/widgets/sprocket_redness?sprocket_id=2')
     ->content_type_is('text/plain')
     ->content_is("not red");
 
-$t->get_ok('/logout')
+$t->get_ok('/logout', $h)
     ->status_is(200)
     ->content_type_is("text/html;charset=UTF-8")
     ->text_like('#msg', qr/You have been logged out/);

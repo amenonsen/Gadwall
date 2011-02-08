@@ -25,6 +25,18 @@ use Gadwall::Util;
 sub allow_users {
     my $self = shift;
 
+    # When authentication is involved, we'll have nothing to do with
+    # requests that aren't explicitly identified as being over HTTPS.
+    unless ($self->req->is_secure) {
+        my $url = $self->req->url->clone->scheme('https');
+        my $host = $self->req->headers->header('X-Forwarded-Host');
+        $url->host($host) if $host;
+        $self->redirect_to($url->to_abs)->render_text(
+            "Redirecting to https", format => 'txt'
+        );
+        return 0;
+    }
+
     my $user = $self->session('user');
     if ($user) {
         my $u = $self->new_controller('Users')->select_by_key($user);
@@ -40,9 +52,6 @@ sub allow_users {
     if ($source eq $self->url_for('logout')) {
         $source = "/";
     }
-
-    # Here we should check if this request was made via HTTPS, and if
-    # not, redirect to HTTPS before exposing the login form. But how?
 
     $self->session(token => Gadwall::Util->csrf_token());
     $self->render(

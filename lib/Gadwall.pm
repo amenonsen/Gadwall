@@ -49,6 +49,14 @@ sub gadwall_setup {
     );
 
     $app->_shadow_controllers(qw(Auth Users));
+
+    $app->hook(before_dispatch => sub {
+        my $self = shift;
+        my $proto = $self->req->headers->header('X-Forwarded-Protocol');
+        if ($proto && $proto eq 'https') {
+            $self->req->url->base->scheme('https');
+        }
+    });
 }
 
 # This function sets $main::prng to an AES CTR generator keyed with 256

@@ -36,7 +36,9 @@ at http://www.owasp.org/index.php/Top_10_2010
 
    Gadwall applications should be deployed using HTTPS to avoid leakage
    of plaintext passwords (as submitted to the login form) and session
-   cookies (which are equivalent to authenticators).
+   cookies (which are equivalent to authenticators). Gadwall refuses to
+   serve a login page over HTTP, so it cannot be deployed insecurely
+   without a concerted effort.
 
 6. CSRF (cross-site request forgery) resistance
 
@@ -44,8 +46,8 @@ at http://www.owasp.org/index.php/Top_10_2010
    is set in the session cookie and in every POST form. If the values do
    not match for a POST request, the request is rejected very early. The
    login form is also protected, and the signature on the session cookie
-   prevents active network attacks against the CSRF token.
-   
+   protects against active network attacks against the CSRF token.
+
    Of course, GET requests are idempotent, as recommended by HTTP.
 
 7. Route-based authorisation

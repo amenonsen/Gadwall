@@ -2,8 +2,8 @@ Deployment with Apache
 
 Here's an example VirtualHost configuration.
 
-It's important to set/unset X-Forwarded-Protocol because Gadwall will
-refuse to serve login pages over HTTP.
+It's important to set/unset X-Forwarded-Protocol and X-Forwarded-Host
+because Gadwall will refuse to serve login pages over plain HTTP.
 
 Listen a.b.c.d:443
 <VirtualHost a.b.c.d:443>
@@ -15,6 +15,7 @@ Listen a.b.c.d:443
     ProxyPass / http://127.0.0.1:3000/
     ProxyPassReverse / http://127.0.0.1:3000/
     RequestHeader set X-Forwarded-Protocol "https"
+    RequestHeader unset X-Forwarded-Host
 </VirtualHost>
 
 Listen a.b.c.d:80
@@ -27,4 +28,5 @@ Listen a.b.c.d:80
     ProxyPass / http://127.0.0.1:3000/
     ProxyPassReverse / http://127.0.0.1:3000/
     RequestHeader unset X-Forwarded-Protocol
+    RequestHeader unset X-Forwarded-Host
 </VirtualHost>
