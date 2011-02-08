@@ -36,6 +36,7 @@ sub gadwall_setup {
     );
 
     $app->secret($conf->{secret});
+    $app->sessions->secure(1);
 
     (ref $app)->attr(
         db => sub { new_dbh(@$conf{qw/db-name db-user db-pass/}) }

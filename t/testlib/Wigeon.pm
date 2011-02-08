@@ -13,6 +13,13 @@ sub startup {
     my $app = shift;
     $app->gadwall_setup();
 
+    $app->hook(
+        before_dispatch => sub {
+            my $self = shift;
+            $self->req->headers->add('X-Forwarded-Protocol', "https");
+        }
+    );
+
     my $r = $app->routes();
 
     $r->any('/' => sub {

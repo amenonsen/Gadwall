@@ -37,8 +37,8 @@ at http://www.owasp.org/index.php/Top_10_2010
    Gadwall applications should be deployed using HTTPS to avoid leakage
    of plaintext passwords (as submitted to the login form) and session
    cookies (which are equivalent to authenticators). Gadwall refuses to
-   serve a login page over HTTP, so it cannot be deployed insecurely
-   without a concerted effort.
+   serve a login page over HTTP and uses secure (HTTPS-only) cookies, so
+   it cannot be deployed insecurely without a concerted effort.
 
 6. CSRF (cross-site request forgery) resistance
 
