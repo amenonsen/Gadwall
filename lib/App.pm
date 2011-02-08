@@ -1,9 +1,6 @@
 package App;
 
-use strict;
-use warnings;
-
-use base 'Gadwall';
+use Mojo::Base 'Gadwall';
 
 sub config_defaults {
     my $app = shift;

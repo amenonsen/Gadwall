@@ -1,9 +1,6 @@
 package Gadwall::Users;
 
-use strict;
-use warnings;
-
-use base 'Gadwall::Table';
+use Mojo::Base 'Gadwall::Table';
 
 use Gadwall::Util qw(bcrypt);
 

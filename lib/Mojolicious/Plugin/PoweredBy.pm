@@ -3,7 +3,7 @@
 
 package Mojolicious::Plugin::PoweredBy;
 
-use base 'Mojolicious::Plugin';
+use Mojo::Base 'Mojolicious::Plugin';
 
 sub register {
 }

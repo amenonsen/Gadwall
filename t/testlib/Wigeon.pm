@@ -1,9 +1,6 @@
 package Wigeon;
 
-use strict;
-use warnings;
-
-use base 'Gadwall';
+use Mojo::Base 'Gadwall';
 
 use Mojolicious::Controller;
 

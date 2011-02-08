@@ -4,10 +4,7 @@
 
 package Gadwall::Auth;
 
-use strict;
-use warnings;
-
-use base 'Gadwall::Controller';
+use Mojo::Base 'Gadwall::Controller';
 
 use Gadwall::Util;
 

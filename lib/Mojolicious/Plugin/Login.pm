@@ -4,10 +4,7 @@
 
 package Mojolicious::Plugin::Login;
 
-use strict;
-use warnings;
-
-use base 'Mojolicious::Plugin';
+use Mojo::Base 'Mojolicious::Plugin';
 
 sub register {
     my ($self, $app, $conf) = @_;

@@ -1,9 +1,6 @@
 package Gadwall::Table;
 
-use strict;
-use warnings;
-
-use base 'Gadwall::Controller';
+use Mojo::Base 'Gadwall::Controller';
 
 # These functions (are Mojolicious "actions" that) act on the table and
 # return a suitable JSON response. They validate parameters, but do not

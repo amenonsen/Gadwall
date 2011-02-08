@@ -1,11 +1,6 @@
 package Gadwall::Controller;
 
-use strict;
-use warnings;
-
-use base 'Mojolicious::Controller';
-
-use Mojo::Loader;
+use Mojo::Base 'Mojolicious::Controller';
 
 # Takes the name of a class, like Sprockets, and returns its full name,
 # like Wigeon::Sprockets (or Gadwall::Sprockets, if that is not found).

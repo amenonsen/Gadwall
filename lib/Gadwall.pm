@@ -1,9 +1,6 @@
 package Gadwall;
 
-use strict;
-use warnings;
-
-use base 'Mojolicious';
+use Mojo::Base 'Mojolicious';
 
 use DBI;
 use Crypt::Rijndael;

@@ -3,7 +3,7 @@ package Gadwall::User;
 use strict;
 use warnings;
 
-use base "Gadwall::Row";
+use parent 'Gadwall::Row';
 
 use Gadwall::Util qw(bcrypt);
 

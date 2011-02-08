@@ -1,9 +1,6 @@
 package Wigeon::Widgets;
 
-use strict;
-use warnings;
-
-use base 'Gadwall::Controller';
+use Mojo::Base 'Gadwall::Controller';
 
 sub sprocket_colours {
     my $self = shift;

@@ -3,7 +3,7 @@ package Wigeon::Sprocket;
 use strict;
 use warnings;
 
-use base "Gadwall::Row";
+use parent "Gadwall::Row";
 
 sub is_red {
     my $self = shift;
