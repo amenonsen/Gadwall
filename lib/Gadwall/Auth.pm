@@ -45,15 +45,14 @@ sub allow_users {
     }
 
     my $source = $self->req->url;
-    if ($source eq $self->url_for('logout')) {
-        $source = "/";
+    unless ($source eq $self->url_for('logout')) {
+        $self->session(source => $source);
     }
 
     $self->session(token => Gadwall::Util->csrf_token());
     $self->render(
         status => 403,
-        template => "auth/login",
-        login => "", source => $source,
+        template => "auth/login", login => "",
         template_class => __PACKAGE__
     );
 
@@ -113,7 +112,6 @@ sub login {
         $login = $self->param("__login");
         $passwd = $self->param("__passwd");
     }
-    my $source = $self->param("__source") || '/';
 
     if ($login && $passwd) {
         my $u = $self->new_controller('Users')->select_one(
@@ -124,6 +122,7 @@ sub login {
             $self->app->log->info("Login: " . $u->{email});
             $self->session(user => $u->{user_id});
             $self->session(token => Gadwall::Util->csrf_token());
+            my $source = delete $self->session->{source} || '/';
             $self->render_plaintext("Redirecting to $source");
             $self->redirect_to($source);
             return;
@@ -131,7 +130,7 @@ sub login {
     }
 
     $self->render(
-        login => $login, source => $source,
+        login => $login,
         errmsg => $self->message('badlogin'),
         template_class => __PACKAGE__
     );
@@ -198,8 +197,7 @@ sub logout {
 
     $self->session(expires => 1);
     $self->render(
-        template => "auth/login",
-        login => "", source => "/",
+        template => "auth/login", login => "",
         errmsg => $self->message('loggedout'),
         template_class => __PACKAGE__
     );
@@ -223,7 +221,6 @@ __DATA__
 % layout 'default', title => "Login";
 <%= form_for login => (method => 'post', class => 'login') => begin %>
   <%= hidden_field '__token' => session 'token' %>
-  <%= hidden_field '__source' => stash 'source' %>
   <label for="__login">Login:</label><br>
   <%= text_field '__login', value => stash 'login' %><br>
   <label for="__passwd">Password:</label><br>

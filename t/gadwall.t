@@ -137,7 +137,7 @@ $t->post_form_ok('/login', {__login => "dummy", __passwd => "user", __token => $
     ->content_type_is("text/html;charset=UTF-8")
     ->text_like('#msg', qr/Incorrect username or password/);
 
-$t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __source => "/users-only", __token => $token})
+$t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __token => $token})
     ->status_is(302)
     ->content_type_is("text/plain")
     ->content_is("Redirecting to /users-only");
@@ -244,19 +244,19 @@ $t->get_ok('/users-only')
 $newtoken = $t->tx->res->dom('input[name="__token"]')->[0]->attrs->{value};
 ok($newtoken ne $token, "New CSRF token");
 
-$t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __source => "/users-only", __token => $token})
+$t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __token => $token})
     ->status_is(403)
     ->content_type_is("text/plain")
     ->content_is("Permission denied");
 
 $token = $newtoken;
 
-$t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __source => "/users-only", __token => $token})
+$t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __token => $token})
     ->status_is(200)
     ->content_type_is("text/html;charset=UTF-8")
     ->text_like('#msg', qr/Incorrect username or password/);
 
-$t->post_form_ok('/login', {__login => "bar", __passwd => "secret", __source => "/users-only", __token => $token})
+$t->post_form_ok('/login', {__login => "bar", __passwd => "secret", __token => $token})
     ->status_is(302)
     ->content_type_is("text/plain")
     ->content_is("Redirecting to /users-only");
