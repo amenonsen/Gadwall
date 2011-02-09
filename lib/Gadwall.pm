@@ -138,8 +138,8 @@ sub new_cache {
 
 # This function takes a list of controller names (e.g. "Users", "Auth").
 # It looks for App::$name to see if any of them have been reimplemented
-# by the derived application. If not, it loads our module and creates a
-# dummy package inheriting from it in the App:: namespace. All this is
+# by the derived application. If not, it creates a dummy package in the
+# App:: namespace that inherits from the Gadwall:: module. All this is
 # so that one can refer to foo#bar in routes, no matter whether foo is
 # App::Foo or Gadwall::Foo.
 #
@@ -150,37 +150,34 @@ sub new_cache {
 
 sub _shadow_controllers {
     my ($app, @names) = @_;
+    my @done;
 
     my $class = ref $app;
-    $app->log->debug(
-        "Creating shadow classes under ${class}:: for Gadwall::".
-        join(",", @names)
-    );
-
     foreach my $name (@names) {
-        if (my $e = Mojo::Loader->load("${class}::$name")) {
-            die $e if ref $e;
-            my $ours = "Gadwall::$name";
-            Mojo::Loader->load($ours);
-            {
-                no strict 'refs';
-                @{"${class}::${name}::ISA"} = ($ours);
-            }
-        }
+        my $full = "${class}::$name";
+        my $e = Mojo::Loader->load($full);
+        next unless $e; die $e if ref $e;
+
+        push @INC, sub {
+            return unless $_[1] eq "$class/$name.pm";
+            $INC{$_[1]} = 0;
+
+            my $i = 0;
+            return (sub {
+                my @lines = (
+                    "package $full; use parent 'Gadwall::$name'; 1;"
+                );
+                return defined ($_ = $lines[${$_[1]}++]) ? 1 : 0;
+            }, \$i)
+        };
+
+        push @done, $name;
     }
 
-    my $names = join "|", @names;
-
-    push @INC, sub {
-        my ($ref, $filename) = @_;
-        return unless $filename =~ /$class\/(?:$names)\.pm/;
-        my $i = 0;
-        return (sub {
-            my ($ref, $state) = @_;
-            if ($$state++ == 0) { $_ = "1;"; return 1; }
-            else { return 0; }
-        }, \$i );
-    };
+    $app->log->debug(
+        "Created shadow classes under ${class}:: for Gadwall::".
+        join(", ", @done)
+    ) if @done;
 }
 
 1;
