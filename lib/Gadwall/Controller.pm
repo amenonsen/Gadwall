@@ -43,14 +43,17 @@ sub new_controller {
     );
 }
 
+# This function saves having to type "format => 'txt'" everywhere.
+
+sub render_plaintext {
+    shift->render_text(shift, format => 'txt', @_);
+}
+
 # This function may be used by any controller/action/bridge at any time
 # if it thinks something shady is going on.
 
 sub denied {
-    my $self = shift;
-    $self->render(
-        status => 403, text => "Permission denied", format => 'txt'
-    );
+    shift->render_plaintext("Permission denied", status => 403);
     return 0;
 }
 

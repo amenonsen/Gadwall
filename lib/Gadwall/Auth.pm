@@ -28,9 +28,8 @@ sub allow_users {
         my $url = $self->req->url->clone->scheme('https');
         my $host = $self->req->headers->header('X-Forwarded-Host');
         $url->host($host) if $host;
-        $self->redirect_to($url->to_abs)->render_text(
-            "Redirecting to https", format => 'txt'
-        );
+        $self->render_plaintext("Redirecting to https");
+        $self->redirect_to($url->to_abs);
         return 0;
     }
 
@@ -125,9 +124,8 @@ sub login {
             $self->app->log->info("Login: " . $u->{email});
             $self->session(user => $u->{user_id});
             $self->session(token => Gadwall::Util->csrf_token());
-            $self->redirect_to($source)->render_text(
-                "Redirecting to $source", format => 'txt'
-            );
+            $self->render_plaintext("Redirecting to $source");
+            $self->redirect_to($source);
             return;
         }
     }
@@ -179,9 +177,8 @@ sub su {
         $self->flash(errmsg => $self->message('badsu'));
     }
 
-    $self->redirect_to('/')->render_text(
-        "Redirecting to /", format => 'txt'
-    );
+    $self->render_plaintext("Redirecting to /");
+    $self->redirect_to('/');
 }
 
 # This function revokes the cookie issued by login.
@@ -194,9 +191,8 @@ sub logout {
 
     if ($self->session('suser')) {
         $self->session(user => delete $self->session->{suser});
-        $self->redirect_to('/')->render_text(
-            "Redirecting to /", format => 'txt'
-        );
+        $self->render_plaintext("Redirecting to /");
+        $self->redirect_to('/');
         return;
     }
 

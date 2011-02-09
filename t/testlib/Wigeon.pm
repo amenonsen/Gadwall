@@ -23,7 +23,7 @@ sub startup {
     my $r = $app->routes();
 
     $r->any('/' => sub {
-        shift->render_text("Quack!", format => 'txt')
+        shift->render_plaintext("Quack!");
     });
 
     $r->any('/die' => sub { die "ouch\n" });
@@ -71,7 +71,7 @@ sub startup {
             $dbh->rollback;
             die $@;
         }
-        $self->render(text => "Welcome!", format => 'txt');
+        $self->render_plaintext("Welcome!");
     });
 
     $r->route('/widgets/:action')->to(controller => 'widgets');
@@ -82,30 +82,28 @@ sub startup {
     my $auth = $app->plugin('login');
     $auth->route('/my-token')->to(cb => sub {
         my $self = shift;
-        $self->render_text($self->session('token'), format => 'txt');
+        $self->render_plaintext($self->session('token'));
     });
     $auth->route('/users-only')->to(cb => sub {
-        shift->render_text("This is not a bar", format => 'txt');
+        shift->render_plaintext("This is not a bar");
     });
     my $bird = $auth->bridge->to('auth#allow_roles', namespace => "Gadwall", roles => "birdwatcher");
     $bird->route('/birdwatchers-only')->to(cb => sub {
-        shift->render_text("This is not a baz", format => 'txt');
+        shift->render_plaintext("This is not a baz");
     });
     $bird->route('/su')->via('post')->to('auth#su');
     $auth->route('/my-email')->to(cb => sub {
         my $self = shift;
-        $self->render_text($self->stash('user')->{email}, format => 'txt');
+        $self->render_plaintext($self->stash('user')->{email});
     });
     $auth->get('/my-roles' => sub {
         my $self = shift;
         my $u = $self->stash('user');
-        $self->render(
-            text => join(":",$u->roles()), format => 'txt'
-        );
+        $self->render_plaintext(join(":",$u->roles()));
     });
 
     my $never = $auth->bridge->to('auth#allow_if', cond => sub {0});
-    $never->get('/never' => sub { shift->render(text => "Sometimes", format => 'txt') });
+    $never->get('/never' => sub { shift->render_plaintext("Sometimes") });
 
     $auth->route('/users/create')->via('post')->to('users#create');
     $auth->route('/users/:user_id/password')->via('post')->to('users#password');
@@ -114,10 +112,14 @@ sub startup {
         my $self = shift;
         $self->app->db->do("drop table sprockets");
         $self->app->db->do("drop table users");
-        $self->render(text => "Goodbye!", format => 'txt');
+        $self->render_plaintext("Goodbye!");
     });
 
     $r->any('/(*whatever)' => sub { shift->render_not_found });
+}
+
+sub Mojolicious::Controller::render_plaintext {
+    shift->render_text(shift, format => 'txt', @_);
 }
 
 1;
