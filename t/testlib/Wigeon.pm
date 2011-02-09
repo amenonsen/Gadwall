@@ -2,8 +2,6 @@ package Wigeon;
 
 use Mojo::Base 'Gadwall';
 
-use Mojolicious::Controller;
-
 sub config_defaults {(
     shift->SUPER::config_defaults(),
     "db-name" => "gadwall", "db-user" => "gadwall"
@@ -11,7 +9,9 @@ sub config_defaults {(
 
 sub startup {
     my $app = shift;
+    $app->log->level('debug');
     $app->gadwall_setup();
+    $app->defaults(template_class => __PACKAGE__);
 
     $app->hook(
         before_dispatch => sub {
@@ -25,6 +25,8 @@ sub startup {
     $r->any('/' => sub {
         shift->render_text("Quack!", format => 'txt')
     });
+
+    $r->any('/die' => sub { die "ouch\n" });
 
     $r->any(
         '/from-template' => sub {
@@ -118,31 +120,6 @@ sub startup {
     $r->any('/(*whatever)' => sub { shift->render_not_found });
 }
 
-{
-    no warnings 'redefine';
-    package Mojolicious::Controller;
-
-    sub render_not_found {
-        my $self = shift;
-        $self->render(
-            status => 404, format => 'txt',
-            text => "Not found: ".$self->req->url->path
-        );
-    }
-
-    sub render_exception {
-        my ($self, $e) = @_;
-
-        return if $self->stash->{'mojo.exception'};
-        $self->render(
-            status => 500, format => 'txt',
-            handler => undef, layout => undef, extends => undef,
-            text => Mojo::Exception->new($e)->message,
-            'mojo.exception' => 1
-        );
-    }
-}
-
 1;
 
 __DATA__
@@ -150,3 +127,9 @@ __DATA__
 @@ foo.html.ep
 % layout 'default', title => "Foo!";
 Foo bar!
+
+@@ not_found.testing.html.ep
+<%= "Not found: " . url_for =%>
+
+@@ exception.testing.html.ep
+<%= stash('exception')->message =%>

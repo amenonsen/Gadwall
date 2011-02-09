@@ -86,6 +86,7 @@ is_deeply(
 
 # Test the application itself
 
+$ENV{MOJO_MODE} = "testing";
 my $client = Mojo::Client->new(app => "Wigeon");
 my $t = Test::Mojo->new(app => "Wigeon", client => $client);
 $t->client->test_server('http');
@@ -97,6 +98,11 @@ $t->get_ok('/')
     ->status_is(200)
     ->content_type_is('text/plain')
     ->content_is("Quack!");
+
+$t->get_ok('/die')
+    ->status_is(500)
+    ->content_type_is('text/html;charset=UTF-8')
+    ->content_is("ouch\n");
 
 $t->get_ok('/startup')
     ->status_is(200)
