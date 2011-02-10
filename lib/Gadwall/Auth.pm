@@ -14,10 +14,15 @@ use Gadwall::Util;
 
 sub allow_secure {
     my $self = shift;
+    my $conf = $self->stash('config');
 
     unless ($self->req->is_secure) {
         my $url = $self->req->url->clone;
         $url->scheme('https')->authority($url->base->authority);
+        $url->host($conf->{"canonical-host"})
+            if exists $conf->{"canonical-host"};
+        $url->port($conf->{"canonical-https-port"})
+            if exists $conf->{"canonical-https-port"};
         $self->render_plaintext("Redirecting to https");
         $self->redirect_to($url->to_abs);
         return 0;
