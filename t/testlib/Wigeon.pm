@@ -26,7 +26,8 @@ sub startup {
         shift->render_plaintext("Quack!");
     });
 
-    $r->any('/die' => sub { die "ouch\n" });
+    my $https = $r->bridge->to('auth#allow_secure');
+    $https->any('/die' => sub { die "ouch\n" });
 
     $r->any(
         '/from-template' => sub {

@@ -100,9 +100,9 @@ $t->get_ok('/')
     ->content_is("Quack!");
 
 $t->get_ok('/die')
-    ->status_is(500)
-    ->content_type_is('text/html;charset=UTF-8')
-    ->content_is("ouch\n");
+    ->status_is(302)
+    ->content_type_is("text/plain")
+    ->content_is("Redirecting to https");
 
 $t->get_ok('/startup')
     ->status_is(200)
@@ -123,6 +123,11 @@ $t->get_ok('/users-only', {"X-Bypass-Security" => 1})
 $client = Mojo::Client->new(app => "Wigeon");
 $t = Test::Mojo->new(app => "Wigeon", client => $client);
 $t->client->test_server('https');
+
+$t->get_ok('/die')
+    ->status_is(500)
+    ->content_type_is('text/html;charset=UTF-8')
+    ->content_is("ouch\n");
 
 $t->get_ok('/users-only')
     ->status_is(403)

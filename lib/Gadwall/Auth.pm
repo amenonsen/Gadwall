@@ -8,6 +8,25 @@ use Mojo::Base 'Gadwall::Controller';
 
 use Gadwall::Util;
 
+# This bridge function allows requests made over a secure channel to
+# pass through. Otherwise, it issues a redirect to the HTTPS version
+# of the request URL and returns 0.
+
+sub allow_secure {
+    my $self = shift;
+
+    unless ($self->req->is_secure) {
+        my $url = $self->req->url->clone->scheme('https');
+        my $host = $self->req->headers->header('X-Forwarded-Host');
+        $url->host($host) if $host;
+        $self->render_plaintext("Redirecting to https");
+        $self->redirect_to($url->to_abs);
+        return 0;
+    }
+
+    return 1;
+}
+
 # This bridge function returns 1 only if there is an (already validated)
 # session cookie that identifies a user. Otherwise it returns 0, thereby
 # denying access to anything protected by the bridge. In the former case
@@ -24,14 +43,7 @@ sub allow_users {
 
     # When authentication is involved, we'll have nothing to do with
     # requests that aren't explicitly identified as being over HTTPS.
-    unless ($self->req->is_secure) {
-        my $url = $self->req->url->clone->scheme('https');
-        my $host = $self->req->headers->header('X-Forwarded-Host');
-        $url->host($host) if $host;
-        $self->render_plaintext("Redirecting to https");
-        $self->redirect_to($url->to_abs);
-        return 0;
-    }
+    return 0 unless $self->allow_secure;
 
     my $user = $self->session('user');
     if ($user) {
