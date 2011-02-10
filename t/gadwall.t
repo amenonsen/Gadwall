@@ -104,6 +104,9 @@ $t->get_ok('/die')
     ->content_type_is("text/plain")
     ->content_is("Redirecting to https");
 
+my $loc = $t->tx->res->headers->location();
+ok $loc =~ /^https:\/\//, 'redirected to ' . $loc;
+
 $t->get_ok('/startup')
     ->status_is(200)
     ->content_type_is('text/plain')
@@ -119,6 +122,9 @@ $t->get_ok('/users-only', {"X-Bypass-Security" => 1})
     ->status_is(302)
     ->content_type_is("text/plain")
     ->content_is("Redirecting to https");
+
+$loc = $t->tx->res->headers->location();
+ok $loc =~ /^https:\/\//, 'redirected to ' . $loc;
 
 $client = Mojo::Client->new(app => "Wigeon");
 $t = Test::Mojo->new(app => "Wigeon", client => $client);

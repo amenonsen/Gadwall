@@ -16,9 +16,8 @@ sub allow_secure {
     my $self = shift;
 
     unless ($self->req->is_secure) {
-        my $url = $self->req->url->clone->scheme('https');
-        my $host = $self->req->headers->header('X-Forwarded-Host');
-        $url->host($host) if $host;
+        my $url = $self->req->url->clone;
+        $url->scheme('https')->authority($url->base->authority);
         $self->render_plaintext("Redirecting to https");
         $self->redirect_to($url->to_abs);
         return 0;

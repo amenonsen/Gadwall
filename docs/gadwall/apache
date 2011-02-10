@@ -13,9 +13,9 @@ Listen a.b.c.d:443
     SSLCertificateKeyFile ...
     ProxyRequests off
     ProxyPass / http://127.0.0.1:3000/
+    ProxyPassReverse / https://127.0.0.1:3000/
     ProxyPassReverse / http://127.0.0.1:3000/
     RequestHeader set X-Forwarded-Protocol "https"
-    RequestHeader unset X-Forwarded-Host
 </VirtualHost>
 
 Listen a.b.c.d:80
@@ -27,6 +27,6 @@ Listen a.b.c.d:80
     ProxyRequests off
     ProxyPass / http://127.0.0.1:3000/
     ProxyPassReverse / http://127.0.0.1:3000/
+    ProxyPassReverse / https://127.0.0.1:3000/
     RequestHeader unset X-Forwarded-Protocol
-    RequestHeader unset X-Forwarded-Host
 </VirtualHost>
