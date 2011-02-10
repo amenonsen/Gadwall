@@ -46,6 +46,8 @@ sub gadwall_setup {
         cache => sub { new_cache(@$conf{qw/memcached-port memcached-namespace/}) }
     );
 
+    delete @$conf{qw/secret db-pass/};
+
     $app->_shadow_controllers(qw(Auth Users));
 
     $app->hook(before_dispatch => sub {
