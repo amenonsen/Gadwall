@@ -50,11 +50,25 @@ sub gadwall_setup {
 
     $app->_shadow_controllers(qw(Auth Users));
 
+    # If we're running behind a reverse proxy, we rewrite the base
+    # request URL so that we can generate canonical redirects.
+
     $app->hook(before_dispatch => sub {
         my $self = shift;
-        my $proto = $self->req->headers->header('X-Forwarded-Protocol');
-        if ($proto && $proto eq 'https') {
+
+        my @proto = $self->req->headers->header('X-Forwarded-Protocol');
+        if (@proto && pop @proto eq 'https') {
             $self->req->url->base->scheme('https');
+        }
+
+        my @host = $self->req->headers->header('X-Forwarded-Host');
+        if (my $host = $conf->{"canonical-host"} || pop @host) {
+            $self->req->url->base->authority($host);
+        }
+
+        my $scheme = $self->req->url->base->scheme;
+        if (my $port = $conf->{"canonical-$scheme-port"}) {
+            $self->req->url->base->port($port);
         }
     });
 }
