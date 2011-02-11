@@ -231,8 +231,7 @@ __DATA__
 
 @@ auth/login.html.ep
 % layout 'default', title => "Login";
-<%= form_for login => (method => 'post', class => 'login') => begin %>
-  <%= hidden_field '__token' => session 'token' %>
+<%= post_form login => (class => 'login') => begin %>
   <label for="__login">Login:</label><br>
   <%= text_field '__login', value => stash 'login' %><br>
   <label for="__passwd">Password:</label><br>

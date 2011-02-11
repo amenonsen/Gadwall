@@ -48,7 +48,7 @@ sub gadwall_setup {
 
     delete @$conf{qw/secret db-pass/};
 
-    $app->_shadow_controllers(qw(Auth Users));
+    $app->plugin('gadwall_helpers');
 
     # If we're running behind a reverse proxy, we rewrite the base
     # request URL so that we can generate canonical redirects.
@@ -71,6 +71,8 @@ sub gadwall_setup {
             $self->req->url->base->port($port);
         }
     });
+
+    $app->_shadow_controllers(qw(Auth Users));
 }
 
 # This function sets $main::prng to an AES CTR generator keyed with 256
