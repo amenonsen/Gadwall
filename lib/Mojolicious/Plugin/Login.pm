@@ -20,11 +20,19 @@ sub register {
             my $ptoken = $c->param('__token');
             return if $ctoken && $ptoken && $ctoken eq $ptoken;
 
+            my @err;
+            push @err, "no cookie token" unless $ctoken;
+            push @err, "no form token" unless $ptoken;
+            unless (@err || $ctoken eq $ptoken) {
+                push @err, "tokens don't match";
+            }
+
             $c->app->log->error(
                 "CSRF: POST ". $c->req->url->path .
                 " from ". $c->tx->remote_address .
                 " (". ($c->req->headers->user_agent||"no user-agent") .
-                ", ". ($c->req->headers->referrer||"no referrer") .")"
+                ", ". ($c->req->headers->referrer||"no referrer") ."): ".
+                join(", ", @err)
             );
             $c->render(
                 status => 403, format => 'txt', text => "Permission denied"
