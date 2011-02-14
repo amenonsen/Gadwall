@@ -60,13 +60,6 @@ sub startup {
                 "values ('a','red',42), ('b','green',64), ('c','blue',256)"
             );
             $dbh->do(
-                "create table users (user_id serial primary key, ".
-                "login text unique, email text not null unique, ".
-                "password text not null, is_active bool not null ".
-                "default true, roles bit(31) not null default ".
-                "B'0'::bit(31))"
-            );
-            $dbh->do(
                 "insert into users (login,email,password,roles) values ".
                 q{('bar', 'bar@example.org', '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC', }.
                 q{B'0000000000000000000000001011000'::bit(31))}
@@ -114,10 +107,13 @@ sub startup {
     $auth->route('/users/create')->via('post')->to('users#create');
     $auth->route('/users/:user_id/password')->via('post')->to('users#password');
 
+    # We have to connect as the admin in order to delete users.
     $r->any('/shutdown' => sub {
         my $self = shift;
         $self->app->db->do("drop table sprockets");
-        $self->app->db->do("drop table users");
+        my $dbh = DBI->connect("dbi:Pg:database=gadwall", "mallard", "")||die $DBI::errstr;
+        $dbh->do("delete from users");
+        $dbh->do("alter sequence users_user_id_seq restart with 1");
         $self->render_plaintext("Goodbye!");
     });
 

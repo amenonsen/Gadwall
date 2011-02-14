@@ -11,6 +11,7 @@ su - postgres -c "
     createdb -O $ADMIN $DB
 " && \
 psql $DB $ADMIN <<SQL
+\set user $USER
 \set ON_ERROR_STOP
 SET client_min_messages TO 'error';
 begin;

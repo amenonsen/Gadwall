@@ -11,6 +11,8 @@ create table users (
     is_active bool not null default true,
     roles bit(31) not null default B'0'::bit(31)
 );
+grant select,insert,update on users to :user;
+grant select,usage on users_user_id_seq to :user;
 
 create table confirmation_tokens (
     token text primary key,
@@ -21,3 +23,4 @@ create table confirmation_tokens (
             default current_timestamp,
     unique (path, user_id)
 );
+grant select,insert,delete on confirmation_tokens to :user;
