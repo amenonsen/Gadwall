@@ -11,3 +11,13 @@ create table users (
     is_active bool not null default true,
     roles bit(31) not null default B'0'::bit(31)
 );
+
+create table confirmation_tokens (
+    token text primary key,
+    path text not null,
+    user_id integer not null references users
+            on delete cascade,
+    issued_at timestamptz not null
+            default current_timestamp,
+    unique (path, user_id)
+);

@@ -2,6 +2,8 @@ package Gadwall::Table;
 
 use Mojo::Base 'Gadwall::Controller';
 
+use Gadwall::Validator;
+
 # These functions (are Mojolicious "actions" that) act on the table and
 # return a suitable JSON response. They validate parameters, but do not
 # know anything about users and authorization.

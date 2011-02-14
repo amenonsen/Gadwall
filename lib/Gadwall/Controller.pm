@@ -43,6 +43,27 @@ sub new_controller {
     );
 }
 
+# Returns the canonical URL for this web site, if configured, or the
+# best we can do under the circumstances if not.
+
+sub canonical_url {
+    my ($self, $protocol, $path) = @_;
+
+    my $cfg = $self->stash('config');
+    my $url = $self->req->url->base->clone;
+
+    $protocol ||= 'http';
+    my $host = $cfg->{"canonical-url"};
+    my $port = $cfg->{"canonical-$protocol-port"};
+
+    $url->scheme($protocol);
+    $url->host($host) if $host;
+    $url->port($port) if $port;
+    $url->path($path) if $path;
+
+    return $url;
+}
+
 # This function saves having to type "format => 'txt'" everywhere.
 
 sub render_plaintext {

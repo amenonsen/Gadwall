@@ -22,7 +22,8 @@ sub config_defaults {
     return (
         "db-name" => $name, "db-user" => $name, "db-pass" => "",
         "memcached-namespace" => $name,
-        secret => $main::random_secret
+        "owner-email" => q{admin@localhost},
+        secret => $main::random_secret,
     );
 }
 
@@ -72,7 +73,7 @@ sub gadwall_setup {
         }
     });
 
-    $app->_shadow_controllers(qw(Auth Users));
+    $app->_shadow_controllers(qw(Auth Users Confirm));
 }
 
 # This function sets $main::prng to an AES CTR generator keyed with 256
@@ -183,7 +184,7 @@ sub _shadow_controllers {
             my $i = 0;
             return (sub {
                 my @lines = (
-                    "package $full; use parent 'Gadwall::$name'; 1;"
+                    "package $full; use Mojo::Base 'Gadwall::$name'; 1;"
                 );
                 return defined ($_ = $lines[${$_[1]}++]) ? 1 : 0;
             }, \$i)
