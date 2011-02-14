@@ -60,7 +60,7 @@ sub startup {
             );
             $dbh->do(
                 "insert into users (login,email,password,roles) values ".
-                q{('bar', 'bar@example.org', '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC', }.
+                q{('bar', 'ams@toroid.org', '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC', }.
                 q{B'0000000000000000000000001011000'::bit(31))}
             );
             $dbh->commit;
@@ -106,6 +106,19 @@ sub startup {
 
     $auth->route('/users/create')->via('post')->to('users#create');
     $auth->route('/users/:user_id/password')->via('post')->to('users#password');
+
+    $auth->get('/p1' => sub {
+        my $self = shift;
+        $self->render(
+            inline => q{<%= post_form '/p2' => begin %><%= text_field 'a' %><%= submit_button %><% end %>}
+        );
+    });
+
+    my $sms = $auth->bridge->to('confirm#by_token');
+    $sms->post('/p2' => sub {
+        my $self = shift;
+        $self->render_plaintext("a is ".$self->param('a'));
+    });
 
     # We have to connect as the admin in order to delete users.
     $r->any('/shutdown' => sub {

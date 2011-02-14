@@ -169,7 +169,7 @@ $t->get_ok('/users-only')
 $t->get_ok('/my-email')
     ->status_is(200)
     ->content_type_is("text/plain")
-    ->content_is('bar@example.org');
+    ->content_is('ams@toroid.org');
 
 $t->get_ok('/my-roles')
     ->status_is(200)
@@ -217,7 +217,7 @@ $t->get_ok('/logout')
 $t->get_ok('/my-email')
     ->status_is(200)
     ->content_type_is("text/plain")
-    ->content_is('bar@example.org');
+    ->content_is('ams@toroid.org');
 
 $t->get_ok('/my-roles')
     ->status_is(200)
