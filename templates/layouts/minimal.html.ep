@@ -1,0 +1,6 @@
+<!doctype html>
+<html><head>
+<title><%= stash 'title' %></title>
+</head><body>
+<%= content %>
+</body></html>

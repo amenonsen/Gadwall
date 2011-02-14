@@ -82,43 +82,57 @@ sub password {
     return $self->json_ok("Password changed");
 }
 
-# This action takes an email address and, if it belongs to a user, sends
-# them a "reset password" link by email. It should be available via POST
-# to everyone.
+# This action initiates the password reset process.
 #
-# $r->route('/forgot-password')->via('post')->to('users#send_password_reset')
+# In response to a GET, it returns a form to accept an email address and
+# POST to itself. If the POSTed address belongs to a user, it sends them
+# a "reset password" link by email (which is handled below).
+#
+# $r->route('/forgot-password')->via(qw/get post/)->to('users#forgot_password')
 
-sub send_password_reset {
+sub forgot_password {
     my $self = shift;
 
+    my $email;
+    if ($self->req->method eq 'POST') {
+        $email = $self->param('email');
+    }
+
+    unless ($email) {
+        $self->render(
+            template => "users/password/select-email",
+            template_class => __PACKAGE__
+        );
+        return;
+    }
+
     my $user = $self->select_one(
-        "select * from users where email=?", $self->param("email")
+        "select * from users where email=?", $email
     );
 
     if ($user) {
-        my $uid = $user->{user_id};
         my $url = $self->new_controller('Confirm')->generate_url(
-            "/reset-password", $uid
+            "/reset-password", $user->{user_id}
         );
 
         if ($url) {
-            my $from = $self->stash('config')->{"owner-email"};
             my $host = $self->canonical_url->host;
+            my $from = $self->stash('config')->{"owner-email"};
             my $to = $user->{email};
             mail(
                 from => $from, to => $to,
                 subject => "Reset your password at $host",
                 text => $self->render_partial(
-                    template => "users/password-reset", format => 'txt',
+                    template => "users/password/reset-mail",
                     from => $from, to => $to, host => $host, url => $url,
-                    template_class => __PACKAGE__,
+                    template_class => __PACKAGE__, format => 'txt'
                 )
             );
-        }
 
-        $self->app->log->info(
-            "Sent password reset link to $user->{email}"
-        );
+            $self->app->log->info(
+                "Sent password reset link to $user->{email}"
+            );
+        }
     }
 
     # We always claim to have sent the reset link, because we don't want
@@ -126,7 +140,8 @@ sub send_password_reset {
     # valid users, and we don't care about anyone else.
 
     $self->render(
-        text => "A link to reset your password has been sent to your email address"
+        template => "users/password/sent-reset", format => 'html',
+        template_class => __PACKAGE__
     );
 }
 
@@ -149,9 +164,6 @@ sub reset_password {
                 pass2 => $self->param("pass2")
             }
         );
-        if (%set) {
-            $self->_update($uid, %set);
-        }
     }
 
     unless (%set && $self->_update($uid, %set)) {
@@ -165,18 +177,21 @@ sub reset_password {
             $params{t} = $url->query->param('t') if $url;
         }
         $self->render(
-            template => "users/reset-password",
+            template => "users/password/select-new",
             template_class => __PACKAGE__,
             %params
         );
         return;
     }
 
-    $self->render_plaintext("Password reset");
-
     my $user = $self->select_by_key($uid);
     $self->app->log->info(
         "Password reset by $user->{email}"
+    );
+
+    $self->render(
+        template => "users/password/reset",
+        template_class => __PACKAGE__
     );
 }
 
@@ -184,7 +199,15 @@ sub reset_password {
 
 __DATA__
 
-@@ users/password-reset.txt.ep
+@@ users/password/select-email.html.ep
+% layout 'minimal', title => "Reset forgotten password";
+<%= post_form forgot_password => begin %>
+<label for=email>Enter your email address:</label><br>
+<%= text_field 'email' %><br>
+<%= submit_button 'Forgot password' %>
+<% end %>
+
+@@ users/password/reset-mail.txt.ep
 To reset your password at <%= $host %>, visit:
 
 <%= $url %>
@@ -195,12 +218,23 @@ This link is valid for one hour.
 Administrator
 <%= $from %>
 
-@@ users/reset-password.html.ep
-% layout 'default';
+@@ users/password/sent-reset.html.ep
+% layout 'minimal', title => "Reset forgotten password";
+<p class=msg>
+A link to reset your password has been sent to your email address.
+Please click on it to continue.
+
+@@ users/password/select-new.html.ep
+% layout 'minimal', title => "Reset forgotten password";
 <%= post_form reset_password => begin %>
-Enter password (twice):<br>
+Enter new password (twice):<br>
 <%= hidden_field t => $t || "" %>
 <%= password_field 'pass1' %><br>
 <%= password_field 'pass2' %><br>
 <%= submit_button 'Reset password' %>
 <% end %>
+
+@@ users/password/reset.html.ep
+% layout 'minimal', title => "Password reset";
+<p class=msg>
+Your password has been reset. <a href="/">Return to the main page</a>.

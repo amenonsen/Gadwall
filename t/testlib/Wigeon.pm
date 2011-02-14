@@ -29,7 +29,7 @@ sub startup {
     my $https = $r->bridge->to('auth#allow_secure');
     $https->any('/die' => sub { die "ouch\n" });
     $https->get('/password-reset-form' => sub {shift->render(template=>"password-reset")});
-    $https->route('/forgot-password')->via('post')->to('users#send_password_reset')->name('forgot_password');
+    $https->route('/forgot-password')->via(qw/get post/)->to('users#forgot_password')->name('forgot_password');
 
     my $confirm = $https->bridge->to('confirm#by_url');
     $confirm->route('/reset-password')->via(qw/get post/)->to('users#reset_password')->name('reset_password');
