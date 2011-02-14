@@ -2,6 +2,10 @@ package Wigeon;
 
 use Mojo::Base 'Gadwall';
 
+sub testing_mode {
+    shift->log->path(undef);
+}
+
 sub config_defaults {(
     shift->SUPER::config_defaults(),
     "db-name" => "gadwall", "db-user" => "gadwall"
