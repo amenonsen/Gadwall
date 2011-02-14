@@ -230,7 +230,7 @@ sub messages {
 __DATA__
 
 @@ auth/login.html.ep
-% layout 'default', title => "Login";
+% layout 'minimal', title => "Login";
 <%= post_form login => (class => 'login') => begin %>
   <label for="__login">Login:</label><br>
   <%= text_field '__login', value => stash 'login' %><br>

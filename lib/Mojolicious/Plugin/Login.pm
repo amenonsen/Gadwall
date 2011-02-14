@@ -34,7 +34,7 @@ sub register {
 
     my $r = $app->routes;
     $r->route('/login')->via('post')->to('auth#login')->name('login');
-    my $auth = $r->bridge->to('auth#allow_users');
+    my $auth = $r->bridge->to('auth#allow_users')->name('auth');
     $auth->route('/logout')->to('auth#logout')->name('logout');
     return $auth;
 }
