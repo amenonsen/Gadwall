@@ -1,6 +1,6 @@
 <!doctype html>
 <html><head>
-<title><%= stash 'title' %></title>
+<title><%= $title %></title>
 </head><body>
 <%= content %>
 </body></html>
