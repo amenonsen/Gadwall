@@ -132,7 +132,13 @@ sub by_token {
     # form that will recreate the current request when submitted.
 
     my $token = $self->generate_token;
-    $self->send_token($token) if $token;
+    if ($token && !$self->send_token($token)) {
+        $self->render(
+            template => "confirm/token-error",
+            template_class => __PACKAGE__, format => 'html'
+        );
+        return 0;
+    }
 
     my $p = $self->req->params->to_hash;
     delete $p->{__token};
@@ -224,11 +230,18 @@ sub send_token {
     );
 
     $self->app->log->info("Sent confirmation token to $to");
+    return 1;
 }
 
 1;
 
 __DATA__
+
+@@ confirm/token-error.html.ep
+% layout 'minimal', title => 'Confirmation error';
+<p>
+An error occurred while sending you the confirmation code for this
+action. Please try again.
 
 @@ confirm/get-token.html.ep
 % layout 'minimal', title => 'Confirm action';
