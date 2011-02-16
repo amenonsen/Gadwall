@@ -2,6 +2,10 @@ package Gadwall::Controller;
 
 use Mojo::Base 'Mojolicious::Controller';
 
+# An alias to reduce the tedium of typing $self->app->log()
+
+sub log { shift->app->log }
+
 # Takes the name of a class, like Sprockets, and returns its full name,
 # like Wigeon::Sprockets (or Gadwall::Sprockets, if that is not found).
 # Returns undef if neither is found.

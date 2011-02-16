@@ -75,7 +75,7 @@ sub password {
         return $self->json_error;
     }
 
-    $self->app->log->info(
+    $self->log->info(
         "Password changed by $u->{email}".
         $u->{user_id} ne $id ? " (for user $id)" : ""
     );
@@ -129,7 +129,7 @@ sub forgot_password {
                 )
             );
 
-            $self->app->log->info(
+            $self->log->info(
                 "Sent password reset link to $user->{email}"
             );
         }
@@ -185,7 +185,7 @@ sub reset_password {
     }
 
     my $user = $self->select_by_key($uid);
-    $self->app->log->info(
+    $self->log->info(
         "Password reset by $user->{email}"
     );
 

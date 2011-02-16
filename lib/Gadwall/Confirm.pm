@@ -229,7 +229,7 @@ sub send_token {
         )
     );
 
-    $self->app->log->info("Sent confirmation token to $to");
+    $self->log->info("Sent confirmation token to $to");
     return 1;
 }
 

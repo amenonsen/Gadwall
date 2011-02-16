@@ -52,7 +52,7 @@ sub allow_users {
             $self->stash(user => $u);
             return 1;
         }
-        $self->app->log->error("Can't load user $user despite valid cookie");
+        $self->log->error("Can't load user $user despite valid cookie");
         $self->session(expires => 1);
     }
 
@@ -131,7 +131,7 @@ sub login {
             "coalesce(login,email)=? and is_active", $login
         );
         if ($u && $u->has_password($passwd)) {
-            $self->app->log->info("Login: " . $u->{email});
+            $self->log->info("Login: " . $u->{email});
             $self->session(user => $u->{user_id});
             $self->session(token => Gadwall::Util->csrf_token());
             my $source = delete $self->session->{source} || '/';
@@ -178,7 +178,7 @@ sub su {
 
     my $u = $self->new_controller('Users')->select_one($query, @v);
     if ($u) {
-        $self->app->log->info(
+        $self->log->info(
             "su: ". $self->stash('user')->{email} ." to ". $u->{email}
         );
         $self->session(suser => $self->session('user'));
@@ -198,7 +198,7 @@ sub logout {
     my $self = shift;
 
     my $u = $self->stash('user');
-    $self->app->log->info("Logout: " . $u->{email});
+    $self->log->info("Logout: " . $u->{email});
 
     if ($self->session('suser')) {
         $self->session(user => delete $self->session->{suser});
