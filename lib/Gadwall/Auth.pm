@@ -58,7 +58,7 @@ sub allow_users {
 
     my $source = $self->req->url;
     unless ($source eq $self->url_for('logout')) {
-        $self->session(source => $source);
+        $self->session(source => $source->to_string);
     }
 
     $self->session(token => Gadwall::Util->csrf_token());
