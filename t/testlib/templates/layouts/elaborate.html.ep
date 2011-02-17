@@ -1,6 +1,8 @@
 <!doctype html>
 <html><head>
 <title><%= $title %></title>
+<%= css %>
 </head><body>
 <%= content %>
+<%= js %>
 </body></html>

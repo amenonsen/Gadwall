@@ -40,6 +40,13 @@ sub startup {
         }
     );
 
+    $r->any(
+        '/helpers' => sub {
+            my $self = shift;
+            $self->render(template => "helpers", template_class => __PACKAGE__);
+        }
+    );
+
     $r->any('/startup' => sub {
         my $self = shift;
         my $dbh = $self->app->db;
@@ -151,9 +158,21 @@ Foo bar!
 @@ exception.testing.html.ep
 <%= stash('exception')->message =%>
 
-@@ password-reset.html.ep
-% layout 'default', title => "Reset password";
-<%= post_form forgot_password => begin %>
-<%= text_field 'email' %>
-<%= submit_button 'Reset password' %>
+@@ helpers.html.ep
+% layout 'elaborate', title => "helpers";
+% requires '/foo.js', '/foo.css', 'jquery-ui';
+<% css begin %>
+ foo { bar: 1; }
 <% end %>
+<% ready begin %>
+ $("x").click(function(){return false});
+<% end %>
+foo bar
+<% js begin %>
+ var x = 1;
+<% end %>
+foo bar
+<% ready begin %>
+ var x = 2;
+<% end %>
+foo bar
