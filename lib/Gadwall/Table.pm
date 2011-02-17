@@ -20,6 +20,7 @@ sub list {
     my $self = shift;
     return $self->render(
         json => {
+            key => $self->primary_key,
             rows => [
                 map { $_->display_hash } @{
                     $self->select($self->rows)
