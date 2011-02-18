@@ -158,6 +158,11 @@ Foo bar!
 @@ exception.testing.html.ep
 <%= stash('exception')->message =%>
 
+@@ widgets/wrapdiv.html.ep
+<div>
+<%= $content %>
+</div>
+
 @@ helpers.html.ep
 % layout 'elaborate', title => "helpers";
 % requires '/foo.js', '/foo.css', 'jquery-ui';
@@ -176,3 +181,6 @@ foo bar
  var x = 2;
 <% end %>
 foo bar
+<%= widget wrapdiv => begin %>
+ this should be in a div
+<% end %>

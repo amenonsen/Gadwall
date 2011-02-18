@@ -8,6 +8,19 @@ use Gadwall::Util;
 sub register {
     my ($self, $app) = @_;
 
+    # widget is like "include", but it allows the included template to
+    # be wrapped around provided begin/end block of content.
+
+    $app->helper(widget => sub {
+        my $self = shift;
+        my $file = shift;
+        if (ref $_[-1] && ref $_[-1] eq 'CODE') {
+            my $block = pop;
+            push @_, content => b($block->());
+        }
+        $self->render_partial("widgets/$file", @_);
+    });
+
     # The next few helpers are used to manage CSS and Javascript
     # dependencies for the current page.
     #
