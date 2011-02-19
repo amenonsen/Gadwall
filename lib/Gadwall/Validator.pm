@@ -50,8 +50,8 @@ sub validate {
     foreach my $c (keys %known) {
         my $col = $known{$c};
 
-        my $missing = $col->{missing} || $col->{error} || "$c is required";
-        my $invalid = $col->{invalid} || $col->{error} || "$c is invalid";
+        my $missing = $col->{missing} || $col->{error} || "This field is required";
+        my $invalid = $col->{invalid} || $col->{error} || "This field is invalid";
         my $required = $opts{all} && $col->{required};
 
         # By default, a column name corresponds to an eponymous form

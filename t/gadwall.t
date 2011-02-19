@@ -72,10 +72,10 @@ ok($r eq 'invalid', 'validation status');
 
 is_deeply(
     $v->errors, {
-        b => "b is invalid", c => "c is required",
+        b => "This field is invalid", c => "This field is required",
         g => "Invalid field specification (#B)",
-        h => "h is required", i => "i is required",
-        m => "m is invalid"
+        h => "This field is required", i => "This field is required",
+        m => "This field is invalid"
     }, "validation errors"
 );
 is_deeply(
@@ -283,12 +283,12 @@ $token = $newtoken;
 $t->get_ok('/sprockets')
     ->status_is(200)
     ->content_type_is('application/json')
-    ->json_content_is({rows => [{colour => "blue", teeth => 256, sprocket_name => "c", sprocket_id => 3},{colour => "green", teeth => 64, sprocket_name => "b", sprocket_id => 2},{colour => "red", teeth => 42, sprocket_name => "a", sprocket_id => 1}]});
+    ->json_content_is({key => "sprocket_id", rows => [{colour => "blue", teeth => 256, sprocket_name => "c", sprocket_id => 3},{colour => "green", teeth => 64, sprocket_name => "b", sprocket_id => 2},{colour => "red", teeth => 42, sprocket_name => "a", sprocket_id => 1}]});
 
 $t->get_ok('/sprockets/list?id=1')
     ->status_is(200)
     ->content_type_is('application/json')
-    ->json_content_is({rows => [{colour => "red", teeth => 42, sprocket_name => "a", sprocket_id => 1}]});
+    ->json_content_is({key => "sprocket_id", rows => [{colour => "red", teeth => 42, sprocket_name => "a", sprocket_id => 1}]});
 
 $t->post_form_ok('/sprockets/create', {sprocket_name => "d", colour => "red", teeth => 128, __token => $token})
     ->status_is(200)
@@ -298,12 +298,12 @@ $t->post_form_ok('/sprockets/create', {sprocket_name => "d", colour => "red", te
 $t->get_ok('/sprockets/list?id=4')
     ->status_is(200)
     ->content_type_is('application/json')
-    ->json_content_is({rows => [{colour => "red", teeth => 128, sprocket_name => "d", sprocket_id => 4}]});
+    ->json_content_is({key => "sprocket_id", rows => [{colour => "red", teeth => 128, sprocket_name => "d", sprocket_id => 4}]});
 
 $t->post_form_ok('/sprockets/4/update', {sprocket_name => "q", colour => "black", __token => $token})
     ->status_is(200)
     ->content_type_is('application/json')
-    ->content_is(qq!{"errors":{"colour":"colour is invalid"},"status":"error","message":"Please correct the following errors"}!);
+    ->content_is(qq!{"errors":{"colour":"This field is invalid"},"status":"error","message":"Please correct the following errors"}!);
 
 $t->post_form_ok('/sprockets/4/update', {sprocket_name => "e", colour => "blue", teeth => 128, __token => $token})
     ->status_is(200)
@@ -313,7 +313,7 @@ $t->post_form_ok('/sprockets/4/update', {sprocket_name => "e", colour => "blue",
 $t->get_ok('/sprockets/list?id=4')
     ->status_is(200)
     ->content_type_is('application/json')
-    ->json_content_is({rows => [{colour => "blue", teeth => 128, sprocket_name => "e", sprocket_id => 4}]});
+    ->json_content_is({key => "sprocket_id", rows => [{colour => "blue", teeth => 128, sprocket_name => "e", sprocket_id => 4}]});
 
 $t->post_form_ok('/sprockets/4/delete', {__token => $token})
     ->status_is(200)
@@ -323,7 +323,7 @@ $t->post_form_ok('/sprockets/4/delete', {__token => $token})
 $t->get_ok('/sprockets/list?id=4')
     ->status_is(200)
     ->content_type_is('application/json')
-    ->json_content_is({rows => []});
+    ->json_content_is({key => "sprocket_id", rows => []});
 
 $t->get_ok('/widgets/sprocket_colours')
     ->status_is(200)
