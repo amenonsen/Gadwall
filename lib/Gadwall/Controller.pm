@@ -113,7 +113,8 @@ sub json_ok {
 # => {"status": "error", "message": "Failed!", "extra": "data"}
 
 sub json_error {
-    my ($self, $error) = @_;
+    my $self = shift;
+    my $error = shift;
 
     my %error;
 
