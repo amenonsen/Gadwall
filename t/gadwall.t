@@ -189,6 +189,15 @@ $t->post_form_ok('/users/create', {
     ->content_type_is("application/json")
     ->json_content_is({status => "ok", message => "User created"});
 
+$t->get_ok('/users/list?id=2')
+    ->status_is(200)
+    ->content_type_is("application/json")
+    ->json_content_is({
+            key => "user_id", rows => [{
+                user_id=>2, email=>'foo@example.org', login=>undef,
+                is_backstabber=>1, is_admin=>1,is_active=>1}]
+        });
+
 $t->post_form_ok('/su', {user_id => 2, __token => $token})
     ->status_is(302)
     ->content_type_is("text/plain")

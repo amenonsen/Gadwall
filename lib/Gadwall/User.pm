@@ -8,8 +8,18 @@ use parent 'Gadwall::Row';
 use Gadwall::Util qw(bcrypt);
 
 sub display_hash {
-    my $hash = shift->SUPER::display_hash();
-    delete $hash->{password};
+    my $self = shift;
+    my $hash = $self->SUPER::display_hash();
+
+    my $n = 0;
+    foreach my $r ($self->role_names()) {
+        if ($self->{roles} & (1<<$n)) {
+            $hash->{"is_$r"} = 1;
+        }
+        $n++;
+    }
+
+    delete @$hash{qw/roles password/};
     return $hash;
 }
 

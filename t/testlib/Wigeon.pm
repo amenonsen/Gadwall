@@ -111,6 +111,7 @@ sub startup {
     my $never = $auth->bridge->to('auth#allow_if', cond => sub {0});
     $never->get('/never' => sub { shift->render_plaintext("Sometimes") });
 
+    $auth->route('/users/list')->via('get')->to('users#list');
     $auth->route('/users/create')->via('post')->to('users#create');
     $auth->route('/users/:user_id/password')->via('post')->to('users#password');
 
