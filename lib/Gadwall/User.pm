@@ -43,15 +43,6 @@ sub role_names {
     qw(admin)
 }
 
-sub role_bit {
-    my ($self, $r) = @_;
-
-    my $i = 0;
-    my %roles = map { $_ => $i++ } $self->role_names();
-
-    return $roles{$r};
-}
-
 sub has_role {
     return shift->has_any_role(@_);
 }
