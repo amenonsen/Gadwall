@@ -64,25 +64,62 @@ sub delete {
     return $self->json_ok($self->message('deleted'));
 }
 
-# This function must generate a SELECT query to retrieve rows based on
-# the request parameters. It must return a query string and a list of
-# bind values. The default version knows how to retrieve all rows, an
-# individual row identified by primary key value. rows() then applies
-# ORDER BY and LIMIT/OFFSET clauses to this query.
+# This function returns a query string and a list of bind values based
+# on the request parameters. By default, it assembles a query to fetch
+# all columns from the represented table. If an id is given, the query
+# fetches only the matching row; otherwise, it fetches everything. Any
+# or all of these decisions may be overriden by subclasses.
 
 sub query {
     my $self = shift;
-    my $cols = join ",", "*", $self->extra_columns();
-    my $query = "select $cols from " . $self->table_name;
 
-    my @values;
-    if (my $id = $self->param('id')) {
-        $query .= " where ". $self->primary_key ."=?";
-        push @values, $id;
+    my $query =
+        "select ". join(",", $self->query_columns).
+        " from ". $self->query_tables;
+
+    my ($where, @values) = $self->query_conditions(@_);
+    if ($where) {
+        $query .= " where $where";
     }
 
     return ($query, @values);
 }
+
+sub query_columns { qw(*) }
+
+sub query_tables { shift->table_name }
+
+sub query_conditions {
+    my $self = shift;
+
+    # We can be called in any of four different ways. With no arguments,
+    # we use the primary key value from the request parameters, if any.
+    # A single argument may be either a primary key value, or a hashref
+    # of column names and values to be ANDed together to form the WHERE
+    # clause. To accommodate more complicated queries, we also accept a
+    # string and a list of bind values and pass them through unchanged.
+
+    if (@_ > 1) {
+        return @_;
+    }
+    elsif (@_ == 1 && ref $_[0] eq 'HASH') {
+        my %columns = %{+shift};
+        return (
+            join(" AND ", map { "$_=$columns{$_}" } keys %columns),
+            values %columns
+        );
+    }
+    elsif (my $id = @_ ? shift : $self->param('id')) {
+        return (
+            $self->primary_key."=?", $id
+        );
+    }
+
+    return;
+}
+
+# This function applies ORDER BY and LIMIT/OFFSET clauses to the query
+# returned by query().
 
 sub rows {
     my $self = shift;
@@ -103,7 +140,6 @@ sub rows {
     return ($query, @values);
 }
 
-sub extra_columns {()}
 sub order { shift->primary_key ." DESC" }
 sub limit {}
 
@@ -126,13 +162,15 @@ sub select {
     return $rows;
 }
 
-# select_one returns a single row as a (blessed) hashref directly,
-# rather than wrapping it in an array. Just a convenience.
+# This is just a convenience. It passes its arguments to query(), and
+# returns a single row as a (blessed) hashref directly, rather than
+# wrapping it in an array.
 
 sub select_one {
     my $self = shift;
+    my ($q, @v) = $self->query(@_);
     my $row = $self->app->db->selectrow_hashref(
-        shift, {}, @_
+        $q, {}, @v
     );
 
     my $class = $self->rowclass;
@@ -153,12 +191,9 @@ sub select_by_key {
 
     my $row = $self->_cache_get($id);
     unless ($row) {
-        my $table = $self->table_name;
-        my $key = $self->primary_key;
-
-        my $cols = join ",", "*", $self->extra_columns();
+        my ($q, @v) = $self->query($id);
         $row = $self->app->db->selectrow_hashref(
-            "select $cols from $table where $key=?", {}, $id
+            $q, {}, @v
         );
 
         $self->_cache_set($id, $row) if $row;

@@ -127,8 +127,7 @@ sub login {
 
     if ($login && $passwd) {
         my $u = $self->new_controller('Users')->select_one(
-            "select * from users where ".
-            "coalesce(login,email)=? and is_active", $login
+            "is_active and coalesce(login,email)=?" => $login
         );
         if ($u && $u->has_password($passwd)) {
             $self->log->info("Login: " . $u->{email});
@@ -154,17 +153,16 @@ sub login {
 sub su {
     my $self = shift;
 
-    my @v;
-    my $query = "select * from users where ";
+    my ($where, @v);
     if ($self->req->method eq 'POST') {
         foreach my $p (qw(user_id login email username)) {
             if (my $v = $self->param($p)) {
                 if ($p eq 'username') {
-                    $query .= "login=? or email=?";
+                    $where .= "login=? or email=?";
                     push @v, $v;
                 }
                 else {
-                    $query .= "$p=?";
+                    $where .= "$p=?";
                 }
                 push @v, $v;
                 last;
@@ -176,7 +174,7 @@ sub su {
         return $self->denied;
     }
 
-    my $u = $self->new_controller('Users')->select_one($query, @v);
+    my $u = $self->new_controller('Users')->select_one($where, @v);
     if ($u) {
         $self->log->info(
             "su: ". $self->stash('user')->{email} ." to ". $u->{email}

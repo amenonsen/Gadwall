@@ -43,7 +43,7 @@ sub columns {
     );
 }
 
-sub extra_columns { qw(roles::int) }
+sub query_columns { qw(* roles::int) }
 
 # Takes the current password and (two copies of) a new password and
 # changes the user's password. Expects the router to set user_id in
@@ -106,9 +106,7 @@ sub forgot_password {
         return;
     }
 
-    my $user = $self->select_one(
-        "select * from users where email=?", $email
-    );
+    my $user = $self->select_one({email => $email});
 
     if ($user) {
         my $url = $self->new_controller('Confirm')->generate_url(
