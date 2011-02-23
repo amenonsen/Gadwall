@@ -16,9 +16,9 @@ use Gadwall::Validator;
 #
 # $r->route('/widgets/:widget_id/delete')->to('widgets#delete')
 
-sub list {
+sub json {
     my $self = shift;
-    return $self->render(
+    return $self->render_partial(
         json => {
             key => $self->primary_key,
             rows => [
@@ -28,6 +28,11 @@ sub list {
             ]
         }
     );
+}
+
+sub list {
+    my $self = shift;
+    return $self->render_text($self->json, format => 'json');
 }
 
 sub create {
