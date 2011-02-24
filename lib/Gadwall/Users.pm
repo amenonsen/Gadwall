@@ -77,7 +77,7 @@ sub password {
 
     $self->log->info(
         "Password changed by $u->{email}".
-        $u->{user_id} ne $id ? " (for user $id)" : ""
+        ($u->{user_id} ne $id ? " (for user $id)" : "")
     );
     return $self->json_ok("Password changed");
 }
