@@ -206,7 +206,8 @@ sub logout {
         return;
     }
 
-    $self->session(expires => 1);
+    delete $self->session->{user};
+    $self->session(token => Gadwall::Util->csrf_token());
     $self->render(
         template => "auth/login", login => "",
         errmsg => $self->message('loggedout'),
