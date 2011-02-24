@@ -16,28 +16,11 @@ use Gadwall::Validator;
 #
 # $r->route('/widgets/:widget_id/delete')->to('widgets#delete')
 
-sub display_rows {
-    my $self = shift;
-    return [
-        map { $_->display_hash } @{
-            $self->select($self->rows)
-        }
-    ];
-}
-
-sub json_string {
-    my $self = shift;
-    return $self->render_partial(
-        json => {
-            key => $self->primary_key,
-            rows => $self->display_rows
-        }
-    );
-}
-
 sub list {
     my $self = shift;
-    return $self->render_text($self->json_string, format => 'json');
+    return $self->render_text(
+        $self->json_string, format => 'json'
+    );
 }
 
 sub create {
@@ -129,9 +112,9 @@ sub query_conditions {
 }
 
 # This function applies ORDER BY and LIMIT/OFFSET clauses to the query
-# returned by query().
+# returned by query(). It is poorly named.
 
-sub rows {
+sub query_all {
     my $self = shift;
 
     my ($query, @values) = $self->query(@_);
@@ -217,6 +200,32 @@ sub select_by_key {
 }
 
 sub cache_rows { 0 }
+
+# Three convenient ways to fetch results: as an arrayref of blessed
+# rows, as an arrayref of unblessed rows for display, and as a JSON
+# string.
+
+sub rows {
+    my $self = shift;
+    return $self->select($self->query_all);
+}
+
+sub display_rows {
+    my $self = shift;
+    return [
+        map { $_->display_hash } @{$self->rows}
+    ];
+}
+
+sub json_string {
+    my $self = shift;
+    return $self->render_partial(
+        json => {
+            key => $self->primary_key,
+            rows => $self->display_rows
+        }
+    );
+}
 
 # This function must return the name of a package into which rows from
 # the database are blessed. By default, it looks for a package with the
