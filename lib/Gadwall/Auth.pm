@@ -101,7 +101,8 @@ sub allow_roles {
 sub allow_if {
     my $self = shift;
 
-    if (my $allow = $self->stash('cond')->($self->stash('user'))) {
+    my $user = $self->stash('user');
+    if (my $allow = $self->stash('cond')->($self, $user)) {
         return 1;
     }
 
