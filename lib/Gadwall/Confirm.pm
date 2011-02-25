@@ -133,6 +133,11 @@ sub by_token {
 
     my $token = $self->generate_token;
     if ($token && !$self->send_token($token)) {
+        if ($token) {
+            $self->app->db->do(
+                "delete from confirmation_tokens where token=?", {}, $token
+            );
+        }
         $self->render(
             template => "confirm/token-error",
             template_class => __PACKAGE__, format => 'html'
