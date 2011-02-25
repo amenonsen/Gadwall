@@ -190,7 +190,7 @@ sub values {
 my %patterns = (
     number => qr/^[0-9]+$/,
     nznumber => qr/^[1-9][0-9]*$/,
-    numeric2 => qr/^[0-9]+(?:\.[0-9]{1,2})$/,
+    numeric2 => qr/^[0-9]+(?:\.[0-9]{1,2})?$/,
     time => qr/^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/,
     date => sub {
         my %args = @_;
