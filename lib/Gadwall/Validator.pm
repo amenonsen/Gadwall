@@ -101,6 +101,8 @@ sub validate {
             next COLUMN;
         }
 
+        next COLUMN unless grep exists $given{$_}, @fields;
+
         # Finally, we validate the supplied value(s).
         #
         # The validator may be a callback, in which case it can accept
