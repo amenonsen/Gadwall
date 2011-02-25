@@ -19,8 +19,7 @@ use Gadwall::Validator;
 sub list {
     my $self = shift;
     return $self->render_text(
-        $self->json_rows($self->rows),
-        format => 'json'
+        $self->json_rows, format => 'json'
     );
 }
 
@@ -214,7 +213,7 @@ sub rows {
 sub display_rows {
     my ($self, $rows) = @_;
     return [
-        map { $_->display_hash } @$rows
+        map { $_->display_hash } @{$rows || $self->rows}
     ];
 }
 
