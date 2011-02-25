@@ -213,7 +213,7 @@ sub rows {
 sub display_rows {
     my ($self, $rows) = @_;
     return [
-        map { $_->display_hash } @{$rows || $self->rows}
+        map { ref eq 'HASH' ? $_ : $_->display_hash } @{$rows || $self->rows}
     ];
 }
 
