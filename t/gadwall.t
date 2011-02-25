@@ -60,7 +60,7 @@ my $v = Gadwall::Validator->new({
             return (l => $v{_l}.$v{_m});
         }},
     m => { required => 1, validate => Gadwall::Validator->patterns('date') },
-    n => { validate => Gadwall::Validator->patterns('decimal2') }
+    n => { validate => Gadwall::Validator->patterns('numeric2') }
 });
 ok($v);
 
