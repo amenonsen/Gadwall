@@ -188,6 +188,7 @@ sub values {
 my %patterns = (
     number => qr/^[0-9]+$/,
     nznumber => qr/^[1-9][0-9]*$/,
+    decimal2 => qr/^[0-9]+(?:\.[0-9]{2})$/,
     date => sub {
         my %args = @_;
         foreach my $k (keys %args) {
