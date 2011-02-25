@@ -56,14 +56,24 @@ sub gadwall_setup {
 
     $app->hook(before_dispatch => sub {
         my $self = shift;
+        my $h = $self->req->headers;
 
-        my @proto = $self->req->headers->header('X-Forwarded-Protocol');
-        if (@proto && pop @proto eq 'https') {
+        my $last = sub {
+            my @v = $h->header(shift);
+            my $v = pop @v;
+            if ($v && ref $v eq 'ARRAY') {
+                $v = pop @$v;
+            }
+            return $v;
+        };
+
+        my $proto = $last->('X-Forwarded-Protocol');
+        if ($proto && $proto eq 'https') {
             $self->req->url->base->scheme('https');
         }
 
-        my @host = $self->req->headers->header('X-Forwarded-Host');
-        if (my $host = $conf->{"canonical-host"} || pop @host) {
+        my $host = $conf->{"canonical-host"} || $last->('X-Forwarded-Host');
+        if ($host) {
             $self->req->url->base->authority($host);
         }
 
