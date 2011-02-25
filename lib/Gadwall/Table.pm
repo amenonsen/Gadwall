@@ -98,7 +98,7 @@ sub query_conditions {
     elsif (@_ == 1 && ref $_[0] eq 'HASH') {
         my %columns = %{+shift};
         return (
-            join(" AND ", map { "$_=$columns{$_}" } keys %columns),
+            join(" AND ", map { "$_=?" } keys %columns),
             values %columns
         );
     }
