@@ -207,13 +207,13 @@ sub cache_rows { 0 }
 
 sub rows {
     my $self = shift;
-    return $self->select($self->query_all);
+    return $self->select($self->query_all(@_));
 }
 
 sub display_rows {
     my $self = shift;
     return [
-        map { $_->display_hash } @{$self->rows}
+        map { $_->display_hash } @{$self->rows(@_)}
     ];
 }
 
@@ -222,7 +222,7 @@ sub json_string {
     return $self->render_partial(
         json => {
             key => $self->primary_key,
-            rows => $self->display_rows
+            rows => $self->display_rows(@_)
         }
     );
 }
