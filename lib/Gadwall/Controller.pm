@@ -51,16 +51,15 @@ sub new_controller {
 # best we can do under the circumstances if not.
 
 sub canonical_url {
-    my ($self, $protocol, $path) = @_;
+    my ($self, $scheme, $path) = @_;
 
-    my $cfg = $self->stash('config');
     my $url = $self->req->url->base->clone;
 
-    $protocol ||= 'http';
-    my $host = $cfg->{"canonical-url"};
-    my $port = $cfg->{"canonical-$protocol-port"};
+    $scheme ||= 'http';
+    my $host = $self->config("canonical-url");
+    my $port = $self->config("canonical-$scheme-port");
 
-    $url->scheme($protocol);
+    $url->scheme($scheme);
     $url->host($host) if $host;
     $url->port($port) if $port;
     $url->path($path) if $path;

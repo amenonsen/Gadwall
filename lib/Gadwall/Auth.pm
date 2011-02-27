@@ -14,7 +14,6 @@ use Gadwall::Util;
 
 sub allow_secure {
     my $self = shift;
-    my $conf = $self->stash('config');
 
     unless ($self->req->is_secure) {
         my $url = $self->req->url->clone;

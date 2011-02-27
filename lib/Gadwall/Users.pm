@@ -115,7 +115,7 @@ sub forgot_password {
 
         if ($url) {
             my $host = $self->canonical_url->host;
-            my $from = $self->stash('config')->{"owner-email"};
+            my $from = $self->config("owner-email");
             my $to = $user->{email};
             mail(
                 from => $from, to => $to,
