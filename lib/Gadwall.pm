@@ -61,9 +61,7 @@ sub gadwall_setup {
         my $last = sub {
             my @v = $h->header(shift);
             my $v = pop @v;
-            if ($v && ref $v eq 'ARRAY') {
-                $v = pop @$v;
-            }
+            $v = pop @$v if $v;
             return $v;
         };
 
