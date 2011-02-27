@@ -1,6 +1,9 @@
 <!doctype html>
 <html><head>
 <title><%= $title %></title>
+<style type="text/css">
+body { padding: 1em; }
+</style>
 </head><body>
 <%= content %>
 </body></html>
