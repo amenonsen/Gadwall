@@ -7,7 +7,7 @@ package Mojolicious::Plugin::Login;
 use Mojo::Base 'Mojolicious::Plugin';
 
 sub register {
-    my ($self, $app, $conf) = @_;
+    my ($self, $app, $opts) = @_;
 
     $app->hook(
         after_static_dispatch => sub {
@@ -42,6 +42,18 @@ sub register {
 
     my $r = $app->routes;
     $r->route('/login')->via('post')->to('auth#login')->name('login');
+
+    if ($opts->{reset_passwords}) {
+        my $secure = $r->bridge('/passwords')->to('auth#allow_secure');
+        $secure->route('/forgot')->via(qw/get post/)->to(
+            'users#forgot_password'
+        )->name('forgot_password');
+        my $confirm = $secure->bridge->to('confirm#by_url');
+        $confirm->route('/reset')->via(qw/get post/)->to(
+            'users#reset_password'
+        )->name('reset_password');
+    }
+
     my $auth = $r->bridge->to('auth#allow_users')->name('auth');
     $auth->route('/logout')->to('auth#logout')->name('logout');
     return $auth;
