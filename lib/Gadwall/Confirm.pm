@@ -30,7 +30,8 @@ sub by_url {
     my $self = shift;
 
     # Do we have a token with a valid signature?
-    my ($tok, $sig) = split /:/, $self->param('t'), 2;
+    my $t = $self->param('t') || "";
+    my ($tok, $sig) = split /:/, $t, 2;
     unless ($tok && $sig && $sig eq
             Mojo::Util::hmac_md5_sum($tok, $self->app->secret))
     {
@@ -221,7 +222,7 @@ sub send_token {
     my ($self, $token) = @_;
 
     my $host = $self->canonical_url->host;
-    my $from = $self->stash('config')->{"owner-email"};
+    my $from = $self->config("owner-email");
     my $to = $self->stash('user')->{email};
 
     mail(

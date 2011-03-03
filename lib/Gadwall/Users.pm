@@ -100,7 +100,7 @@ sub forgot_password {
 
     unless ($email) {
         $self->render(
-            template => "users/password/select-email",
+            template => "users/passwords/select-email",
             template_class => __PACKAGE__
         );
         return;
@@ -110,18 +110,18 @@ sub forgot_password {
 
     if ($user) {
         my $url = $self->new_controller('Confirm')->generate_url(
-            "/reset-password", $user->{user_id}
+            "/passwords/reset", $user->{user_id}
         );
 
         if ($url) {
             my $host = $self->canonical_url->host;
-            my $from = $self->stash('config')->{"owner-email"};
+            my $from = $self->config("owner-email");
             my $to = $user->{email};
             mail(
                 from => $from, to => $to,
                 subject => "Reset your password at $host",
                 text => $self->render_partial(
-                    template => "users/password/reset-mail",
+                    template => "users/passwords/reset-mail",
                     from => $from, to => $to, host => $host, url => $url,
                     template_class => __PACKAGE__, format => 'txt'
                 )
@@ -138,7 +138,7 @@ sub forgot_password {
     # valid users, and we don't care about anyone else.
 
     $self->render(
-        template => "users/password/sent-reset", format => 'html',
+        template => "users/passwords/sent-reset", format => 'html',
         template_class => __PACKAGE__
     );
 }
@@ -170,12 +170,12 @@ sub reset_password {
             # Unless there's a database error, keep regenerating the
             # token to allow the user one more access to this URL.
             my $url = $self->new_controller('Confirm')->generate_url(
-                "/reset-password", $uid
+                "/passwords/reset", $uid
             );
             $params{t} = $url->query->param('t') if $url;
         }
         $self->render(
-            template => "users/password/select-new",
+            template => "users/passwords/select-new",
             template_class => __PACKAGE__,
             %params
         );
@@ -188,7 +188,7 @@ sub reset_password {
     );
 
     $self->render(
-        template => "users/password/reset",
+        template => "users/passwords/reset",
         template_class => __PACKAGE__
     );
 }
@@ -197,7 +197,7 @@ sub reset_password {
 
 __DATA__
 
-@@ users/password/select-email.html.ep
+@@ users/passwords/select-email.html.ep
 % layout 'minimal', title => "Reset forgotten password";
 <%= post_form forgot_password => begin %>
 <label for=email>Enter your email address:</label><br>
@@ -205,7 +205,7 @@ __DATA__
 <%= submit_button 'Forgot password' %>
 <% end %>
 
-@@ users/password/reset-mail.txt.ep
+@@ users/passwords/reset-mail.txt.ep
 To reset your password at <%= $host %>, visit:
 
 <%= $url %>
@@ -216,13 +216,13 @@ This link is valid for one hour.
 Administrator
 <%= $from %>
 
-@@ users/password/sent-reset.html.ep
+@@ users/passwords/sent-reset.html.ep
 % layout 'minimal', title => "Reset forgotten password";
 <p class=msg>
 A link to reset your password has been sent to your email address.
 Please click on it to continue.
 
-@@ users/password/select-new.html.ep
+@@ users/passwords/select-new.html.ep
 % layout 'minimal', title => "Reset forgotten password";
 <%= post_form reset_password => begin %>
 Enter new password (twice):<br>
@@ -232,7 +232,7 @@ Enter new password (twice):<br>
 <%= submit_button 'Reset password' %>
 <% end %>
 
-@@ users/password/reset.html.ep
+@@ users/passwords/reset.html.ep
 % layout 'minimal', title => "Password reset";
 <p class=msg>
 Your password has been reset. <a href="/">Return to the main page</a>.
