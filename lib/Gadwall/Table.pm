@@ -8,20 +8,12 @@ use Gadwall::Validator;
 # return a suitable JSON response. They validate parameters, but do not
 # know anything about users and authorization.
 #
-# list() returns rows matching a query. create() takes a set of values
-# and creates a new row. update() takes a set of values and updates one
-# row identified by its id. delete() takes an id and deletes the row.
-# The row id must be a stash value rather than a parameter; it can be
-# set by the router as follows:
+# create() takes a set of values and creates a new row. update() takes a
+# set of values and updates one row identified by its id. delete() takes
+# an id and deletes the row. The row id must be in the stash rather than
+# a parameter; it can be set by the router as follows:
 #
 # $r->route('/widgets/:widget_id/delete')->to('widgets#delete')
-
-sub list {
-    my $self = shift;
-    return $self->render_text(
-        $self->json_rows, format => 'json'
-    );
-}
 
 sub create {
     my $self = shift;
@@ -55,6 +47,50 @@ sub delete {
     }
 
     return $self->json_ok($self->message('deleted'));
+}
+
+# This action returns a JSON response containing rows of data from the
+# table which match a(n optional) search expression. A lot of work goes
+# on behind the scenes to produce the response. First, query() assembles
+# a query based on the request parameters and the columns and conditions
+# defined by the subclass. Then select() executes the query and returns
+# a list of rows, which are then formatted for display and incorporated
+# into the response. Somewhere along the way, we also have to fetch and
+# return the total number of rows, to help the client paginate the list.
+
+sub list {
+    my $self = shift;
+    $self->render_text(
+        $self->list_json, format => 'json'
+    );
+}
+
+sub list_json {
+    my $self = shift;
+
+    my $table = $self->table_name;
+    my $res = {
+        table => {
+            name => $table,
+            key => $self->primary_key,
+            page => $self->page,
+            limit => $self->limit,
+        }
+    };
+
+    if (my $rows = $self->rows(@_)) {
+        $res->{status} = "ok";
+        $res->{$table} = $self->for_display($rows);
+        $res->{table}{total} = $self->count_rows(@_);
+    }
+    else {
+        $res = {
+            status => "error",
+            message => $self->app->db->errstr || "Unknown error"
+        };
+    }
+
+    return $self->render_partial(json => $res);
 }
 
 # This function returns a query string and a list of bind values based
@@ -112,9 +148,10 @@ sub query_conditions {
 }
 
 # This function applies ORDER BY and LIMIT/OFFSET clauses to the query
-# returned by query(). It is poorly named.
+# returned by query(). The resulting query returns one page of results
+# (or all results, if pages weren't requested).
 
-sub query_all {
+sub query_page {
     my $self = shift;
 
     my ($query, @values) = $self->query(@_);
@@ -125,8 +162,8 @@ sub query_all {
 
     if (my $n = $self->limit) {
         $query .= " LIMIT $n";
-        if (my $o = $self->param('start')) {
-            $query .= " OFFSET $o";
+        if ((my $p = $self->page) > 1) {
+            $query .= " OFFSET " . ($p-1)*$n;
         }
     }
 
@@ -134,7 +171,26 @@ sub query_all {
 }
 
 sub order { shift->primary_key ." DESC" }
-sub limit {}
+sub limit { int(shift->param('n') || 0) }
+sub page { int(shift->param('p') || 1) }
+
+# This function returns the number of rows that would be matched by a
+# given query. If anything goes wrong, it returns undef. This is a bit
+# of a hack.
+
+sub count_rows {
+    my $self = shift;
+
+    # Rather than duplicating code from query(), we just replace the
+    # column list in the generated query with a count(*).
+    my ($q, @v) = $self->query(@_);
+    $q =~
+        s{^select (?:.*?) from }
+         {select count(*) from }i;
+
+    my $row = $self->app->db->selectrow_arrayref($q, {}, @v);
+    return $row && $row->[0];
+}
 
 # This function takes a query string and an array of bind parameters and
 # executes the query, returning the results as a reference to an array
@@ -201,30 +257,26 @@ sub select_by_key {
 
 sub cache_rows { 0 }
 
-# Three convenient ways to fetch results: as an arrayref of blessed
-# rows, as an arrayref of unblessed rows for display, and as a JSON
-# string.
+# Two convenient ways to fetch results: as an arrayref of blessed rows
+# and as an arrayref of unblessed rows for display (plus a utility
+# function to convert one to the other).
 
 sub rows {
     my $self = shift;
-    return $self->select($self->query_all(@_));
+    return $self->select($self->query_page(@_));
 }
 
 sub display_rows {
-    my ($self, $rows) = @_;
-    return [
-        map { ref eq 'HASH' ? $_ : $_->display_hash } @{$rows || $self->rows}
-    ];
+    my $self = shift;
+    return $self->for_display($self->rows(@_));
 }
 
-sub json_rows {
+sub for_display {
     my ($self, $rows) = @_;
-    return $self->render_partial(
-        json => {
-            key => $self->primary_key,
-            rows => $self->display_rows($rows)
-        }
-    );
+
+    return $rows && [
+        map { ref eq 'HASH' ? $_ : $_->display_hash } @$rows
+    ];
 }
 
 # This function must return the name of a package into which rows from

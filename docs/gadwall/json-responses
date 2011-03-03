@@ -41,13 +41,13 @@ This is an informal description of the JSON responses we send.
     };
 
 5. Table data (e.g. search results), distinguished from the above by the
-   indication of start/total to enable pagination.
+   addition of page/total/limit to enable pagination.
 
     var res = {
         "status": "ok",
         "table": {
             "name": "things", "key": "thing_id",
-            "start": 10, "total": 365
+            "page": 10, "limit": 35, "total": 365
         },
         "things": [
             { "thing_id": 3, "field": "value", ... }

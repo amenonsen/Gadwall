@@ -197,9 +197,12 @@ $t->get_ok('/users/list?id=2')
     ->status_is(200)
     ->content_type_is("application/json")
     ->json_content_is({
-            key => "user_id", rows => [{
+            status => "ok",
+            table => { name => "users", key => "user_id", page => 1, limit => 0, total => 1 },
+            users => [{
                 user_id=>2, email=>'foo@example.org', login=>undef,
-                is_backstabber=>1, is_admin=>1,is_active=>1}]
+                is_backstabber=>1, is_admin=>1,is_active=>1
+            }]
         });
 
 $t->post_form_ok('/su', {user_id => 2, __token => $token})
@@ -296,12 +299,26 @@ $token = $newtoken;
 $t->get_ok('/sprockets')
     ->status_is(200)
     ->content_type_is('application/json')
-    ->json_content_is({key => "sprocket_id", rows => [{colour => "blue", teeth => 256, sprocket_name => "c", sprocket_id => 3},{colour => "green", teeth => 64, sprocket_name => "b", sprocket_id => 2},{colour => "red", teeth => 42, sprocket_name => "a", sprocket_id => 1}]});
+    ->json_content_is({
+            status => "ok",
+            table => { name => "sprockets", key => "sprocket_id", page => 1, limit => 0, total => 3 },
+            sprockets => [
+                {colour => "blue", teeth => 256, sprocket_name => "c", sprocket_id => 3},
+                {colour => "green", teeth => 64, sprocket_name => "b", sprocket_id => 2},
+                {colour => "red", teeth => 42, sprocket_name => "a", sprocket_id => 1}
+            ]
+        });
 
 $t->get_ok('/sprockets/list?id=1')
     ->status_is(200)
     ->content_type_is('application/json')
-    ->json_content_is({key => "sprocket_id", rows => [{colour => "red", teeth => 42, sprocket_name => "a", sprocket_id => 1}]});
+    ->json_content_is({
+            status => "ok",
+            table => { name => "sprockets", key => "sprocket_id", page => 1, limit => 0, total => 1 },
+            sprockets => [
+                {colour => "red", teeth => 42, sprocket_name => "a", sprocket_id => 1}
+            ]
+        });
 
 $t->post_form_ok('/sprockets/create', {sprocket_name => "d", colour => "red", teeth => 128, __token => $token})
     ->status_is(200)
@@ -311,7 +328,13 @@ $t->post_form_ok('/sprockets/create', {sprocket_name => "d", colour => "red", te
 $t->get_ok('/sprockets/list?id=4')
     ->status_is(200)
     ->content_type_is('application/json')
-    ->json_content_is({key => "sprocket_id", rows => [{colour => "red", teeth => 128, sprocket_name => "d", sprocket_id => 4}]});
+    ->json_content_is({
+            status => "ok",
+            table => { name => "sprockets", key => "sprocket_id", page => 1, limit => 0, total => 1 },
+            sprockets => [
+                {colour => "red", teeth => 128, sprocket_name => "d", sprocket_id => 4}
+            ]
+        });
 
 $t->post_form_ok('/sprockets/4/update', {sprocket_name => "q", colour => "black", __token => $token})
     ->status_is(200)
@@ -326,7 +349,25 @@ $t->post_form_ok('/sprockets/4/update', {sprocket_name => "e", colour => "blue",
 $t->get_ok('/sprockets/list?id=4')
     ->status_is(200)
     ->content_type_is('application/json')
-    ->json_content_is({key => "sprocket_id", rows => [{colour => "blue", teeth => 128, sprocket_name => "e", sprocket_id => 4}]});
+    ->json_content_is({
+            status => "ok",
+            table => { name => "sprockets", key => "sprocket_id", page => 1, limit => 0, total => 1 },
+            sprockets => [
+                {colour => "blue", teeth => 128, sprocket_name => "e", sprocket_id => 4}
+            ]
+        });
+
+$t->get_ok('/sprockets/list?p=2;n=2')
+    ->status_is(200)
+    ->content_type_is('application/json')
+    ->json_content_is({
+            status => "ok",
+            table => { name => "sprockets", key => "sprocket_id", page => 2, limit => 2, total => 4 },
+            sprockets => [
+                {colour => "green", teeth => 64, sprocket_name => "b", sprocket_id => 2},
+                {colour => "red", teeth => 42, sprocket_name => "a", sprocket_id => 1}
+            ]
+        });
 
 $t->post_form_ok('/sprockets/4/delete', {__token => $token})
     ->status_is(200)
@@ -336,7 +377,11 @@ $t->post_form_ok('/sprockets/4/delete', {__token => $token})
 $t->get_ok('/sprockets/list?id=4')
     ->status_is(200)
     ->content_type_is('application/json')
-    ->json_content_is({key => "sprocket_id", rows => []});
+    ->json_content_is({
+            status => "ok",
+            table => { name => "sprockets", key => "sprocket_id", page => 1, limit => 0, total => 0 },
+            sprockets => []
+        });
 
 $t->get_ok('/widgets/sprocket_colours')
     ->status_is(200)
