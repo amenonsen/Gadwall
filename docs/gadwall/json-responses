@@ -1,0 +1,55 @@
+This is an informal description of the JSON responses we send.
+
+0. The client may always get a 403/Permission denied response.
+
+1. A generic error message
+
+    var res = {
+        "status": "error",
+        "message": "...some error message..."
+    };
+
+2. A generic success message
+
+    var res = {
+        "status": "ok",
+        "message": "...some success message..."
+    };
+
+3. An error related to a form submission, with errors marked
+
+    var res = {
+        "status": "error",
+        "message": "...some error message...",
+        "errors": {
+            "field1": "message related to field1",
+            "field2": "message related to field2",
+            ...
+        }
+    };
+
+4. Success message with additional data (e.g. when an entity has been
+   created or updated)
+
+    var res = {
+        "status": "ok",
+        "message": "...some success message...",
+        "table": { "name": "things", "key": "thing_id" },
+        "things": [
+            { "thing_id": 3, "field": "value", ... }
+        ]
+    };
+
+5. Table data (e.g. search results), distinguished from the above by the
+   indication of start/total to enable pagination.
+
+    var res = {
+        "status": "ok",
+        "table": {
+            "name": "things", "key": "thing_id",
+            "start": 10, "total": 365
+        },
+        "things": [
+            { "thing_id": 3, "field": "value", ... }
+        ]
+    };
