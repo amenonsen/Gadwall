@@ -43,6 +43,12 @@ sub role_names {
     qw(admin)
 }
 
+sub role_descriptions {
+    return {
+        admin => "Administrator"
+    }
+}
+
 sub has_role {
     return shift->has_any_role(@_);
 }
