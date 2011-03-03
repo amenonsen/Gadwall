@@ -201,7 +201,8 @@ $t->get_ok('/users/list?id=2')
             table => { name => "users", key => "user_id", page => 1, limit => 0, total => 1 },
             users => [{
                 user_id=>2, email=>'foo@example.org', login=>undef,
-                is_backstabber=>1, is_admin=>1,is_active=>1
+                is_backstabber=>1, is_admin=>1,is_active=>1,
+                roles => [qw/Administrator backstabber/]
             }]
         });
 

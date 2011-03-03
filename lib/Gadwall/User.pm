@@ -12,14 +12,18 @@ sub display_hash {
     my $hash = $self->SUPER::display_hash();
 
     my $n = 0;
+    my @roles;
+    my $d = $self->role_descriptions;
     foreach my $r ($self->role_names()) {
         if ($self->{roles} & (1<<$n)) {
             $hash->{"is_$r"} = 1;
+            push @roles, $d->{$r} || $r;
         }
         $n++;
     }
+    $hash->{roles} = [ @roles ];
 
-    delete @$hash{qw/roles password/};
+    delete @$hash{qw/password/};
     return $hash;
 }
 
