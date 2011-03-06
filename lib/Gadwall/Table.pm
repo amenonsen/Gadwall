@@ -181,12 +181,11 @@ sub page { int(shift->param('p') || 1) }
 sub count_rows {
     my $self = shift;
 
-    # Rather than duplicating code from query(), we just replace the
-    # column list in the generated query with a count(*).
-    my ($q, @v) = $self->query(@_);
-    $q =~
-        s{^select (?:.*?) from }
-         {select count(*) from }i;
+    my $q = "select count(*) from ". $self->query_tables;
+    my ($where, @v) = $self->query_conditions(@_);
+    if ($where) {
+        $q .= " where $where";
+    }
 
     my $row = $self->app->db->selectrow_arrayref($q, {}, @v);
     return $row && $row->[0];
