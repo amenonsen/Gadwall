@@ -71,7 +71,7 @@ sub password {
         }
     );
 
-    unless (%set && $self->_update($id, %set)) {
+    unless (%set && $self->transaction(update => $id, %set)) {
         return $self->json_error;
     }
 
@@ -164,7 +164,7 @@ sub reset_password {
         );
     }
 
-    unless (%set && $self->_update($uid, %set)) {
+    unless (%set && $self->transaction(update => $uid, %set)) {
         my %params;
         unless (%set) {
             # Unless there's a database error, keep regenerating the

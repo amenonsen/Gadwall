@@ -19,7 +19,7 @@ sub create {
     my $self = shift;
 
     my %set = $self->column_values(all => 1);
-    unless (%set && $self->_create(%set)) {
+    unless (%set && $self->transaction(create => %set)) {
         return $self->json_error;
     }
 
@@ -31,7 +31,7 @@ sub update {
 
     my $id = $self->stash($self->primary_key);
     my %set = $self->column_values();
-    unless ($id && %set && $self->_update($id, %set)) {
+    unless ($id && %set && $self->transaction(update => $id, %set)) {
         return $self->json_error;
     }
 
@@ -42,7 +42,7 @@ sub delete {
     my $self = shift;
 
     my $id = $self->stash($self->primary_key);
-    unless ($id && $self->_delete($id)) {
+    unless ($id && $self->transaction(delete => $id)) {
         return $self->json_error;
     }
 
@@ -319,9 +319,34 @@ sub _validate {
     return $v->values;
 }
 
+# This function wraps a transaction around a create/update/delete
+# operation, which is performed by the relevant _method using the
+# supplied arguments.
+
+sub transaction {
+    my $self = shift;
+    my $dbh = $self->app->db;
+    my $op = "_" . shift;
+    my $rv;
+
+    $dbh->begin_work;
+    eval {
+        local $dbh->{RaiseError} = 1;
+        $rv = $self->$op(@_);
+        $dbh->commit;
+    };
+    if ($@) {
+        $self->stash(error => $@);
+        eval { $dbh->rollback };
+    }
+
+    return $rv;
+}
+
 # These functions can be overriden by subclasses that want to do
 # something other than the default INSERT/UPDATE/DELETE queries
-# (e.g. use an SQL function, or a transaction).
+# (e.g. use an SQL function). They're run inside an eval {}, so
+# if anything goes wrong they can just die().
 
 sub _create {
     my ($self, %set) = @_;
@@ -331,48 +356,35 @@ sub _create {
     my $values = join ",", map { "?" } keys %set;
     my @values = values %set;
 
-    my $dbh = $self->app->db;
-    my $rv = $dbh->do(
+    return $self->app->db->do(
         "insert into $table ($fields) values ($values)", {}, @values
     );
-    unless ($rv) {
-        $self->stash(error => $dbh->errstr);
-    }
-    return $rv;
 }
 
 sub _update {
     my ($self, $id, %set) = @_;
 
-    my $dbh = $self->app->db;
     my $table = $self->table_name;
     my $key = $self->primary_key;
     my $fields = join ",", map { "$_=?" } keys %set;
     my @values = values %set;
 
     $self->_cache_delete($id);
-    my $rv = $dbh->do(
+    return $self->app->db->do(
         "update $table set $fields where $key=?", {}, @values, $id
     );
-    unless ($rv) {
-        $self->stash(error => $dbh->errstr);
-    }
-    return $rv;
 }
 
 sub _delete {
     my ($self, $id) = @_;
 
-    my $dbh = $self->app->db;
     my $table = $self->table_name;
     my $key = $self->primary_key;
 
     $self->_cache_delete($id);
-    my $rv = $dbh->do("delete from $table where $key=?", {}, $id);
-    unless ($rv) {
-        $self->stash(error => $dbh->errstr);
-    }
-    return $rv;
+    return $self->app->db->do(
+        "delete from $table where $key=?", {}, $id
+    );
 }
 
 # Low-level cache access functions: get, set, delete
