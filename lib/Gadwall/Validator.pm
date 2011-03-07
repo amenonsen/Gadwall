@@ -147,7 +147,7 @@ sub validate {
         # missing. If we end up with no value, we ignore the column.
 
         $value = [grep defined, @$value];
-        $value = shift @$value unless @$value > 1;
+        $value = shift @$value unless $col->{multiple} || @$value > 1;
         next COLUMN unless $value;
 
         if (ref $V eq 'Regexp') {

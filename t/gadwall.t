@@ -62,14 +62,16 @@ my $v = Gadwall::Validator->new({
     m => { required => 1, validate => Gadwall::Validator->patterns('date') },
     n => { validate => Gadwall::Validator->patterns('numeric2') },
     o => { validate => Gadwall::Validator->patterns('numeric2') },
-    p => { validate => Gadwall::Validator->patterns('time') }
+    p => { validate => Gadwall::Validator->patterns('time') },
+    q => { multiple => 1, required => 1 }
 });
 ok($v);
 
 my $r = $v->validate({
     a => 1, b => 'a', c => " ", d => 3, e => "  foo  ", f => [1," 2 "],
     G => [1,2,3], H => 4, I => 3, J => undef, K => "	", _l => "foo",
-    _m => "bar", m => "2011-01-33", n => "3.53", o => 13, p => "13:21"
+    _m => "bar", m => "2011-01-33", n => "3.53", o => 13, p => "13:21",
+    q => 1
 }, all => 1);
 ok($r eq 'invalid', 'validation status');
 
@@ -84,7 +86,7 @@ is_deeply(
 is_deeply(
     {$v->values}, {
         a => 1, d => 2, e => "foo", f => [1,2], j => 3, l => "foobar",
-        n => "3.53", o => 13, p => "13:21"
+        n => "3.53", o => 13, p => "13:21", q => [1]
     }, "validated values"
 );
 
