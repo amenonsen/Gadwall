@@ -101,6 +101,14 @@ sub validate {
             next COLUMN;
         }
 
+        if ($col->{multiple}) {
+            foreach my $f (@fields) {
+                if (exists $given{$f} && ref $given{$f} ne 'ARRAY') {
+                    $given{$f} = [ $given{$f} ];
+                }
+            }
+        }
+
         next COLUMN unless grep exists $given{$_}, @fields;
 
         # Finally, we validate the supplied value(s).
