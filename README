@@ -23,6 +23,9 @@ may be version-sensitive. If necessary, specific versions of these or
 any other modules may be distributed with the application by placing
 them in the top-level deps directory.)
 
+Gadwall is itself under development, and there are presently no
+guarantees of backwards compatibility.
+
 
 » Installation
 
