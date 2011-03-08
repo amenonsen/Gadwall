@@ -156,7 +156,7 @@ sub validate {
 
         $value = [grep defined, @$value];
         $value = shift @$value unless $col->{multiple} || @$value > 1;
-        next COLUMN unless $value;
+        next COLUMN unless defined $value && (ref $value || length $value);
 
         if (ref $V eq 'Regexp') {
             if (grep !m/$V/, map {ref $_ eq 'ARRAY' ? @$_ : $_} $value) {
