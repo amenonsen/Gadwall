@@ -1,0 +1,43 @@
+Gadwall
+-------
+
+Gadwall is a foundation upon which I can build web applications. Based
+on the Mojolicious web framework, it is the result of some months spent
+exploring the available options and finding a combination that suits me.
+
+This program is named after the Gadwall (Anas strepera), a handsome duck
+whose name does not resemble anything else on Github.
+
+
+» Requirements
+
+This program expects to run on a Unix system with:
+
+- Perl 5.10.1+
+- PostgreSQL 8.4+
+- Perl modules: Mojolicious, DBI, DBD::Pg, Crypt::Eksblowfish::Bcrypt,
+  Data::Entropy, Crypt::Rijndael, Email::Stuff
+
+(Mojolicious and associated modules are under active development, and
+may be version-sensitive. If necessary, specific versions of these or
+any other modules may be distributed with the application by placing
+them in the top-level deps directory.)
+
+
+» Installation
+
+To install a Gadwall-based application:
+
+- First, set up the database. See utils/setup-schema
+
+- Edit app.conf to set db-name/db-user/db-pass if necessary, and also
+  to set the "secret" used to sign session cookies.
+
+- Configure a front-end web server to proxy HTTP and HTTPS connections
+  to http://127.0.0.1:3000. See docs/gadwall/apache for an example.
+
+- Use Hypnotoad ("hypnotoad ./app") or any suitable Plack web server
+  ("plackup -s Starman ./app") to run the application in production.
+
+--
+Abhijit Menon-Sen <ams@toroid.org>
