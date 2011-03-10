@@ -33,7 +33,7 @@ sub gadwall_setup {
     $app->setup_random_source;
 
     my $conf = $app->plugin(
-        json_config => { ext => 'conf', default => { $app->config_defaults } }
+        config => { ext => 'conf', default => { $app->config_defaults } }
     );
 
     $app->secret($conf->{secret});
