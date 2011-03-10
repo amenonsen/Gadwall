@@ -222,7 +222,7 @@ sub send_token {
     my ($self, $token) = @_;
 
     my $host = $self->canonical_url->host;
-    my $from = $self->config("owner-email");
+    my $from = $self->config("owner_email");
     my $to = $self->stash('user')->{email};
 
     mail(

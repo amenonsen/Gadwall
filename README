@@ -33,7 +33,7 @@ To install a Gadwall-based application:
 
 - First, set up the database. See utils/setup-schema
 
-- Edit app.conf to set db-name/db-user/db-pass if necessary, and also
+_ Edit app.conf to set db_name/db_user/db_pass if necessary, and also
   to set the "secret" used to sign session cookies.
 
 - Configure a front-end web server to proxy HTTP and HTTPS connections

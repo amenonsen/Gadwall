@@ -56,8 +56,8 @@ sub canonical_url {
     my $url = $self->req->url->base->clone;
 
     $scheme ||= 'http';
-    my $host = $self->config("canonical-url");
-    my $port = $self->config("canonical-$scheme-port");
+    my $host = $self->config("canonical_url");
+    my $port = $self->config("canonical_${scheme}_port");
 
     $url->scheme($scheme);
     $url->host($host) if $host;

@@ -8,7 +8,7 @@ sub testing_mode {
 
 sub config_defaults {(
     shift->SUPER::config_defaults(),
-    "db-name" => "gadwall", "db-user" => "gadwall"
+    db_name => "gadwall", db_user => "gadwall"
 )}
 
 sub startup {

@@ -20,9 +20,9 @@ sub config_defaults {
     my $name = lc ref $self;
 
     return (
-        "db-name" => $name, "db-user" => $name, "db-pass" => "",
-        "memcached-namespace" => $name,
-        "owner-email" => q{admin@localhost},
+        db_name => $name, db_user => $name, db_pass => "",
+        memcached_namespace => $name,
+        owner_email => q{admin@localhost},
         secret => $main::random_secret,
     );
 }
@@ -40,14 +40,14 @@ sub gadwall_setup {
     $app->sessions->secure(1);
 
     (ref $app)->attr(
-        db => sub { new_dbh(@$conf{qw/db-name db-user db-pass/}) }
+        db => sub { new_dbh(@$conf{qw/db_name db_user db_pass/}) }
     );
 
     (ref $app)->attr(
-        cache => sub { new_cache(@$conf{qw/memcached-port memcached-namespace/}) }
+        cache => sub { new_cache(@$conf{qw/memcached_port memcached_namespace/}) }
     );
 
-    delete @$conf{qw/secret db-pass/};
+    delete @$conf{qw/secret db_pass/};
 
     $app->plugin('gadwall_helpers');
     $app->helper(config => sub {
@@ -74,13 +74,13 @@ sub gadwall_setup {
             $self->req->url->base->scheme('https');
         }
 
-        my $host = $conf->{"canonical-host"} || $last->('X-Forwarded-Host');
+        my $host = $conf->{canonical_host} || $last->('X-Forwarded-Host');
         if ($host) {
             $self->req->url->base->authority($host);
         }
 
         my $scheme = $self->req->url->base->scheme;
-        if (my $port = $conf->{"canonical-$scheme-port"}) {
+        if (my $port = $conf->{"canonical_${scheme}_port"}) {
             $self->req->url->base->port($port);
         }
     });
@@ -132,7 +132,7 @@ sub new_dbh {
 
 # This function returns a Cache::Memcached-compatible object. Whether
 # this object actually talks to a running memcached depends on whether
-# memcached-port is set in the config file and whether Cache::Memcached
+# memcached_port is set in the config file and whether Cache::Memcached
 # (or an equivalent) is available.
 
 sub new_cache {
