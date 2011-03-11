@@ -18,6 +18,9 @@ sub register {
             my $block = pop;
             push @_, content => b($block->());
         }
+        else {
+            push @_, content => "";
+        }
         $self->render_partial("widgets/$file", @_);
     });
 
