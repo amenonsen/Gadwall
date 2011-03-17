@@ -9,11 +9,14 @@ sub register {
     my ($self, $app) = @_;
 
     # widget is like "include", but it allows the included template to
-    # be wrapped around provided begin/end block of content.
+    # be wrapped around provided begin/end block of content. It also
+    # localises stash values for convenience.
 
     $app->helper(widget => sub {
         my $self = shift;
         my $file = shift;
+        my $stash = $self->stash;
+
         if (ref $_[-1] && ref $_[-1] eq 'CODE') {
             my $block = pop;
             push @_, content => b($block->());
@@ -21,7 +24,15 @@ sub register {
         else {
             push @_, content => "";
         }
-        $self->render_partial("widgets/$file", @_);
+
+        my %v = @_;
+        my @locals =
+            map { "local \$stash->{$_} = qq{$v{$_}};" }
+                keys %v;
+        my $render = qq{\$self->render_partial("widgets/$file");};
+        my $s = join "\n", "{", @locals, $render, "}";
+        $self->app->log->info($s);
+        eval $s;
     });
 
     # The next few helpers are used to manage CSS and Javascript

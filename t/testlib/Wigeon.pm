@@ -161,6 +161,7 @@ Foo bar!
 @@ widgets/wrapdiv.html.ep
 <div>
 <%= $content %>
+<%= stash('x') || '' %>
 </div>
 
 @@ helpers.html.ep
@@ -181,6 +182,9 @@ foo bar
  var x = 2;
 <% end %>
 foo bar
+<%= widget wrapdiv => (x=>3) => begin %>
+ this should be in a div
+<% end %>
 <%= widget wrapdiv => begin %>
  this should be in a div
 <% end %>
