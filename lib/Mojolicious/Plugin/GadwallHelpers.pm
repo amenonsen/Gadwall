@@ -31,7 +31,6 @@ sub register {
                 keys %v;
         my $render = qq{\$self->render_partial("widgets/$file");};
         my $s = join "\n", "{", @locals, $render, "}";
-        $self->app->log->info($s);
         eval $s;
     });
 
