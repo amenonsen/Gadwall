@@ -86,7 +86,7 @@ sub list_json {
     else {
         $res = {
             status => "error",
-            message => $self->app->db->errstr || "Unknown error"
+            message => $self->db->errstr || "Unknown error"
         };
     }
 
@@ -187,7 +187,7 @@ sub count_rows {
         $q .= " where $where";
     }
 
-    my $row = $self->app->db->selectrow_arrayref($q, {}, @v);
+    my $row = $self->db->selectrow_arrayref($q, {}, @v);
     return $row && $row->[0];
 }
 
@@ -198,7 +198,7 @@ sub count_rows {
 
 sub select {
     my $self = shift;
-    my $rows = $self->app->db->selectall_arrayref(
+    my $rows = $self->db->selectall_arrayref(
         shift, { Slice => {} }, @_
     );
 
@@ -217,7 +217,7 @@ sub select {
 sub select_one {
     my $self = shift;
     my ($q, @v) = $self->query(@_);
-    my $row = $self->app->db->selectrow_hashref(
+    my $row = $self->db->selectrow_hashref(
         $q, {}, @v
     );
 
@@ -240,7 +240,7 @@ sub select_by_key {
     my $row = $self->_cache_get($id);
     unless ($row) {
         my ($q, @v) = $self->query($id);
-        $row = $self->app->db->selectrow_hashref(
+        $row = $self->db->selectrow_hashref(
             $q, {}, @v
         );
 
@@ -324,7 +324,7 @@ sub _validate {
 
 sub transaction {
     my $self = shift;
-    my $dbh = $self->app->db;
+    my $dbh = $self->db;
     my $op = "_" . shift;
     my $rv;
 
@@ -355,7 +355,7 @@ sub _create {
     my $values = join ",", map { "?" } keys %set;
     my @values = values %set;
 
-    return $self->app->db->do(
+    return $self->db->do(
         "insert into $table ($fields) values ($values)", {}, @values
     );
 }
@@ -369,7 +369,7 @@ sub _update {
     my @values = values %set;
 
     $self->_cache_delete($id);
-    return $self->app->db->do(
+    return $self->db->do(
         "update $table set $fields where $key=?", {}, @values, $id
     );
 }
@@ -381,7 +381,7 @@ sub _delete {
     my $key = $self->primary_key;
 
     $self->_cache_delete($id);
-    return $self->app->db->do(
+    return $self->db->do(
         "delete from $table where $key=?", {}, $id
     );
 }
