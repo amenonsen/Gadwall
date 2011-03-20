@@ -50,10 +50,6 @@ sub gadwall_setup {
     delete @$conf{qw/secret db_pass/};
 
     $app->plugin('gadwall_helpers');
-    $app->helper(config => sub {
-        my ($c, $key) = @_;
-        return $c->stash('config')->{$key};
-    });
 
     # If we're running behind a reverse proxy, we rewrite the base
     # request URL so that we can generate canonical redirects.

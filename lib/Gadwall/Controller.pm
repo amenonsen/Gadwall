@@ -2,8 +2,9 @@ package Gadwall::Controller;
 
 use Mojo::Base 'Mojolicious::Controller';
 
-# An alias to reduce the tedium of typing $self->app->log()
+# Aliases to reduce the tedium of typing $self->app->log() etc.
 
+sub db { shift->app->db }
 sub log { shift->app->log }
 
 # Takes the name of a class, like Sprockets, and returns its full name,

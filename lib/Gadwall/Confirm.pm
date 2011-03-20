@@ -38,7 +38,7 @@ sub by_url {
         return $self->denied;
     }
 
-    my $row = $self->app->db->selectrow_hashref(
+    my $row = $self->db->selectrow_hashref(
         "delete from confirmation_tokens where token=? returning *, ".
         "age(issued_at,current_timestamp)>interval '1 hour' as expired",
         {}, $tok
@@ -63,7 +63,7 @@ sub by_url {
 sub generate_url {
     my ($self, $path, $uid) = @_;
 
-    my $dbh = $self->app->db;
+    my $dbh = $self->db;
 
     # We delete any tokens for this (path,uid) combination that are more
     # than 15 minutes old and insert a new token. The insert may fail if
@@ -116,7 +116,7 @@ sub by_token {
     # Do we have a valid token for this request?
     my $t = $self->param('t');
     if ($t) {
-        my $row = $self->app->db->selectrow_hashref(
+        my $row = $self->db->selectrow_hashref(
             "delete from confirmation_tokens where token=? returning *, ".
             "age(issued_at,current_timestamp)>interval '15 minutes' as ".
             "expired", {}, $t
@@ -135,7 +135,7 @@ sub by_token {
     my $token = $self->generate_token;
     if ($token && !$self->send_token($token)) {
         if ($token) {
-            $self->app->db->do(
+            $self->db->do(
                 "delete from confirmation_tokens where token=?", {}, $token
             );
         }
@@ -173,7 +173,7 @@ sub by_token {
 sub generate_token {
     my $self = shift;
 
-    my $dbh = $self->app->db;
+    my $dbh = $self->db;
     my $path = $self->req->url->path;
     my $user = $self->stash('user');
     my $uid = $user->{user_id};
