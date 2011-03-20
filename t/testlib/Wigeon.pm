@@ -183,8 +183,8 @@ foo bar
 <% end %>
 foo bar
 <%= widget wrapdiv => (x=>3) => begin %>
- this should be in a div
+ this should be <em>in</em> a div
 <% end %>
 <%= widget wrapdiv => begin %>
- this should be in a div
+ this <b>should</b> be in a div
 <% end %>
