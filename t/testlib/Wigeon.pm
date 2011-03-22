@@ -92,7 +92,7 @@ sub startup {
     $auth->route('/users-only')->to(cb => sub {
         shift->render_plaintext("This is not a bar");
     });
-    my $bird = $auth->bridge->to('auth#allow_roles', roles => "birdwatcher");
+    my $bird = $auth->allow_roles("birdwatcher");
     $bird->route('/birdwatchers-only')->to(cb => sub {
         shift->render_plaintext("This is not a baz");
     });
