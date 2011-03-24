@@ -154,20 +154,11 @@ sub su {
     my $self = shift;
 
     my ($where, @v);
-    if ($self->req->method eq 'POST') {
-        foreach my $p (qw(user_id login email username)) {
-            if (my $v = $self->param($p)) {
-                if ($p eq 'username') {
-                    $where .= "login=? or email=?";
-                    push @v, $v;
-                }
-                else {
-                    $where .= "$p=?";
-                }
-                push @v, $v;
-                last;
-            }
-        }
+    if ($self->req->method eq 'POST' &&
+        (my $v = $self->param("username")))
+    {
+        $where = "login=? or email=?";
+        push @v, $v, $v;
     }
 
     unless (@v) {

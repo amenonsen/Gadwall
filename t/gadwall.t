@@ -212,7 +212,7 @@ $t->get_ok('/users/list?id=2')
             }]
         });
 
-$t->post_form_ok('/su', {user_id => 2, __token => $token})
+$t->post_form_ok('/su', {username => 'foo@example.org', __token => $token})
     ->status_is(302)
     ->content_type_is("text/plain")
     ->content_is("Redirecting to /");
