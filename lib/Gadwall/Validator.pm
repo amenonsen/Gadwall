@@ -27,15 +27,20 @@ sub validate {
     my %given = %$values;
     my $status;
 
-    # Start by removing undefined or empty parameter values.
+    # Each parameter has a single value or an arrayref of values, which
+    # may be undefined, empty, or consist only of whitespace. We remove
+    # leading and trailing whitespace and keep only non-empty values.
 
     foreach my $k (keys %given) {
+        my @v;
         my $v = $given{$k};
-        my @v =
-            grep { $_ ne "" }
-                map { s/^\s+//; s/\s+$//; $_ }
-                    grep { defined }
-                        (ref $v eq 'ARRAY' ? @$v : $v);
+        foreach (ref $v eq 'ARRAY' ? @$v : $v) {
+            next unless defined;
+            s/^\s+//; s/\s+$//;
+            next if $_ eq "";
+            push @v, $_;
+        }
+
         if (@v) {
             $given{$k} = @v == 1 ? $v[0] : [@v];
         }
