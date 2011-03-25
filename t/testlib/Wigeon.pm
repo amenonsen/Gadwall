@@ -47,6 +47,8 @@ sub startup {
         }
     );
 
+    $r->any('/wrapped-json')->to('users#wrapped_json');
+
     $r->any('/startup' => sub {
         my $self = shift;
         my $dbh = $self->app->db;

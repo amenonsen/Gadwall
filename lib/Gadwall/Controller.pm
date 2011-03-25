@@ -88,7 +88,15 @@ sub denied {
 # => {"a": 1, "b": "two"}
 
 sub json_fragment {
-    return shift->render(json => { @_ })
+    my $self = shift;
+    my $format = $self->stash('format');
+    if ($format && $format eq 'textarea') {
+        my $json = $self->render_partial(json => { @_ });
+        $self->render_text("<textarea>$json</textarea>", format => 'html');
+    }
+    else {
+        $self->render_json({ @_ });
+    }
 }
 
 # return $self->json_ok("Success!", extra => "data")
