@@ -89,7 +89,7 @@ sub denied {
 
 sub json_fragment {
     my $self = shift;
-    my $format = $self->stash('format');
+    my $format = $self->stash('json_format');
     if ($format && $format eq 'textarea') {
         my $json = $self->render_partial(json => { @_ });
         $self->render_text("<textarea>$json</textarea>", format => 'html');
