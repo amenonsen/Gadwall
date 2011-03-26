@@ -97,6 +97,7 @@ sub json_fragment {
     else {
         $self->render_json({ @_ });
     }
+    return;
 }
 
 # return $self->json_ok("Success!", extra => "data")
