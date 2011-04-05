@@ -10,7 +10,7 @@ su - postgres -c "
     createuser -SDR $USER && \
     createdb -O $ADMIN $DB
 " && \
-su - postgres -c "psql $DB" <<SQL
+su -m postgres -c "psql $DB" <<SQL
 \set user $USER
 \set ON_ERROR_STOP
 SET client_min_messages TO 'error';
