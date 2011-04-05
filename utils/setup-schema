@@ -10,11 +10,12 @@ su - postgres -c "
     createuser -SDR $USER && \
     createdb -O $ADMIN $DB
 " && \
-psql $DB $ADMIN <<SQL
+su - postgres -c "psql $DB" <<SQL
 \set user $USER
 \set ON_ERROR_STOP
 SET client_min_messages TO 'error';
 CREATE OR REPLACE LANGUAGE plpgsql;
+SET SESSION AUTHORIZATION $ADMIN;
 begin;
 $(for i in schema/*.sql; do echo "\\i $i"; done)
 commit;
