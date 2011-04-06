@@ -318,6 +318,15 @@ sub _validate {
     return $v->values;
 }
 
+# This function is meant to return a user-friendly version of the given
+# db error message. By default, it just passes the error through. It's
+# up to subclasses to change that.
+
+sub db_error {
+    my $self = shift;
+    return shift;
+}
+
 # This function wraps a transaction around a create/update/delete
 # operation, which is performed by the relevant _method using the
 # supplied arguments.
@@ -335,7 +344,7 @@ sub transaction {
         $dbh->commit;
     };
     if ($@) {
-        $self->stash(error => $@);
+        $self->stash(error => $self->db_error($@));
         eval { $dbh->rollback };
     }
 
