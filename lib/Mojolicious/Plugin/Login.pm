@@ -54,6 +54,14 @@ sub register {
         )->name('reset_password');
     }
 
+    if ($opts->{change_email}) {
+        my $secure = $r->bridge('/email')->to('auth#allow_secure');
+        my $confirm = $secure->bridge->to('confirm#by_url');
+        $confirm->route('/confirm')->via('get')
+            ->to('users#confirm_email')
+            ->name('confirm_email');
+    }
+
     my $auth = $r->bridge->to('auth#allow_users')->name('auth');
     $auth->route('/logout')->to('auth#logout')->name('logout');
 
