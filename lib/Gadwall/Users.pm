@@ -357,4 +357,4 @@ Administrator
 
 @@ users/email/confirmed.html.ep
 % layout 'minimal', title => "Address change confirmed";
-<p class=msg>$msg
+<p class=msg><%= $msg %>
