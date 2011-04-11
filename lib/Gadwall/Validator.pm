@@ -126,6 +126,9 @@ sub validate {
 
         if (ref $V eq 'CODE') {
             my %set = $V->(map {($_ => $given{$_})} @fields);
+            if (exists $set{_error}) {
+                $invalid = delete $set{_error};
+            }
             unless (%set) {
                 $self->{errors}->{$c} = $invalid;
                 $status = 'invalid';
