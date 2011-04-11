@@ -10,6 +10,8 @@ sub columns {
         login => {},
         email => {
             required => 1,
+            validate => qr/@/,
+            invalid => "The email address must be in x\@y.z form"
         },
         password => {
             fields => [qw/pass1 pass2/],
