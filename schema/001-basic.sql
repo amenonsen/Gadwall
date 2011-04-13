@@ -1,5 +1,5 @@
 create table schema (name text primary key, version integer not null);
-insert into schema (name, version) values ('gadwall', 1);
+insert into schema (name, version) values ('gadwall', 2);
 
 -- One row for each user who is allowed to login to the system
 
@@ -21,6 +21,7 @@ create table confirmation_tokens (
             on delete cascade,
     issued_at timestamptz not null
             default current_timestamp,
+    data text,
     unique (path, user_id)
 );
 grant select,insert,delete on confirmation_tokens to :user;

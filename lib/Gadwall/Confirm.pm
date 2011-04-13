@@ -54,6 +54,7 @@ sub by_url {
 
     # Can't find anything to complain about.
     $self->stash(user_id => $row->{user_id});
+    $self->stash(link_data => $row->{data});
     return 1;
 }
 
@@ -61,7 +62,7 @@ sub by_url {
 # that the above bridge will accept.
 
 sub generate_url {
-    my ($self, $path, $uid) = @_;
+    my ($self, $path, $uid, $data) = @_;
 
     my $dbh = $self->db;
 
@@ -84,8 +85,8 @@ sub generate_url {
             );
             $token = encode_base64($main::prng->get_bits(128), "");
             $rv = $dbh->do(
-                "insert into confirmation_tokens (token, path, user_id) ".
-                "values (?, ?, ?)", {}, $token, $path, $uid
+                "insert into confirmation_tokens (token, path, user_id, data) ".
+                "values (?, ?, ?, ?)", {}, $token, $path, $uid, $data
             );
             $dbh->commit;
         };

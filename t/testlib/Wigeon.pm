@@ -115,6 +115,7 @@ sub startup {
     $auth->route('/users/list')->via('get')->to('users#list');
     $auth->route('/users/create')->via('post')->to('users#create');
     $auth->route('/users/:user_id/password')->via('post')->to('users#password');
+    $auth->route('/users/:user_id/email')->via('post')->to('users#email');
 
     $auth->get('/p1' => sub {
         my $self = shift;

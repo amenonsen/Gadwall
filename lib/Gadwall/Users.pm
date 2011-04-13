@@ -10,6 +10,8 @@ sub columns {
         login => {},
         email => {
             required => 1,
+            validate => qr/@/,
+            invalid => "The email address must be in x\@y.z form"
         },
         password => {
             fields => [qw/pass1 pass2/],
@@ -45,9 +47,16 @@ sub columns {
 
 sub query_columns { qw(* roles::int) }
 
-# Takes the current password and (two copies of) a new password and
-# changes the user's password. Expects the router to set user_id in
-# the stash. Users should have access to only their own password.
+# This action changes a user's password.
+#
+# It may be used either by a user (who must supply the current password
+# for confirmation) or by an admin for another user (in which case the
+# current password is not needed, though it *is* needed when the admin
+# is changing its own password).
+#
+# It expects to be called via AJAX through a route which sets user_id in
+# the stash, and returns a JSON response. Users should be allowed access
+# only to their own passwords.
 #
 # $auth->route('/users/:user_id/password')->to('users#password');
 
@@ -80,6 +89,106 @@ sub password {
         ($u->{user_id} ne $id ? " (for user $id)" : "")
     );
     return $self->json_ok("Password changed");
+}
+
+# This action begins the process of changing a user's email address. It
+# sends a confirmation link by email to the new address. When the user
+# clicks on it, the change is confirmed (see below).
+#
+# It may be used either by a user (who must supply the current password
+# for confirmation) or by an admin for another user (in which case the
+# current password is not needed, though it *is* needed when the admin
+# is changing its own email address).
+#
+# It expects to be called via AJAX through a route which sets user_id in
+# the stash, and returns a JSON response. Users should be allowed access
+# only to their own email addresses.
+#
+# $auth->route('/users/:user_id/email')->to('users#email');
+
+sub email {
+    my $self = shift;
+
+    my $u = $self->stash('user');
+    my $id = $self->stash($self->primary_key);
+    my $passwd = $self->param('password');
+    my $email = $self->param('email');
+
+    unless (($u->has_role("admin") && $u->{user_id} != $id) ||
+            ($passwd && $u->has_password($passwd)))
+    {
+        return $self->json_error("Incorrect password");
+    }
+
+    my %set = $self->_validate(
+        { $self->columns }, { email => $email }
+    );
+
+    unless (%set) {
+        return $self->json_error;
+    }
+
+    $email = $set{email};
+    my $user = $self->select_one({email => $email});
+    if ($user) {
+        if ($user->has_role('admin')) {
+            return $self->json_error("That email address already exists");
+        }
+        else {
+            return $self->json_ok("Confirmation link sent to new address");
+        }
+    }
+
+    my $url = $self->new_controller('Confirm')->generate_url(
+        "/email/confirm", $id, $email
+    );
+
+    if ($url) {
+        my $host = $self->canonical_url->host;
+        my $from = $self->config("owner_email");
+        mail(
+            from => $from, to => $email,
+            subject => "Confirm email address change at $host",
+            text => $self->render_partial(
+                template => "users/email/confirm-mail",
+                from => $from, to => $email, host => $host, url => $url,
+                template_class => __PACKAGE__, format => 'txt'
+            )
+        );
+
+        $self->log->info(
+            "Sent address confirmation link to $email for user $id"
+        );
+    }
+
+    return $self->json_ok("Confirmation link sent to new address");
+}
+
+# This is where the user reaches when clicking on the link generated
+# above. We know that they must have received the email, so we just
+# update their email address in our records.
+
+sub confirm_email {
+    my $self = shift;
+
+    my $msg;
+
+    my $uid = $self->stash('user_id');
+    my $email = $self->stash('link_data');
+
+    my %set = (email => $email);
+    unless ($self->transaction(update => $uid, %set)) {
+        $msg = "Sorry, we could not update your email address.";
+    }
+    else {
+        $msg = "Thanks for confirming your new email address.";
+        $self->log->info("Address changed by user $uid to $email");
+    }
+
+    $self->render(
+        template => "users/email/confirmed", msg => $msg,
+        template_class => __PACKAGE__
+    );
 }
 
 # This action initiates the password reset process.
@@ -236,3 +345,18 @@ Enter new password (twice):<br>
 % layout 'minimal', title => "Password reset";
 <p class=msg>
 Your password has been reset. <a href="/">Return to the main page</a>.
+
+@@ users/email/confirm-mail.txt.ep
+To confirm that you have received this email, please visit:
+
+<%= $url %>
+
+This link is valid for one hour.
+
+--
+Administrator
+<%= $from %>
+
+@@ users/email/confirmed.html.ep
+% layout 'minimal', title => "Address change confirmed";
+<p class=msg><%= $msg %>

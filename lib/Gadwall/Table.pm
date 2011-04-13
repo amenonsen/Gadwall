@@ -23,6 +23,7 @@ sub create {
         return $self->json_error;
     }
 
+    $self->after_create() if $self->can('after_create');
     return $self->json_ok($self->message('created'));
 }
 
@@ -35,6 +36,7 @@ sub update {
         return $self->json_error;
     }
 
+    $self->after_update() if $self->can('after_update');
     return $self->json_ok($self->message('updated'));
 }
 
@@ -46,6 +48,7 @@ sub delete {
         return $self->json_error;
     }
 
+    $self->after_delete() if $self->can('after_delete');
     return $self->json_ok($self->message('deleted'));
 }
 
