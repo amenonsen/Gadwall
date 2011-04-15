@@ -15,7 +15,6 @@ sub columns {
         },
         password => {
             fields => [qw/pass1 pass2/],
-            required => 1,
             validate => sub {
                 my (%p) = @_;
                 return unless $p{pass1};
