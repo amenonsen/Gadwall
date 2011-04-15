@@ -28,12 +28,13 @@ sub display_hash {
 }
 
 # Takes a password and returns true if it is the user's password, and
-# false otherwise.
+# false otherwise. Always returns false if the password is unset.
 
 sub has_password {
     my ($self, $p) = @_;
 
-    return bcrypt($p, $self->{password}) eq $self->{password};
+    return $self->{password} &&
+        bcrypt($p, $self->{password}) eq $self->{password};
 }
 
 # A user's roles are represented in the database as a 31-bit vector.
