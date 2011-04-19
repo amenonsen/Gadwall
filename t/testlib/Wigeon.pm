@@ -191,3 +191,4 @@ foo bar
 <%= widget wrapdiv => begin %>
  this <b>should</b> be in a div
 <% end %>
+<%= stash('x') || "foo" %>

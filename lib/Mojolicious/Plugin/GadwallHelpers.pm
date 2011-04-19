@@ -25,13 +25,15 @@ sub register {
             push @_, content => "";
         }
 
-        my %v = @_;
-        my @locals =
-            map { "local \$stash->{$_} = \$v{$_};" }
-                keys %v;
-        my $render = qq{\$self->render_partial("widgets/$file");};
-        my $s = join "\n", "{", @locals, $render, "}";
-        eval $s;
+        my %args = @_;
+
+        my $key;
+        LOCALIZE:
+            $key = (keys %args)[0];
+            local $stash->{$key} = delete $args{$key};
+        goto LOCALIZE while keys %args;
+
+        return $self->render_partial("widgets/$file");
     });
 
     # The next few helpers are used to manage CSS and Javascript
