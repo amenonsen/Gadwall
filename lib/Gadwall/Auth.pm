@@ -190,7 +190,9 @@ sub logout {
     $self->log->info("Logout: " . $u->{email});
 
     if ($self->session('suser')) {
-        $self->session(user => delete $self->session->{suser});
+        my $suser = delete $self->session->{suser};
+        delete $self->session->{$_} foreach keys %{$self->session};
+        $self->session(user => $suser);
         $self->render_plaintext("Redirecting to /");
         $self->redirect_to('/');
         return;
