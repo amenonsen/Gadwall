@@ -196,7 +196,7 @@ sub logout {
         return;
     }
 
-    delete $self->session->{user};
+    delete $self->session->{$_} foreach keys %{$self->session};
     $self->session(token => Gadwall::Util->csrf_token());
     $self->render(
         template => "auth/login", login => "",
