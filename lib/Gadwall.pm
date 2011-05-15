@@ -183,7 +183,7 @@ sub _shadow_controllers {
     foreach my $name (@names) {
         my $full = "${class}::$name";
         my $e = Mojo::Loader->load($full);
-        next unless $e; die $e if ref $e;
+        next unless $e; $e->throw() if ref $e;
 
         push @INC, sub {
             return unless $_[1] eq "$class/$name.pm";
