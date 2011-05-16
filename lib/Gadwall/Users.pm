@@ -344,6 +344,10 @@ Enter new password (twice):<br>
 <%= password_field 'pass2' %><br>
 <%= submit_button 'Reset password' %>
 <% end %>
+% if (stash 'error') {
+<p id=msg class=error>
+<%= ref stash('error') ? stash('error')->{message} : stash('error') %>
+% }
 
 @@ users/passwords/reset.html.ep
 % layout 'minimal', title => "Password reset";
