@@ -240,6 +240,11 @@ sub forgot_password {
             );
         }
     }
+    else {
+        $self->log->info(
+            "Ignoring password reset request for unknown user $email"
+        );
+    }
 
     # We always claim to have sent the reset link, because we don't want
     # to leak any information about valid email addresses. It's true for
