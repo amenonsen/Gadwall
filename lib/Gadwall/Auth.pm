@@ -139,6 +139,14 @@ sub login {
             $self->redirect_to($source);
             return;
         }
+        else {
+            if ($u) {
+                $self->log->info("Login failed: $login");
+            }
+            else {
+                $self->log->debug("Login ignored: $login");
+            }
+        }
     }
 
     $self->render(
