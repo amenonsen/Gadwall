@@ -271,9 +271,14 @@ $t->post_form_ok('/users/1/password', {
     ->json_content_is({status => "ok", message => "Password changed"});
 
 $t->get_ok('/logout')
+    ->status_is(302)
+    ->content_type_is("text/plain")
+    ->content_is("Redirecting to /");
+
+$t->get_ok('/')
     ->status_is(200)
-    ->content_type_is("text/html;charset=UTF-8")
-    ->text_like('#msg', qr/You have been logged out/);
+    ->content_type_is("text/plain")
+    ->content_is("Quack!");
 
 $t->get_ok('/users-only')
     ->status_is(403)
@@ -421,7 +426,12 @@ $t->get_ok('/widgets/sprocket_redness?sprocket_id=2')
     ->content_is("not red");
 
 $t->get_ok('/logout')
-    ->status_is(200)
+    ->status_is(302)
+    ->content_type_is("text/plain")
+    ->content_is("Redirecting to /");
+
+$t->get_ok('/users-only')
+    ->status_is(403)
     ->content_type_is("text/html;charset=UTF-8")
     ->text_like('#msg', qr/You have been logged out/);
 
