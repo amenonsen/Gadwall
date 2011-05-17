@@ -200,7 +200,9 @@ sub logout {
 
     if ($self->session('suser')) {
         my $suser = delete $self->session->{suser};
-        delete $self->session->{$_} foreach keys %{$self->session};
+        foreach (keys %{$self->session}) {
+            delete $self->session->{$_} unless $_ eq "token";
+        }
         $self->session(user => $suser);
         $self->render_plaintext("Redirecting to /");
         $self->redirect_to('/');
