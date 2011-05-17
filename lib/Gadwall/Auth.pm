@@ -64,6 +64,7 @@ sub allow_users {
     $self->render(
         status => 403,
         template => "auth/login", login => "",
+        errmsg => $self->flash('errmsg') || undef,
         template_class => __PACKAGE__
     );
 
@@ -200,11 +201,9 @@ sub logout {
 
     delete $self->session->{$_} foreach keys %{$self->session};
     $self->session(token => Gadwall::Util->csrf_token());
-    $self->render(
-        template => "auth/login", login => "",
-        errmsg => $self->message('loggedout'),
-        template_class => __PACKAGE__
-    );
+    $self->flash(errmsg => $self->message('loggedout'));
+    $self->render_plaintext("Redirecting to /");
+    $self->redirect_to('/');
 }
 
 sub messages {
