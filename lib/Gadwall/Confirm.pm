@@ -153,8 +153,10 @@ sub by_token {
     my @hidden;
     foreach my $k (keys %$p) {
         my $v = $p->{$k};
-        Mojo::Util::html_escape($v);
-        push @hidden, qq{<input type=hidden name="$k" value="$v">};
+        foreach my $val (@{ref $v ? $v : [$v]}) {
+            Mojo::Util::html_escape($val);
+            push @hidden, qq{<input type=hidden name="$k" value="$val">};
+        }
     }
 
     $self->render(
