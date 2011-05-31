@@ -56,10 +56,14 @@ sub allow_users {
     }
 
     my $source = $self->req->url;
-    unless ($source eq $self->url_for('logout')) {
-        $self->session(source => $source->to_string);
+    if ($source eq $self->url_for('logout')) {
+        $self->flash(errmsg => $self->message('loggedout'));
+        $self->render_plaintext("Redirecting to /");
+        $self->redirect_to("/");
+        return;
     }
 
+    $self->session(source => $source->to_string);
     $self->session(token => Gadwall::Util->csrf_token());
     $self->render(
         status => 403,
