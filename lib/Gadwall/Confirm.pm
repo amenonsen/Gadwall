@@ -230,7 +230,7 @@ sub send_token {
 
     mail(
         from => $from, to => $to,
-        subject => "Confirmation code for $host",
+        subject => "Confirmation code for $host: $token",
         text => $self->render_partial(
             template => "confirm/token-mail",
             from => $from, to => $to, host => $host, token => $token,
