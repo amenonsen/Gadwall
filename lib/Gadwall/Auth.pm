@@ -135,7 +135,8 @@ sub login {
             "is_active and coalesce(login,email)=?" => $login
         );
         if ($u && $u->has_password($passwd)) {
-            $self->log->info("Login: " . $u->{email});
+            my $who = join('/', grep defined, ($u->{login}, $u->{email}));
+            $self->log->info("Login: $who");
             $self->session(user => $u->{user_id});
             $self->session(token => Gadwall::Util->csrf_token());
             my $source = delete $self->session->{source} || '/';
