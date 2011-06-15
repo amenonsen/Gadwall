@@ -84,7 +84,7 @@ sub password {
     }
 
     $self->log->info(
-        "Password changed by $u->{email}".
+        "Password changed by " . $u->username .
         ($u->{user_id} ne $id ? " (for user $id)" : "")
     );
     return $self->json_ok("Password changed");
@@ -236,7 +236,7 @@ sub forgot_password {
             );
 
             $self->log->info(
-                "Sent password reset link to $user->{email}"
+                "Sent password reset link to " . $user->username
             );
         }
     }
@@ -297,7 +297,7 @@ sub reset_password {
 
     my $user = $self->select_by_key($uid);
     $self->log->info(
-        "Password reset by $user->{email}"
+        "Password reset by " . $user->username
     );
 
     $self->render(

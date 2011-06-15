@@ -135,8 +135,7 @@ sub login {
             "is_active and coalesce(login,email)=?" => $login
         );
         if ($u && $u->has_password($passwd)) {
-            my $who = join('/', grep defined, ($u->{login}, $u->{email}));
-            $self->log->info("Login: $who");
+            $self->log->info("Login: " . $u->username);
             $self->session(user => $u->{user_id});
             $self->session(token => Gadwall::Util->csrf_token());
             my $source = delete $self->session->{source} || '/';
@@ -182,7 +181,7 @@ sub su {
     my $u = $self->new_controller('Users')->select_one($where, @v);
     if ($u) {
         $self->log->info(
-            "su: ". $self->stash('user')->{email} ." to ". $u->{email}
+            "su: ". $self->stash('user')->username ." to ". $u->username
         );
         $self->session(suser => $self->session('user'));
         $self->session(user => $u->{user_id});
@@ -201,7 +200,7 @@ sub logout {
     my $self = shift;
 
     my $u = $self->stash('user');
-    $self->log->info("Logout: " . $u->{email});
+    $self->log->info("Logout: " . $u->username);
 
     if ($self->session('suser')) {
         my $suser = delete $self->session->{suser};
