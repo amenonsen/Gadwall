@@ -40,7 +40,7 @@ sub by_url {
 
     my $row = $self->db->selectrow_hashref(
         "delete from confirmation_tokens where token=? returning *, ".
-        "age(issued_at,current_timestamp)>interval '1 hour' as expired",
+        "age(current_timestamp,issued_at)>interval '1 hour' as expired",
         {}, $tok
     );
 
@@ -80,7 +80,7 @@ sub generate_url {
             local $dbh->{RaiseError} = 1;
             my $old = $dbh->do(
                 "delete from confirmation_tokens where path=? and user_id=? ".
-                "and age(issued_at,current_timestamp)>interval '15 minutes'",
+                "and age(current_timestamp,issued_at)>interval '15 minutes'",
                 {}, $path, $uid
             );
             $token = encode_base64($main::prng->get_bits(128), "");
@@ -119,7 +119,7 @@ sub by_token {
     if ($t) {
         my $row = $self->db->selectrow_hashref(
             "delete from confirmation_tokens where token=? returning *, ".
-            "age(issued_at,current_timestamp)>interval '15 minutes' as ".
+            "age(current_timestamp,issued_at)>interval '15 minutes' as ".
             "expired", {}, $t
         );
         unless ($row && !$row->{expired} &&
@@ -196,7 +196,7 @@ sub generate_token {
             local $dbh->{RaiseError} = 1;
             my $old = $dbh->do(
                 "delete from confirmation_tokens where path=? and user_id=? ".
-                "and age(issued_at,current_timestamp)>interval '5 minutes'",
+                "and age(current_timestamp,issued_at)>interval '5 minutes'",
                 {}, $path, $uid
             );
             $token = join "", map {$main::prng->get_int(10)} 1..6;
@@ -230,7 +230,7 @@ sub send_token {
 
     mail(
         from => $from, to => $to,
-        subject => "Confirmation code for $host",
+        subject => "Confirmation code for $host: $token",
         text => $self->render_partial(
             template => "confirm/token-mail",
             from => $from, to => $to, host => $host, token => $token,

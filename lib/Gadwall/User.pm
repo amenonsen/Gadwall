@@ -7,6 +7,12 @@ use parent 'Gadwall::Row';
 
 use Gadwall::Util qw(bcrypt);
 
+sub username {
+    my $u = shift;
+
+    return join('/', grep defined, ($u->{login}, $u->{email}));
+}
+
 sub display_hash {
     my $self = shift;
     my $hash = $self->SUPER::display_hash();
