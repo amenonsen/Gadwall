@@ -97,7 +97,7 @@ is_deeply(
 # Test the application itself
 
 $ENV{MOJO_MODE} = "testing";
-my $t = Test::Mojo->new(app => "Wigeon");
+my $t = Test::Mojo->new("Wigeon");
 $t->test_server('http');
 
 $t->get_ok('/nonesuch')
@@ -140,7 +140,7 @@ $t->get_ok('/users-only', {"X-Bypass-Security" => 1})
 $loc = $t->tx->res->headers->location();
 ok $loc =~ /^https:\/\//, 'redirected to ' . $loc;
 
-$t = Test::Mojo->new(app => "Wigeon");
+$t = Test::Mojo->new("Wigeon");
 $t->test_server('https');
 
 $t->get_ok('/die')
