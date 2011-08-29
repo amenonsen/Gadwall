@@ -20,11 +20,13 @@ sub register {
             my $ptoken = $c->param('__token');
             return if $ctoken && $ptoken && $ctoken eq $ptoken;
 
-            my @err;
-            push @err, "no cookie token" unless $ctoken;
-            push @err, "no form token" unless $ptoken;
-            unless (@err || $ctoken eq $ptoken) {
-                push @err, "tokens don't match";
+            $ptoken = $ptoken ? "'$ptoken'" : "(no token)";
+            $ctoken = "'$ctoken'" if $ctoken;
+            unless ($ctoken) {
+                local $" = ",";
+                $ctoken = $c->req->cookie('mojolicious') ?
+                    "(no token (@{[keys %{$self->session}]}))" :
+                    "(no cookie)";
             }
 
             $c->app->log->error(
@@ -32,7 +34,7 @@ sub register {
                 " from ". $c->tx->remote_address .
                 " (". ($c->req->headers->user_agent||"no user-agent") .
                 ", ". ($c->req->headers->referrer||"no referrer") ."): ".
-                join(", ", @err)
+                "form: $ptoken, cookie: $ctoken"
             );
             $c->render(
                 status => 403, format => 'txt', text => "Permission denied"
