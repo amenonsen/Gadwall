@@ -20,7 +20,7 @@ sub startup {
     $app->hook(
         before_dispatch => sub {
             my $self = shift;
-            $self->req->headers->add('X-Forwarded-Protocol', "https");
+            $self->req->headers->add('X-Forwarded-HTTPS', "1");
         }
     );
 

@@ -1,5 +1,7 @@
 package Gadwall;
 
+BEGIN { $ENV{MOJO_REVERSE_PROXY} = 1; }
+
 use Mojo::Base 'Mojolicious';
 
 use DBI;
@@ -50,36 +52,6 @@ sub gadwall_setup {
     delete @$conf{qw/secret db_pass/};
 
     $app->plugin('gadwall_helpers');
-
-    # If we're running behind a reverse proxy, we rewrite the base
-    # request URL so that we can generate canonical redirects.
-
-    $app->hook(before_dispatch => sub {
-        my $self = shift;
-        my $h = $self->req->headers;
-
-        my $last = sub {
-            my @v = $h->header(shift);
-            my $v = pop @v;
-            $v = pop @$v if $v;
-            return $v;
-        };
-
-        my $proto = $last->('X-Forwarded-Protocol');
-        if ($proto && $proto eq 'https') {
-            $self->req->url->base->scheme('https');
-        }
-
-        my $host = $conf->{canonical_host} || $last->('X-Forwarded-Host');
-        if ($host) {
-            $self->req->url->base->authority($host);
-        }
-
-        my $scheme = $self->req->url->base->scheme;
-        if (my $port = $conf->{"canonical_${scheme}_port"}) {
-            $self->req->url->base->port($port);
-        }
-    });
 
     $app->_shadow_controllers(qw(Auth Users Confirm));
 }
