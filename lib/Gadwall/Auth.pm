@@ -135,7 +135,8 @@ sub login {
             "is_active and coalesce(login,email)=?" => $login
         );
         if ($u && $u->has_password($passwd)) {
-            $self->log->info("Login: " . $u->username);
+            my $ip = $self->tx->remote_address;
+            $self->log->info("Login: " . $u->username . " (from $ip)");
             $self->session(user => $u->{user_id});
             $self->session(token => Gadwall::Util->csrf_token());
             my $source = delete $self->session->{source} || '/';
