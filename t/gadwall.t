@@ -130,7 +130,10 @@ $t->get_ok('/users/list?id=2')
             users => [{
                 user_id=>2, email=>'foo@example.org', login=>undef,
                 is_backstabber=>1, is_admin=>1,is_active=>1,
-                roles => [qw/Administrator backstabber/]
+                roles => [qw/Administrator backstabber/],
+                last_login=>undef, last_failed_login=>undef,
+                last_password_change=>undef, consecutive_failures=>0,
+                recent_failure=>0, password_expired=>0
             }]
         });
 
