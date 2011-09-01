@@ -131,10 +131,16 @@ sub login {
     }
 
     if ($login && $passwd) {
+        my $dbh = $self->db;
         my $u = $self->new_controller('Users')->select_one(
             "is_active and coalesce(login,email)=?" => $login
         );
         if ($u && $u->has_password($passwd)) {
+            $dbh->do(
+                "update users set consecutive_failures=0, ".
+                "last_login=current_timestamp where user_id=?",
+                {}, $u->{user_id}
+            );
             my $ip = $self->tx->remote_address;
             $self->log->info("Login: " . $u->username . " (from $ip)");
             $self->session(user => $u->{user_id});
@@ -146,6 +152,12 @@ sub login {
         }
         else {
             if ($u) {
+                $dbh->do(
+                    "update users set ".
+                    "consecutive_failures=consecutive_failures+1, ".
+                    "last_failed_login=current_timestamp where user_id=?",
+                    {}, $u->{user_id}
+                );
                 $self->log->info("Login failed: $login");
             }
             else {

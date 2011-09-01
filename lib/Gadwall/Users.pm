@@ -44,7 +44,21 @@ sub columns {
     );
 }
 
-sub query_columns { qw(* roles::int) }
+sub query_columns {(
+    "*",
+
+    "roles::int",
+
+    "to_char(last_login, 'yyyy-mm-dd hh:mm:ss') as last_login",
+    "to_char(last_failed_login, 'yyyy-mm-dd hh:mm:ss') as last_failed_login",
+
+    "current_timestamp - coalesce(last_password_change,".
+    " current_timestamp-((random()*60)::text||' days')::interval) > ".
+    "'30 days'::interval as password_expired",
+
+    "current_timestamp - last_failed_login < '7 days'::interval ".
+    "as recent_failure"
+)}
 
 # This action changes a user's password.
 #
