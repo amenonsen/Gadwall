@@ -152,17 +152,34 @@ sub login {
             return;
         }
         else {
+            my $delay = 0;
             if ($u) {
-                $dbh->do(
+                my $rv = $dbh->selectrow_arrayref(
                     "update users set ".
                     "consecutive_failures=consecutive_failures+1, ".
-                    "last_failed_login=current_timestamp where user_id=?",
-                    {}, $u->{user_id}
+                    "last_failed_login=current_timestamp where user_id=? ".
+                    "returning consecutive_failures", {}, $u->{user_id}
                 );
+                $delay = 2*($rv->[0]-1);
                 $self->log->info("Login failed: $login");
             }
             else {
                 $self->log->debug("Login ignored: $login");
+            }
+
+            if ($delay) {
+                $self->render_later;
+                my $id; $id = Mojo::IOLoop->timer(
+                    $delay => sub {
+                        $self->render(
+                            login => $login,
+                            errmsg => $self->message('badlogin'),
+                            template_class => __PACKAGE__
+                        );
+                    }
+                );
+                $self->on_finish(sub { Mojo::IOLoop->drop($id) });
+                return;
             }
         }
     }
