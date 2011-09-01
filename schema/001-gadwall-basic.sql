@@ -1,5 +1,5 @@
 create table schema (name text primary key, version integer not null);
-insert into schema (name, version) values ('gadwall', 4);
+insert into schema (name, version) values ('gadwall', 5);
 
 -- One row for each user who is allowed to login to the system
 
@@ -11,6 +11,7 @@ create table users (
     is_active bool not null default true,
     roles bit(31) not null default B'0'::bit(31),
     last_login timestamptz,
+    second_last_login timestamptz,
     last_failed_login timestamptz,
     last_password_change timestamptz,
     consecutive_failures integer not null

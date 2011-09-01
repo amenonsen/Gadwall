@@ -138,6 +138,7 @@ sub login {
         if ($u && $u->has_password($passwd)) {
             $dbh->do(
                 "update users set consecutive_failures=0, ".
+                "second_last_login=last_login, ".
                 "last_login=current_timestamp where user_id=?",
                 {}, $u->{user_id}
             );

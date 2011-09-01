@@ -50,6 +50,7 @@ sub query_columns {(
     "roles::int",
 
     "to_char(last_login, 'yyyy-mm-dd hh:mm:ss') as last_login",
+    "to_char(second_last_login, 'yyyy-mm-dd hh:mm:ss') as second_last_login",
     "to_char(last_failed_login, 'yyyy-mm-dd hh:mm:ss') as last_failed_login",
 
     "current_timestamp - coalesce(last_password_change,".
