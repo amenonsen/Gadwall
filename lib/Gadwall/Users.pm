@@ -60,6 +60,16 @@ sub query_columns {(
     "as recent_failure"
 )}
 
+sub _passwd {
+    my ($self, $id, %set) = @_;
+
+    return $self->db->do(
+        "update users set password=?, ".
+        "last_password_change=current_timestamp ".
+        "where user_id=?", {}, $set{password}, $id
+    );
+}
+
 # This action changes a user's password.
 #
 # It may be used either by a user (who must supply the current password
@@ -93,7 +103,11 @@ sub password {
         }
     );
 
-    unless (%set && $self->transaction(update => $id, %set)) {
+    if (exists $set{password} && $u->has_password($set{password})) {
+        return $self->json_error("Please don't reuse the same password");
+    }
+
+    unless (%set && $self->transaction(passwd => $id, %set)) {
         return $self->json_error;
     }
 
