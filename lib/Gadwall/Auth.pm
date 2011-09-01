@@ -227,6 +227,11 @@ sub logout {
         return;
     }
 
+    $self->db->do(
+        "update users set last_failed_login=null where ".
+        "user_id=?", {}, $u->{user_id}
+    );
+
     delete $self->session->{$_} foreach keys %{$self->session};
     $self->session(token => Gadwall::Util->csrf_token());
     $self->flash(errmsg => $self->message('loggedout'));

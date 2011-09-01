@@ -55,10 +55,7 @@ sub query_columns {(
 
     "current_timestamp - coalesce(last_password_change,".
     " current_timestamp-((random()*60)::text||' days')::interval) > ".
-    "'30 days'::interval as password_expired",
-
-    "coalesce(current_timestamp - last_failed_login < '7 days'::interval,".
-    "false) as recent_failure"
+    "'30 days'::interval as password_expired"
 )}
 
 sub _passwd {
