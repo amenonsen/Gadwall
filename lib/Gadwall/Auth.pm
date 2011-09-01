@@ -214,9 +214,9 @@ sub logout {
     my $self = shift;
 
     my $u = $self->stash('user');
-    $self->log->info("Logout: " . $u->username);
 
     if ($self->session('suser')) {
+        $self->log->info("Logout (su): " . $u->username);
         my $suser = delete $self->session->{suser};
         foreach (keys %{$self->session}) {
             delete $self->session->{$_} unless $_ eq "token";
@@ -226,6 +226,8 @@ sub logout {
         $self->redirect_to('/');
         return;
     }
+
+    $self->log->info("Logout: " . $u->username);
 
     $self->db->do(
         "update users set last_failed_login=null where ".
