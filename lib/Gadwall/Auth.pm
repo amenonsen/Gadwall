@@ -161,6 +161,7 @@ sub login {
                     "returning consecutive_failures", {}, $u->{user_id}
                 );
                 $delay = 2*($rv->[0]-1);
+                $delay = 10 if $delay > 10;
                 $self->log->info("Login failed: $login (from $ip)");
             }
             else {
