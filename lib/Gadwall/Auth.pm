@@ -123,6 +123,7 @@ sub allow_if {
 
 sub login {
     my $self = shift;
+    my $ip = $self->tx->remote_address;
 
     my ($login, $passwd);
     if ($self->req->method eq 'POST') {
@@ -142,7 +143,6 @@ sub login {
                 "last_login=current_timestamp where user_id=?",
                 {}, $u->{user_id}
             );
-            my $ip = $self->tx->remote_address;
             $self->log->info("Login: " . $u->username . " (from $ip)");
             $self->session(user => $u->{user_id});
             $self->session(token => Gadwall::Util->csrf_token());
@@ -161,10 +161,10 @@ sub login {
                     "returning consecutive_failures", {}, $u->{user_id}
                 );
                 $delay = 2*($rv->[0]-1);
-                $self->log->info("Login failed: $login");
+                $self->log->info("Login failed: $login (from $ip)");
             }
             else {
-                $self->log->debug("Login ignored: $login");
+                $self->log->debug("Login ignored: $login (from $ip)");
             }
 
             if ($delay) {
@@ -211,8 +211,10 @@ sub su {
 
     my $u = $self->new_controller('Users')->select_one($where, @v);
     if ($u) {
+        my $ip = $self->tx->remote_address;
         $self->log->info(
-            "su: ". $self->stash('user')->username ." to ". $u->username
+            "su: ". $self->stash('user')->username .
+            " to ". $u->username ." (from $ip)"
         );
         $self->session(suser => $self->session('user'));
         $self->session(user => $u->{user_id});
