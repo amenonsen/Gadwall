@@ -143,12 +143,11 @@ sub login {
                 "last_login=current_timestamp where user_id=?",
                 {}, $u->{user_id}
             );
-            $self->log->info("Login: " . $u->username . " (from $ip)");
+            $self->stash(user => $u);
             $self->session(user => $u->{user_id});
             $self->session(token => Gadwall::Util->csrf_token());
-            $self->stash(user => $u);
-            my $source = delete $self->session->{source} || '/';
-            $self->after_login($source);
+            $self->log->info("Login: " . $u->username . " (from $ip)");
+            $self->after_login(delete $self->session->{source} || '/');
             return;
         }
         else {
