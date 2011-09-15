@@ -147,8 +147,7 @@ sub login {
             $self->session(user => $u->{user_id});
             $self->session(token => Gadwall::Util->csrf_token());
             my $source = delete $self->session->{source} || '/';
-            $self->render_plaintext("Redirecting to $source");
-            $self->redirect_to($source);
+            $self->after_login($source);
             return;
         }
         else {
@@ -190,6 +189,21 @@ sub login {
         errmsg => $self->message('badlogin'),
         template_class => __PACKAGE__
     );
+}
+
+# This method, called by login after the user is successfully
+# authenticated, must do whatever is needed to allow the user to
+# continue to use the site; by default, that just means redirecting
+# to the source URL (which is passed as a parameter).
+
+sub after_login {
+    my $self = shift;
+
+    my ($source) = @_;
+    $self->render_plaintext("Redirecting to $source");
+    $self->redirect_to($source);
+
+    return;
 }
 
 # This function allows a user to act as another user. For obvious
