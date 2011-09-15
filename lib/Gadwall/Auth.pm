@@ -146,6 +146,7 @@ sub login {
             $self->log->info("Login: " . $u->username . " (from $ip)");
             $self->session(user => $u->{user_id});
             $self->session(token => Gadwall::Util->csrf_token());
+            $self->stash(user => $u);
             my $source = delete $self->session->{source} || '/';
             $self->after_login($source);
             return;
