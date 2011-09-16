@@ -94,14 +94,15 @@ sub password {
         return $self->json_error("Incorrect password");
     }
 
+    my $p = $self->param('pass1');
     my %set = $self->_validate(
         { $self->columns }, {
-            pass1 => $self->param('pass1'),
+            pass1 => $p,
             pass2 => $self->param('pass2')
         }
     );
 
-    if (exists $set{password} && $u->has_password($set{password})) {
+    if (exists $set{password} && $u->has_password($p)) {
         return $self->json_error("Please don't reuse the same password");
     }
 
