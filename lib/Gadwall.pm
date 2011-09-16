@@ -34,8 +34,9 @@ sub gadwall_setup {
 
     $app->setup_random_source;
 
+    my $name = lc ref $app;
     my $conf = $app->plugin(
-        config => { ext => 'conf', default => { $app->config_defaults } }
+        config => { file => "${name}.conf", default => { $app->config_defaults } }
     );
 
     $app->secret($conf->{secret});
