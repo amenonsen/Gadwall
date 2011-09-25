@@ -97,4 +97,19 @@ sub roles {
     return @roles;
 }
 
+sub roles_from_set {
+    my ($class, %set) = @_;
+
+    my $i = 30;
+    my @roles = (0)x31;
+    foreach my $r ($class->role_names()) {
+        if ($set{"is_$r"}) {
+            $roles[$i] = 1;
+        }
+        $i--;
+    }
+
+    return (roles => join "", @roles);
+}
+
 1;

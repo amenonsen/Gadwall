@@ -3,6 +3,7 @@ package Gadwall::Users;
 use Mojo::Base 'Gadwall::Table';
 
 use Gadwall::Util qw(bcrypt mail);
+use Gadwall::User;
 
 sub columns {
     my $self = shift;
@@ -26,19 +27,8 @@ sub columns {
         roles => {
             fields => qr/^is_[a-z]+$/,
             validate => sub {
-                my (%set) = @_;
-
-                my $i = 30;
-                my @roles = (0)x31;
                 my $class = $self->class_name($self->rowclass);
-                foreach my $r ($class->role_names()) {
-                    if ($set{"is_$r"}) {
-                        $roles[$i] = 1;
-                    }
-                    $i--;
-                }
-
-                return (roles => join "", @roles);
+                return $class->roles_from_set(@_);
             }
         }
     );
