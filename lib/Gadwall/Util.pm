@@ -5,7 +5,7 @@ use warnings;
 
 use Crypt::Eksblowfish::Bcrypt qw(en_base64);
 use MIME::Base64 qw(encode_base64);
-use Email::Stuff;
+use MIME::Lite;
 
 our @EXPORTS = qw(bcrypt csrf_token mail);
 
@@ -42,41 +42,30 @@ sub csrf_token {
     return encode_base64($main::prng->get_bits(128), "");
 }
 
-# Takes a hash of to/from/subject/text/cc/bcc/headers/attachments values
-# and sends mail using localhost as a smarthost.
+# Takes a hash of to/from/subject/text/cc/bcc/headers values and sends
+# mail using localhost as a smarthost.
 
 sub mail {
     my (%opts) = @_;
 
-    die "Not enough parameters to send mail"
-        if grep !defined, @opts{qw(from to subject text)};
+    my $to = delete $opts{to} or die "No To address given";
+    my $from = delete $opts{from} or die "No From address given";
+    my $subject = delete $opts{subject} or die "No subject given";
+    my $text = delete $opts{text} or die "No body text given";
 
-    my $e = Email::Stuff->to($opts{to})
-        ->from($opts{from})
-        ->subject($opts{subject})
-        ->text_body($opts{text});
-
-    foreach my $cc (qw(cc bcc)) {
-        if (my $ccv = $opts{$cc}) {
-            if (ref $ccv) {
-                $ccv = join ", ", @$ccv;
-            }
-            $e->$cc($ccv);
-        }
+    if (ref $to eq 'ARRAY') {
+        $to = join ", ", @$to;
     }
 
-    my $headers = $opts{headers} || {};
-    foreach my $h (keys %$headers) {
-        $e->header($h => $headers->{$h});
-    }
+    my $m = MIME::Lite->new(
+        To => $to,
+        From => $from,
+        Subject => $subject,
+        Data => $text,
+        %opts
+    );
 
-    my $files = $opts{attachments} || [];
-    foreach my $f (@$files) {
-        my $file = shift @$f;
-        $e->attach_file($file, @$f);
-    }
-
-    $e->send(SMTP => Host => '127.0.0.1');
+    $m->send(smtp => '127.0.0.1');
 }
 
 1;
