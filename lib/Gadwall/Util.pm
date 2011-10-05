@@ -57,6 +57,13 @@ sub mail {
         $to = join ", ", @$to;
     }
 
+    if (ref $text && ref $text ne 'ARRAY') {
+        unless ($text->can('to_string')) {
+            die "Body text must be a string or arrayref";
+        }
+        $text = $text->to_string;
+    }
+
     my $m = MIME::Lite->new(
         To => $to,
         From => $from,
