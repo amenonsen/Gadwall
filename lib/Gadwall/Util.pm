@@ -72,7 +72,10 @@ sub mail {
         %opts
     );
 
-    $m->send(smtp => '127.0.0.1');
+    eval {
+        $m->send(smtp => '127.0.0.1');
+    };
+    return $m->last_send_successful;
 }
 
 1;
