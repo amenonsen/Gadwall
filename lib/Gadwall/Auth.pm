@@ -178,7 +178,7 @@ sub login {
                         );
                     }
                 );
-                $self->on_finish(sub { Mojo::IOLoop->drop($id) });
+                $self->on(finish => sub { Mojo::IOLoop->drop($id) });
                 return;
             }
         }
