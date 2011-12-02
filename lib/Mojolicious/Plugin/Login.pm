@@ -25,7 +25,7 @@ sub register {
             unless ($ctoken) {
                 local $" = ",";
                 $ctoken = $c->req->cookie('mojolicious') ?
-                    "(no token (@{[keys %{$self->session}]}))" :
+                    "(no token (@{[keys %{$c->session}]}))" :
                     "(no cookie)";
             }
 
