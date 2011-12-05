@@ -14,13 +14,11 @@ sub log { shift->app->log }
 sub class_name {
     my ($self, $name) = @_;
 
-    if (!defined $name || $name =~ /::/) {
-        return $name;
-    }
+    return unless defined $name;
 
     my $class;
-    for my $p (ref $self->app, "Gadwall") {
-        my $s = "${p}::$name";
+    for my $p ("", ref $self->app, "Gadwall") {
+        my $s = $p ? "${p}::$name" : $name;
         unless (my $e = Mojo::Loader->load($s)) {
             $class = $s;
             last;
