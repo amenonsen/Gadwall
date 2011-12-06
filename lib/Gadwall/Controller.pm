@@ -2,6 +2,8 @@ package Gadwall::Controller;
 
 use Mojo::Base 'Mojolicious::Controller';
 
+use Gadwall::Db::Table;
+
 # Aliases to reduce the tedium of typing $self->app->log() etc.
 
 sub db { shift->app->db }
@@ -154,6 +156,23 @@ sub message {
     my ($self, $name) = @_;
     my %messages = $self->messages;
     return $messages{$name} || $name;
+}
+
+# Returns an object of the subclass of G::Db::Table corresponding to the
+# given name (or the caller's class name, if none is given).
+
+sub table {
+    my $self = shift;
+    my $name = shift;
+
+    unless ($name) {
+        ($name = ref $self) =~ s/^[^:]*:://;
+        if (my $dbclass = $self->can('dbclass')) {
+            $name = $self->$dbclass();
+        }
+    }
+
+    return Gadwall::Db::Table->new_table($self, $name, @_);
 }
 
 1;
