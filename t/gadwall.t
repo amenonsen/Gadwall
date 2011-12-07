@@ -121,7 +121,7 @@ $t->post_form_ok('/users/create', {
     ->content_type_is("application/json")
     ->json_content_is({status => "ok", message => "User created"});
 
-$t->get_ok('/users/list?id=2')
+$t->get_ok('/users/list?user_id=2')
     ->status_is(200)
     ->content_type_is("application/json")
     ->json_content_is({
@@ -246,7 +246,7 @@ $t->get_ok('/sprockets')
             ]
         });
 
-$t->get_ok('/sprockets/list?id=1')
+$t->get_ok('/sprockets/list?sprocket_id=1')
     ->status_is(200)
     ->content_type_is('application/json')
     ->json_content_is({
@@ -262,7 +262,7 @@ $t->post_form_ok('/sprockets/create', {sprocket_name => "d", colour => "red", te
     ->content_type_is('application/json')
     ->content_is(qq!{"status":"ok","message":"Sprocket created"}!);
 
-$t->get_ok('/sprockets/list?id=4')
+$t->get_ok('/sprockets/list?sprocket_id=4')
     ->status_is(200)
     ->content_type_is('application/json')
     ->json_content_is({
@@ -283,7 +283,7 @@ $t->post_form_ok('/sprockets/4/update', {sprocket_name => "e", colour => "blue",
     ->content_type_is('application/json')
     ->content_is(qq!{"status":"ok","message":"Sprocket updated"}!);
 
-$t->get_ok('/sprockets/list?id=4')
+$t->get_ok('/sprockets/list?sprocket_id=4')
     ->status_is(200)
     ->content_type_is('application/json')
     ->json_content_is({
@@ -311,7 +311,7 @@ $t->post_form_ok('/sprockets/4/delete', {__token => $token})
     ->content_type_is('application/json')
     ->content_is(qq!{"status":"ok","message":"Sprocket deleted"}!);
 
-$t->get_ok('/sprockets/list?id=4')
+$t->get_ok('/sprockets/list?sprocket_id=4')
     ->status_is(200)
     ->content_type_is('application/json')
     ->json_content_is({

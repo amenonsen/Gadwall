@@ -73,6 +73,7 @@ sub query_tables { shift->table_name }
 
 sub query_conditions {
     my $self = shift;
+    my $key = $self->primary_key;
 
     # We can be called in any of four different ways. With no arguments,
     # we use the primary key value from the request parameters, if any.
@@ -91,10 +92,11 @@ sub query_conditions {
             values %columns
         );
     }
-    elsif (my $id = @_ ? shift : $self->param('id')) {
-        return (
-            $self->primary_key."=?", $id
-        );
+    elsif (@_ == 1) {
+        return ("$key=?", shift);
+    }
+    elsif (my $id = $self->param($key)) {
+        return ("$key=?", $id);
     }
 
     return;
@@ -266,7 +268,6 @@ sub transaction {
         $dbh->commit;
     };
     if ($@) {
-        # XXX We don't have any stash XXX
         $self->stash(error => $self->db_error($@));
         eval { $dbh->rollback };
     }
