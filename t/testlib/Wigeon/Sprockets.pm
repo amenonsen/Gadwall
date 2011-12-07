@@ -23,7 +23,7 @@ sub columns {
 
 sub approximate_blueness {
     my $self = shift;
-    my $s = $self->select_by_key($self->param("sprocket_id"));
+    my $s = $self->table->select_by_key($self->param("sprocket_id"));
     $self->render_plaintext(
         $s && $s->is_red ? "not blue" : "maybe blue"
     );

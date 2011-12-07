@@ -46,7 +46,7 @@ sub allow_users {
 
     my $user = $self->session('user');
     if ($user) {
-        my $u = $self->new_controller('Users')->select_by_key($user);
+        my $u = $self->table('Users')->select_by_key($user);
         if ($u) {
             $self->stash(user => $u);
             return 1;
@@ -133,7 +133,7 @@ sub login {
 
     if ($login && $passwd) {
         my $dbh = $self->db;
-        my $u = $self->new_controller('Users')->select_one(
+        my $u = $self->table('Users')->select_one(
             "is_active and coalesce(login,email)=?" => $login
         );
         if ($u && $u->has_password($passwd)) {
@@ -224,7 +224,7 @@ sub su {
         return $self->denied;
     }
 
-    my $u = $self->new_controller('Users')->select_one($where, @v);
+    my $u = $self->table('Users')->select_one($where, @v);
     if ($u) {
         my $ip = $self->tx->remote_address;
         $self->log->info(

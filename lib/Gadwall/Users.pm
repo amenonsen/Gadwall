@@ -3,7 +3,6 @@ package Gadwall::Users;
 use Mojo::Base 'Gadwall::Table';
 
 use Gadwall::Util qw(bcrypt mail);
-use Gadwall::User;
 
 sub columns {
     my $self = shift;
@@ -27,34 +26,10 @@ sub columns {
         roles => {
             fields => qr/^is_[a-z]+$/,
             validate => sub {
-                my $class = $self->class_name($self->rowclass);
+                my $class = $self->class_name($self->table->rowclass);
                 return $class->roles_from_set(@_);
             }
         }
-    );
-}
-
-sub query_columns {(
-    "*",
-
-    "roles::int",
-
-    "to_char(last_login, 'yyyy-mm-dd hh:mm:ss') as last_login",
-    "to_char(second_last_login, 'yyyy-mm-dd hh:mm:ss') as second_last_login",
-    "to_char(last_failed_login, 'yyyy-mm-dd hh:mm:ss') as last_failed_login",
-
-    "current_timestamp - coalesce(last_password_change,".
-    " current_timestamp-(round(random()*35)::text||' days')::interval) > ".
-    "'30 days'::interval as password_expired"
-)}
-
-sub _passwd {
-    my ($self, $id, %set) = @_;
-
-    return $self->db->do(
-        "update users set password=?, ".
-        "last_password_change=current_timestamp ".
-        "where user_id=?", {}, $set{password}, $id
     );
 }
 
@@ -73,9 +48,10 @@ sub _passwd {
 
 sub password {
     my $self = shift;
+    my $table = $self->table;
 
     my $u = $self->stash('user');
-    my $id = $self->stash($self->primary_key);
+    my $id = $self->stash($table->primary_key);
     my $passwd = $self->param('password');
 
     unless (($u->has_role("admin") && $u->{user_id} != $id) ||
@@ -96,7 +72,7 @@ sub password {
         return $self->json_error("Please don't reuse the same password");
     }
 
-    unless (%set && $self->transaction(passwd => $id, %set)) {
+    unless (%set && $table->transaction(passwd => $id, %set)) {
         return $self->json_error;
     }
 
@@ -124,9 +100,10 @@ sub password {
 
 sub email {
     my $self = shift;
+    my $table = $self->table;
 
     my $u = $self->stash('user');
-    my $id = $self->stash($self->primary_key);
+    my $id = $self->stash($table->primary_key);
     my $passwd = $self->param('password');
     my $email = $self->param('email');
 
@@ -145,7 +122,7 @@ sub email {
     }
 
     $email = $set{email};
-    my $user = $self->select_one({email => $email});
+    my $user = $table->select_one({email => $email});
     if ($user) {
         if ($user->has_role('admin')) {
             return $self->json_error("That email address already exists");
@@ -193,7 +170,7 @@ sub confirm_email {
     my $email = $self->stash('link_data');
 
     my %set = (email => $email);
-    unless ($self->transaction(update => $uid, %set)) {
+    unless ($self->table->transaction(update => $uid, %set)) {
         $msg = "Sorry, we could not update your email address.";
     }
     else {

@@ -1,11 +1,11 @@
-package Gadwall::Row;
+package Gadwall::Db::Row;
 
 use strict;
 use warnings;
 
 # This is a base class for everything that is mentioned in a rowclass()
-# in a Gadwall::Table subclass. It doesn't do much, and that's probably
-# the way it should be.
+# in a Gadwall::Db::Table subclass. It doesn't do much, and that's the
+# way it should be.
 
 sub new {
     # Defined only to make Mojo::Loader happy.
