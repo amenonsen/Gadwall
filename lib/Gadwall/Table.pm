@@ -18,8 +18,9 @@ use Gadwall::Validator;
 sub create {
     my $self = shift;
 
+    my $table = $self->table;
     my %set = $self->column_values(all => 1);
-    unless (%set && $self->transaction(create => %set)) {
+    unless (%set && $table->transaction(create => %set)) {
         return $self->json_error;
     }
 
@@ -30,9 +31,10 @@ sub create {
 sub update {
     my $self = shift;
 
-    my $id = $self->stash($self->primary_key);
+    my $table = $self->table;
+    my $id = $self->stash($table->primary_key);
     my %set = $self->column_values();
-    unless ($id && %set && $self->transaction(update => $id, %set)) {
+    unless ($id && %set && $table->transaction(update => $id, %set)) {
         return $self->json_error;
     }
 
@@ -43,8 +45,9 @@ sub update {
 sub delete {
     my $self = shift;
 
-    my $id = $self->stash($self->primary_key);
-    unless ($id && $self->transaction(delete => $id)) {
+    my $table = $self->table;
+    my $id = $self->stash($table->primary_key);
+    unless ($id && $table->transaction(delete => $id)) {
         return $self->json_error;
     }
 
@@ -71,20 +74,22 @@ sub list {
 sub list_json {
     my $self = shift;
 
-    my $table = $self->table_name;
+    my $table = $self->table;
+    my $name = $table->table_name;
+
     my $res = {
         table => {
-            name => $table,
-            key => $self->primary_key,
-            page => $self->page,
-            limit => $self->limit,
+            name => $name,
+            key => $table->primary_key,
+            page => $table->page,
+            limit => $table->limit,
         }
     };
 
-    if (my $rows = $self->rows(@_)) {
+    if (my $rows = $table->rows(@_)) {
         $res->{status} = "ok";
-        $res->{$table} = $self->for_display($rows);
-        $res->{table}{total} = $self->count_rows(@_);
+        $res->{$name} = $table->for_display($rows);
+        $res->{table}{total} = $table->count_rows(@_);
     }
     else {
         $res = {
@@ -131,7 +136,7 @@ sub _validate {
 
 sub messages {
     my $self = shift;
-    my $singular = $self->singular;
+    my $singular = $self->table->singular;
 
     return (
         $self->SUPER::messages,

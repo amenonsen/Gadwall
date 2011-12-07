@@ -24,7 +24,27 @@ sub new_table {
 sub controller { shift->() }
 sub dbh { shift->controller->db() }
 sub stash { shift->controller->stash(@_) }
+sub param { shift->controller->param(@_) }
 sub cache { shift->controller->app->cache() }
+
+# By default, entities of type Foo are represented by a subclass named
+# Foos and stored in a table named foos with serial primary key foo_id.
+# Any of these defaults may be overriden for individual subclasses.
+
+sub table_name {
+    (my $name = lc(ref shift)) =~ s/^.*:://;
+    return $name;
+}
+
+sub primary_key {
+    (my $name = shift->table_name) =~ s/s$/_id/;
+    return $name;
+}
+
+sub singular {
+    (my $name = ucfirst(shift->table_name)) =~ s/s$//;
+    return $name;
+}
 
 # This function returns a query string and a list of bind values based
 # on the request parameters. By default, it assembles a query to fetch
@@ -217,7 +237,7 @@ sub for_display {
 
 sub rowclass {
     my $self = shift;
-    return $self->controller->class_name($self->singular);
+    return $self->controller->class_name("Db::".$self->singular);
 }
 
 # This function is meant to return a user-friendly version of the given
@@ -333,25 +353,6 @@ sub _cache_delete {
             join("/", $self->table_name, $self->primary_key, $id)
         );
     }
-}
-
-# By default, entities of type Foo are represented by a subclass named
-# Foos and stored in a table named foos with serial primary key foo_id.
-# Any of these defaults may be overriden for individual subclasses.
-
-sub table_name {
-    (my $name = lc(ref shift)) =~ s/^.*:://;
-    return $name;
-}
-
-sub primary_key {
-    (my $name = shift->table_name) =~ s/s$/_id/;
-    return $name;
-}
-
-sub singular {
-    (my $name = ucfirst(shift->table_name)) =~ s/s$//;
-    return $name;
 }
 
 1;

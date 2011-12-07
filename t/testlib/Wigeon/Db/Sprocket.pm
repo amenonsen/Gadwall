@@ -1,9 +1,9 @@
-package Wigeon::Sprocket;
+package Wigeon::Db::Sprocket;
 
 use strict;
 use warnings;
 
-use parent "Gadwall::Row";
+use parent "Gadwall::Db::Row";
 
 sub is_red {
     my $self = shift;

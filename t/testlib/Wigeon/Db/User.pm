@@ -1,9 +1,6 @@
-package Wigeon::User;
+package Wigeon::Db::User;
 
-use strict;
-use warnings;
-
-use parent "Gadwall::Db::User";
+use Mojo::Base "Gadwall::Db::User";
 
 sub role_names {qw(
     admin cook bottlewasher birdwatcher bearfighter backstabber bitcounter

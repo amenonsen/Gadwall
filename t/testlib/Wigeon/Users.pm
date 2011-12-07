@@ -1,4 +1,5 @@
 package Wigeon::Users;
+
 use Mojo::Base 'Gadwall::Users';
 
 sub wrapped_json {
