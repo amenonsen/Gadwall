@@ -1,4 +1,4 @@
-package Gadwall::Db::User;
+package Gadwall::User;
 
 use Mojo::Base 'Gadwall::Db::Row';
 

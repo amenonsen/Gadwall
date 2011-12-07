@@ -12,7 +12,7 @@ use File::Spec;
 use lib join '/', File::Spec->splitdir(dirname(__FILE__)), 'testlib';
 
 use_ok('Wigeon');
-use_ok('Wigeon::Db::User');
+use_ok('Wigeon::User');
 use_ok('Gadwall::Users');
 use_ok('Gadwall::Validator');
 use_ok('Gadwall::Util', qw(bcrypt));
@@ -24,13 +24,13 @@ ok(bcrypt('s3kr1t', '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3g
 
 # Test the bit-twiddling code for role checking in ::User
 
-my $x = bless {roles => 1<<6|1<<3}, "Wigeon::Db::User";
+my $x = bless {roles => 1<<6|1<<3}, "Wigeon::User";
 ok($x->has_role('bitcounter'), 'has_role bitcounter');
 ok($x->has_role('birdwatcher'), 'has_role birdwatcher');
 ok(!$x->has_role('bearfighter'), '!has_role bearfighter');
 ok(!$x->has_any_role('admin','cook'), "!has_any_roles admin,cook");
 is_deeply([$x->roles()], [qw(birdwatcher bitcounter)], "list roles");
-$x = bless {roles => 1}, "Wigeon::Db::User";
+$x = bless {roles => 1}, "Wigeon::User";
 ok($x->has_role("admin"), 'has_role admin');
 is_deeply([$x->roles()], [qw(admin)], "list roles");
 

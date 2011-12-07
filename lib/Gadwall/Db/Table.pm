@@ -237,7 +237,7 @@ sub for_display {
 
 sub rowclass {
     my $self = shift;
-    return $self->controller->class_name("Db::".$self->singular);
+    return $self->controller->class_name($self->singular);
 }
 
 # This function is meant to return a user-friendly version of the given

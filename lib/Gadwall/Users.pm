@@ -3,7 +3,6 @@ package Gadwall::Users;
 use Mojo::Base 'Gadwall::Table';
 
 use Gadwall::Util qw(bcrypt mail);
-use Gadwall::Db::User;
 
 sub columns {
     my $self = shift;
