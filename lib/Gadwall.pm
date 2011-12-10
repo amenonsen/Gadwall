@@ -93,8 +93,7 @@ sub setup_random_source {
 sub new_dbh {
     my ($db, $user, $pass) = @_;
     my $dbh = DBI->connect(
-        "dbi:Pg:database=$db", $user, $pass,
-        {RaiseError => 0}
+        "dbi:Pg:database=$db", $user, $pass, {RaiseError => 0}
     ) or die $DBI::errstr;
     return $dbh;
 }
