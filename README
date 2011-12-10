@@ -13,8 +13,8 @@ whose name does not resemble anything else on Github.
 
 This program expects to run on a Unix system with:
 
-- Perl 5.10.1+
-- PostgreSQL 8.4+
+- Perl 5.12.3+
+- PostgreSQL 9.0+
 - Perl modules: Mojolicious, DBI, DBD::Pg, Crypt::Eksblowfish::Bcrypt,
   Data::Entropy, Crypt::Rijndael, MIME::Lite
 
@@ -33,7 +33,7 @@ To install a Gadwall-based application:
 
 - First, set up the database. See utils/setup-schema
 
-_ Edit app.conf to set db_name/db_user/db_pass if necessary, and also
+- Edit app.conf to set db_name/db_user/db_pass if necessary, and also
   to set the "secret" used to sign session cookies.
 
 - Configure a front-end web server to proxy HTTP and HTTPS connections
