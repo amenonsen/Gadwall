@@ -19,7 +19,9 @@ sub startup {
     my $r = $app->routes;
 
     $r->any(
-        '/' => sub { shift->render_plaintext("Hello world!") }
+        '/' => sub {
+            shift->render_text("Hello world!", format => 'txt')
+        }
     );
 }
 
