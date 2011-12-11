@@ -32,6 +32,10 @@ sub config_defaults {
 sub gadwall_setup {
     my $app = shift;
 
+    $app->_shadow_controllers(qw(Log Auth Users Confirm));
+
+    $app->replace_log();
+
     $app->setup_random_source;
 
     my $name = lc ref $app;
@@ -53,8 +57,17 @@ sub gadwall_setup {
     delete @$conf{qw/secret db_pass/};
 
     $app->plugin('gadwall_helpers');
+}
 
-    $app->_shadow_controllers(qw(Auth Users Confirm));
+# This function replaces the built-in Mojo::Log object with an App::Log
+# one (with Gadwall::Log providing a sane default).
+
+sub replace_log {
+    my $app = shift;
+
+    my $class = (ref $app)."::Log";
+    $app->log->unsubscribe('message');
+    $app->log($class->new($app->log));
 }
 
 # This function sets $main::prng to an AES CTR generator keyed with 256
