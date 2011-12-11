@@ -170,6 +170,7 @@ sub _shadow_controllers {
             }, \$i)
         };
 
+        require "$class/$name.pm";
         push @done, $name;
     }
 
