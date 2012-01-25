@@ -117,7 +117,7 @@ sub register_types {
     my ($app, %types) = @_;
 
     foreach my $k (keys %types) {
-        $app->types->type($t => $types{$t});
+        $app->types->type($k => $types{$k});
     }
 }
 
