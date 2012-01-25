@@ -111,6 +111,16 @@ sub new_dbh {
     return $dbh;
 }
 
+# This is a shortcut to help register a bunch of content types.
+
+sub register_types {
+    my ($app, %types) = @_;
+
+    foreach my $k (keys %types) {
+        $app->types->type($t => $types{$t});
+    }
+}
+
 # This function returns a Cache::Memcached-compatible object. Whether
 # this object actually talks to a running memcached depends on whether
 # memcached_port is set in the config file and whether Cache::Memcached
