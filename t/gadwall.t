@@ -17,7 +17,7 @@ use_ok('Wigeon');
 
 $ENV{MOJO_MODE} = "testing";
 my $t = Test::Mojo->new("Wigeon");
-$t->test_server('http');
+$t->ua->app_url('http');
 
 $t->get_ok('/nonesuch')
     ->status_is(404);
@@ -60,7 +60,7 @@ $loc = $t->tx->res->headers->location();
 ok $loc =~ /^https:\/\//, 'redirected to ' . $loc;
 
 $t = Test::Mojo->new("Wigeon");
-$t->test_server('https');
+$t->ua->app_url('https');
 
 $t->get_ok('/die')
     ->status_is(500)
