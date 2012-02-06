@@ -18,7 +18,7 @@ sub register {
 
             my $ctoken = $c->session('token');
             my $ptoken = $c->param('__token');
-            if (my $json = $c->res->json) {
+            if (my $json = $c->req->json) {
                 $ptoken = $json->{__token};
             }
 
