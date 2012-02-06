@@ -18,6 +18,10 @@ sub register {
 
             my $ctoken = $c->session('token');
             my $ptoken = $c->param('__token');
+            if (my $json = $c->res->json) {
+                $ptoken = $json->{__token};
+            }
+
             return if $ctoken && $ptoken && $ctoken eq $ptoken;
 
             $ptoken = $ptoken ? "'$ptoken'" : "(no token)";
