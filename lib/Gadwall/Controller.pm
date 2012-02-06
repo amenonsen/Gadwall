@@ -82,6 +82,17 @@ sub denied {
     return 0;
 }
 
+# Shorthand for the commonest redirect_to invocation.
+
+sub redirect {
+    my $self = shift;
+    my $url = $self->url_for(@_);
+
+    $self->redirect_to($url)->render_plaintext(
+        "Redirecting to $url"
+    );
+}
+
 # Helper functions to return JSON responses
 #
 # return $self->json_fragment(a => 1, b => "two")
