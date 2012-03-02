@@ -1,0 +1,22 @@
+The application's SQL schema lives in this directory, split up into as
+many files as needed for a logical arrangement.
+
+- "defs" defines DB, USER, and ADMIN
+
+- The application's schema should be in NNN-*.sql
+
+- Gadwall's own schema lives in NNN-gadwall-*.sql
+
+- 000-schema.sql creates a schema (name,version) table, which is used to
+  keep track of schema deployments and upgrades. Gadwall itself uses the
+  name "gadwall"; applications are free to use other name(s) to identify
+  components of their schema.
+
+- upgrades/$name/N-to-M.sql are scripts that upgrade a component named
+  $name from version N to version M.
+
+utils/setup-schema creates the database and users defined in defs and
+loads NNN-*.sql in lexicographical order using psql.
+
+utils/upgrade-schema loads any outstanding upgrades, each in its own
+transaction.
