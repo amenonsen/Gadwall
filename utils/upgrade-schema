@@ -1,0 +1,27 @@
+#!/bin/bash
+
+DB=gadwall
+USER=gadwall
+ADMIN=mallard
+PSQL=psql
+
+$PSQL -AtF' ' -c 'select name,version from schema' $DB $ADMIN |
+while read name version;
+do
+    next=$((version+1))
+    while test -f schema/upgrades/$name/${version}-to-${next}.sql;
+    do
+        file=schema/upgrades/$name/${version}-to-${next}.sql
+        echo ">>> $name: $file"
+
+cat <<SQL | $PSQL -q1f - || exit
+\set ON_ERROR_STOP
+SET client_min_messages TO 'error';
+update schema set version='$next' where name='$name';
+\i $file
+SQL
+
+        version=$next
+        next=$((version+1))
+    done
+done
