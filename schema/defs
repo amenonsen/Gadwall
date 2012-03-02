@@ -1,0 +1,4 @@
+DB=gadwall
+USER=gadwall
+ADMIN=mallard
+PSQL=psql

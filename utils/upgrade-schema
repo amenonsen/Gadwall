@@ -1,9 +1,6 @@
 #!/bin/bash
 
-DB=gadwall
-USER=gadwall
-ADMIN=mallard
-PSQL=psql
+source schema/defs || exit
 
 $PSQL -AtF' ' -c 'select name,version from schema' $DB $ADMIN |
 while read name version;
