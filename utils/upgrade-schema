@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source schema/defs || exit
+PSQL=${PSQL:-psql}
 
 $PSQL -AtF' ' -c 'select name,version from schema' $DB $ADMIN |
 while read name version;

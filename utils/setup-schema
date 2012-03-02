@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source schema/defs || exit
+PSQL=${PSQL:-psql}
 
 echo "Creating users, database, and schema..."
 su -m postgres -c $PSQL <<SQL
