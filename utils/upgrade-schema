@@ -12,7 +12,7 @@ do
         file=schema/upgrades/$name/${version}-to-${next}.sql
         echo ">>> $name: $file"
 
-cat <<SQL | $PSQL -q1f - || exit
+cat <<SQL | $PSQL -q1f - $DB $ADMIN || exit
 \set ON_ERROR_STOP
 SET client_min_messages TO 'error';
 update schema set version='$next' where name='$name';
