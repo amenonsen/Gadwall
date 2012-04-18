@@ -13,6 +13,7 @@ do
         echo ">>> $name: $file"
 
 cat <<SQL | $PSQL -q1f - $DB $ADMIN || exit
+\set user $USER
 \set ON_ERROR_STOP
 SET client_min_messages TO 'error';
 update schema set version='$next' where name='$name';
