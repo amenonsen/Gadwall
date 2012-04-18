@@ -17,6 +17,10 @@ create table users (
 grant select,insert,update on users to :user;
 grant select,usage on users_user_id_seq to :user;
 
+-- One row for each random token that allows the specified user access
+-- to the given path with some optional associated data. The token is
+-- valid for a specified number of uses, or a period of time, or both.
+
 create table confirmation_tokens (
     token text primary key,
     path text not null,
@@ -24,7 +28,9 @@ create table confirmation_tokens (
             on delete cascade,
     issued_at timestamptz not null
             default current_timestamp,
+    valid_for interval default interval '1 hour',
+    remaining_uses integer default 1,
     data text,
     unique (path, user_id)
 );
-grant select,insert,delete on confirmation_tokens to :user;
+grant select,insert,update,delete on confirmation_tokens to :user;

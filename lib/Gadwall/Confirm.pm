@@ -38,18 +38,56 @@ sub by_url {
         return $self->denied;
     }
 
-    my $row = $self->db->selectrow_hashref(
-        "delete from confirmation_tokens where token=? returning *, ".
-        "age(current_timestamp,issued_at)>interval '1 hour' as expired",
-        {}, $tok
-    );
+    my $dbh = $self->db;
+    my $row;
 
-    # Is the token itself (still?) valid, and does it authorise this
-    # request?
-    unless ($row && !$row->{expired} &&
-            $row->{path} eq $self->req->url->path)
-    {
+    $dbh->begin_work;
+    eval {
+        local $dbh->{RaiseError} = 1;
+
+        $row = $dbh->selectrow_hashref(<<"        SQL", {}, $tok);
+            select path, user_id, remaining_uses, data,
+                    age(current_timestamp,issued_at) > valid_for as expired
+                from confirmation_tokens where token=?
+                for update
+        SQL
+
+        if ($row) {
+            unless ($row->{path} eq $self->req->url->path) {
+                die "Invalid link path";
+            }
+
+            my $exp = $row->{expired} // 0;
+            my $rem = $row->{remaining_uses} // 0;
+
+            if (!$exp && $rem > 1) {
+                $dbh->do(
+                    "update confirmation_tokens ".
+                    "set remaining_uses=remaining_uses-1 ".
+                    "where token=?", {}, $tok
+                );
+            }
+            elsif ($exp || $rem == 1) {
+                $dbh->do(
+                    "delete from confirmation_tokens where token=?", {}, $tok
+                );
+            }
+
+            if ($exp) {
+                $row = undef;
+            }
+        }
+
+        $dbh->commit;
+    };
+    if ($@) {
+        eval { $dbh->rollback };
         return $self->denied;
+    }
+
+    # We try to be lenient about using expired links.
+    unless ($row) {
+        return $self->expired;
     }
 
     # Can't find anything to complain about.
@@ -62,7 +100,10 @@ sub by_url {
 # that the above bridge will accept.
 
 sub generate_url {
-    my ($self, $path, $uid, $data) = @_;
+    my ($self, $path, $uid, $data, $validity, $times) = @_;
+
+    $validity //= 60;
+    $times //= 1;
 
     my $dbh = $self->db;
 
@@ -85,8 +126,10 @@ sub generate_url {
             );
             $token = encode_base64($main::prng->get_bits(128), "");
             $rv = $dbh->do(
-                "insert into confirmation_tokens (token, path, user_id, data) ".
-                "values (?, ?, ?, ?)", {}, $token, $path, $uid, $data
+                "insert into confirmation_tokens ".
+                "(token, path, user_id, data, remaining_uses, valid_for) ".
+                "values (?, ?, ?, ?, ?, (?||' minutes')::interval)",
+                {}, $token, $path, $uid, $data, $times, $validity
             );
             $dbh->commit;
         };
@@ -240,6 +283,10 @@ sub send_token {
 
     $self->log->info("Sent confirmation token to $to");
     return 1;
+}
+
+sub expired {
+    return shift->denied;
 }
 
 1;
