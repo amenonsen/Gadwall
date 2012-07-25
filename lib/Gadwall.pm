@@ -32,9 +32,9 @@ sub config_defaults {
 sub gadwall_setup {
     my $app = shift;
 
-    $app->_shadow_controllers(qw(Log Auth Users Confirm));
-
     $app->replace_log();
+
+    $app->_shadow_controllers(qw(Log Auth Users Confirm));
 
     $app->setup_random_source;
 
