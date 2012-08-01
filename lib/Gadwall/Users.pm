@@ -145,7 +145,7 @@ sub email {
             text => $self->render_partial(
                 template => "users/email/confirm-mail",
                 from => $from, to => $email, host => $host, url => $url,
-                template_class => __PACKAGE__, format => 'txt'
+                format => 'txt'
             )
         );
 
@@ -179,8 +179,7 @@ sub confirm_email {
     }
 
     $self->render(
-        template => "users/email/confirmed", msg => $msg,
-        template_class => __PACKAGE__
+        template => "users/email/confirmed", msg => $msg
     );
 }
 
@@ -201,10 +200,7 @@ sub forgot_password {
     }
 
     unless ($email) {
-        $self->render(
-            template => "users/passwords/select-email",
-            template_class => __PACKAGE__
-        );
+        $self->render(template => "users/passwords/select-email");
         return;
     }
 
@@ -225,7 +221,7 @@ sub forgot_password {
                 text => $self->render_partial(
                     template => "users/passwords/reset-mail",
                     from => $from, to => $to, host => $host, url => $url,
-                    template_class => __PACKAGE__, format => 'txt'
+                    format => 'txt'
                 )
             );
 
@@ -245,8 +241,7 @@ sub forgot_password {
     # valid users, and we don't care about anyone else.
 
     $self->render(
-        template => "users/passwords/sent-reset", format => 'html',
-        template_class => __PACKAGE__
+        template => "users/passwords/sent-reset", format => 'html'
     );
 }
 
@@ -283,7 +278,6 @@ sub reset_password {
         }
         $self->render(
             template => "users/passwords/select-new",
-            template_class => __PACKAGE__,
             %params
         );
         return;
@@ -295,8 +289,7 @@ sub reset_password {
     );
 
     $self->render(
-        template => "users/passwords/reset",
-        template_class => __PACKAGE__
+        template => "users/passwords/reset"
     );
 }
 

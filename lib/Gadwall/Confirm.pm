@@ -185,7 +185,7 @@ sub by_token {
         }
         $self->render(
             template => "confirm/token-error",
-            template_class => __PACKAGE__, format => 'html'
+            format => 'html'
         );
         return 0;
     }
@@ -205,7 +205,7 @@ sub by_token {
     $self->render(
         template => "confirm/get-token",
         url => $self->req->url->path, hidden => \@hidden,
-        template_class => __PACKAGE__, format => 'html'
+        format => 'html'
     );
 
     return 0;
@@ -277,7 +277,7 @@ sub send_token {
         text => $self->render_partial(
             template => "confirm/token-mail",
             from => $from, to => $to, host => $host, token => $token,
-            template_class => __PACKAGE__, format => 'txt'
+            format => 'txt'
         )
     );
 

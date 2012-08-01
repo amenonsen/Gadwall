@@ -56,6 +56,8 @@ sub gadwall_setup {
 
     delete @$conf{qw/secret db_pass/};
 
+    push @{$app->renderer->classes}, qw(Gadwall::Auth Gadwall::Users Gadwall::Confirm);
+
     $app->plugin('gadwall_helpers');
 }
 

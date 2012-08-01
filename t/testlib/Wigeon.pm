@@ -15,7 +15,7 @@ sub startup {
     my $app = shift;
     $app->log->level('debug');
     $app->gadwall_setup();
-    $app->defaults(template_class => __PACKAGE__);
+    push @{$app->renderer->classes}, __PACKAGE__;
 
     $app->hook(
         before_dispatch => sub {
@@ -36,14 +36,14 @@ sub startup {
     $r->any(
         '/from-template' => sub {
             my $self = shift;
-            $self->render(template => "foo", template_class => __PACKAGE__);
+            $self->render(template => "foo");
         }
     );
 
     $r->any(
         '/helpers' => sub {
             my $self = shift;
-            $self->render(template => "helpers", template_class => __PACKAGE__);
+            $self->render(template => "helpers");
         }
     );
 

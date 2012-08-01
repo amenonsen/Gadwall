@@ -68,8 +68,7 @@ sub allow_users {
     $self->render(
         status => 403,
         template => "auth/login", login => "",
-        errmsg => $self->flash('errmsg') || undef,
-        template_class => __PACKAGE__
+        errmsg => $self->flash('errmsg') || undef
     );
 
     return 0;
@@ -173,8 +172,7 @@ sub login {
                     $delay => sub {
                         $self->render(
                             login => $login,
-                            errmsg => $self->message('badlogin'),
-                            template_class => __PACKAGE__
+                            errmsg => $self->message('badlogin')
                         );
                     }
                 );
@@ -186,8 +184,7 @@ sub login {
 
     $self->render(
         login => $login,
-        errmsg => $self->message('badlogin'),
-        template_class => __PACKAGE__
+        errmsg => $self->message('badlogin')
     );
 }
 
