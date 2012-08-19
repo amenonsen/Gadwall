@@ -6,6 +6,7 @@ use warnings;
 use Crypt::Eksblowfish::Bcrypt qw(en_base64);
 use MIME::Base64 qw(encode_base64);
 use MIME::Lite;
+use Carp;
 
 our @EXPORTS = qw(bcrypt csrf_token mail);
 
@@ -48,10 +49,10 @@ sub csrf_token {
 sub mail {
     my (%opts) = @_;
 
-    my $to = delete $opts{to} or die "No To address given";
-    my $from = delete $opts{from} or die "No From address given";
-    my $subject = delete $opts{subject} or die "No subject given";
-    my $text = delete $opts{text} or die "No body text given";
+    my $to = delete $opts{to} or croak "No To address given";
+    my $from = delete $opts{from} or croak "No From address given";
+    my $subject = delete $opts{subject} or croak "No subject given";
+    my $text = delete $opts{text} or croak "No body text given";
 
     if (ref $to eq 'ARRAY') {
         $to = join ", ", @$to;
@@ -59,7 +60,7 @@ sub mail {
 
     if (ref $text && ref $text ne 'ARRAY') {
         unless ($text->can('to_string')) {
-            die "Body text must be a string or arrayref";
+            croak "Body text must be a string or arrayref";
         }
         $text = $text->to_string;
     }
