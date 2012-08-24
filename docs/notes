@@ -1,0 +1,4 @@
+It may be worth switching /logout to POST, so that <img src="…/logout">
+on a malicious page can't log someone out inadvertently.
+
+
