@@ -157,7 +157,7 @@ $t->get_ok('/birdwatchers-only')
     ->content_type_is("text/plain")
     ->content_is("Permission denied");
 
-$t->get_ok('/logout')
+$t->post_form_ok('/logout', {__token => $token})
     ->status_is(302)
     ->content_type_is("text/plain")
     ->content_is("Redirecting to /");
@@ -190,7 +190,7 @@ $t->post_form_ok('/users/1/password', {
     ->content_type_is("application/json")
     ->json_content_is({status => "ok", message => "Password changed"});
 
-$t->get_ok('/logout')
+$t->post_form_ok('/logout', {__token => $token})
     ->status_is(302)
     ->content_type_is("text/plain")
     ->content_is("Redirecting to /");
@@ -345,7 +345,7 @@ $t->get_ok('/widgets/sprocket_redness?sprocket_id=2')
     ->content_type_is('text/plain')
     ->content_is("not red");
 
-$t->get_ok('/logout')
+$t->post_form_ok('/logout', {__token => $token})
     ->status_is(302)
     ->content_type_is("text/plain")
     ->content_is("Redirecting to /");

@@ -69,7 +69,7 @@ sub register {
     }
 
     my $auth = $r->bridge->to('auth#allow_users')->name('auth');
-    $auth->route('/logout')->to('auth#logout')->name('logout');
+    $auth->route('/logout')->via('post')->to('auth#logout')->name('logout');
 
     $r->add_shortcut(allow_roles => sub {
         return shift->bridge->to('auth#allow_roles', roles => @_);
