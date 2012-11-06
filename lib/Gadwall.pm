@@ -58,6 +58,7 @@ sub gadwall_setup {
 
     push @{$app->renderer->classes}, qw(Gadwall::Auth Gadwall::Users Gadwall::Confirm);
 
+    $app->plugin('csrf');
     $app->plugin('gadwall_helpers');
 }
 
