@@ -345,6 +345,12 @@ $t->get_ok('/widgets/sprocket_redness?sprocket_id=2')
     ->content_type_is('text/plain')
     ->content_is("not red");
 
+$t->get_ok('/p1')
+    ->status_is(200)
+    ->content_type_like(qr#text/html#)
+    ->element_exists('form')
+    ->element_exists('form input[name=__token]');
+
 $t->post_form_ok('/logout', {__token => $token})
     ->status_is(302)
     ->content_type_is("text/plain")

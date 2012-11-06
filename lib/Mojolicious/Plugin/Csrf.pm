@@ -1,8 +1,11 @@
-# This plugin rejects POST requests without a valid CSRF token.
+# This plugin rejects POST requests without a valid CSRF token, and adds
+# a post_form helper to include CSRF tokens into forms.
 
 package Mojolicious::Plugin::Csrf;
 
 use Mojo::Base 'Mojolicious::Plugin';
+
+use Gadwall::Util;
 
 sub register {
     my ($self, $app, $opts) = @_;
@@ -26,7 +29,8 @@ sub register {
             # Otherwise we log an error with as much User-Agent and
             # Referer data as we can get, and deny the request.
 
-            if (my $cb = $opts->{cb}) {
+            my $cb = $opts->{cb};
+            if ($cb) {
                 return $cb->();
             }
 
@@ -52,6 +56,33 @@ sub register {
             );
         }
     );
+
+    # post_form behaves like the built-in TagHelpers' form_for helper,
+    # but it always adds a hidden field with the session's CSRF token.
+
+    $app->helper(post_form => sub {
+        my $c = shift;
+        my @url = (shift);
+        push @url, shift if ref $_[0] eq 'HASH';
+
+        my $token = $c->session('token');
+        unless ($token) {
+            $c->session(token => Gadwall::Util->csrf_token());
+        }
+
+        if (ref $_[-1] eq 'CODE') {
+            my $cb = pop @_;
+            push @_, sub {
+                return "\n".
+                    $c->hidden_field(__token => $c->session('token')).
+                    $cb->();
+            };
+        }
+
+        return $c->tag(
+            'form', method => "post", action => $c->url_for(@url), @_
+        );
+    });
 }
 
 1;
