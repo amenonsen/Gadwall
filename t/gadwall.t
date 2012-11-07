@@ -351,6 +351,12 @@ $t->get_ok('/p1')
     ->element_exists('form')
     ->element_exists('form input[name=__token]');
 
+$t->get_ok('/forgot-password')
+    ->status_is(200)
+    ->content_type_like(qr#text/html#)
+    ->element_exists('form')
+    ->element_exists('form input[name=email]');
+
 $t->post_form_ok('/logout', {__token => $token})
     ->status_is(302)
     ->content_type_is("text/plain")

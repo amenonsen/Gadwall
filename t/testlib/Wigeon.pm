@@ -86,7 +86,8 @@ sub startup {
 
     $r->route('/sprockets/:sprocket_id/:action')->to(controller => 'sprockets', action => 'update');
 
-    my $auth = $app->plugin('login', reset_passwords => 1);
+    my $auth = $app->plugin('login');
+    $app->plugin('user');
     $auth->route('/my-token')->to(cb => sub {
         my $self = shift;
         $self->render_plaintext($self->session('token'));
