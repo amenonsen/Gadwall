@@ -190,6 +190,14 @@ $t->post_form_ok('/users/1/password', {
     ->content_type_is("application/json")
     ->json_content_is({status => "ok", message => "Password changed"});
 
+$t->post_form_ok('/users/2/password', {
+        password => "s3kr1t", pass1 => "secret", pass2 => "secret",
+        __token => $token
+    })
+    ->status_is(403)
+    ->content_type_is('text/plain')
+    ->content_is("Permission denied");
+
 $t->post_form_ok('/logout', {__token => $token})
     ->status_is(302)
     ->content_type_is("text/plain")

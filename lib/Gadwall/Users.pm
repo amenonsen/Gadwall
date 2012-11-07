@@ -133,7 +133,7 @@ sub email {
     }
 
     my $url = $self->new_controller('Confirm')->generate_url(
-        "/email/confirm", $id, $email
+        $self->url_for('confirm_email'), $id, $email
     );
 
     if ($url) {
@@ -208,7 +208,7 @@ sub forgot_password {
 
     if ($user) {
         my $url = $self->new_controller('Confirm')->generate_url(
-            "/passwords/reset", $user->{user_id}
+            $self->url_for('reset_password'), $user->{user_id}
         );
 
         if ($url) {
@@ -272,7 +272,7 @@ sub reset_password {
             # Unless there's a database error, keep regenerating the
             # token to allow the user one more access to this URL.
             my $url = $self->new_controller('Confirm')->generate_url(
-                "/passwords/reset", $uid
+                $self->url_for('reset_password'), $uid
             );
             $params{t} = $url->query->param('t') if $url;
         }

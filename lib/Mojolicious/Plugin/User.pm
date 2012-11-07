@@ -17,7 +17,7 @@ sub register {
         die "Please use the 'login' plugin before the 'user' plugin\n";
     }
 
-    # We handle forgotten passwords as follows:
+    # Forgotten passwords are a special case, handled as follows:
     #
     # 1. Click on "Forgot password?" link, GET /passwords/forgot
     # 2. Fill in the email form and submit, POST /passwords/forgot
@@ -37,9 +37,29 @@ sub register {
         ->name('reset_password')
         ->via(qw/get post/);
 
-    # TODO
-    # There are many more functions that should be routed here (e.g.
-    # changing your password, changing your email address, etc.).
+    # Other user management features are accessed through /users/$id/…
+    # (apart from admins, users are allowed access only to their own
+    # account settings).
+
+    my $auth = $r->find('auth');
+    my $users = $auth->bridge('/users/:user_id', user_id => qr/[1-9][0-9]*/)
+        ->name('user_settings')
+        ->to('auth#allow_if', cond => sub {
+            my ($c, $u) = @_;
+            return $c->stash('user_id') == $u->{user_id} ||
+                $u->has_role('admin');
+        });
+
+    $users->post('/password')->to('users#password')->name('change_password');
+    $users->post('/email')->to('users#email')->name('change_email');
+
+    # The final step in changing one's email address is to confirm the
+    # change through an email link. That has to be handled separately:
+
+    $confirm->route('/confirm-email')
+        ->to('users#confirm_email')
+        ->name('confirm_email')
+        ->via('get');
 }
 
 1;
