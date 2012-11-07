@@ -59,7 +59,6 @@ $t->get_ok('/users-only', {"X-Bypass-Security" => 1})
 $loc = $t->tx->res->headers->location();
 ok $loc =~ /^https:\/\//, 'redirected to ' . $loc;
 
-$t = Test::Mojo->new("Wigeon");
 $t->ua->app_url('https');
 
 $t->get_ok('/die')
