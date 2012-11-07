@@ -74,7 +74,10 @@ sub mail {
     );
 
     eval {
-        $m->send(smtp => '127.0.0.1');
+        my $mode = $ENV{MOJO_MODE} || "";
+        unless ($mode eq "testing") {
+            $m->send(smtp => '127.0.0.1');
+        }
     };
     return $m->last_send_successful;
 }
