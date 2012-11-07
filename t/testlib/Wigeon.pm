@@ -69,7 +69,7 @@ sub startup {
             );
             $dbh->do(
                 "insert into users (login,email,password,roles) values ".
-                q{('bar', 'ams@toroid.org', '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC', }.
+                q{('bar', 'bar@example.org', '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC', }.
                 q{B'0000000000000000000000001011000'::bit(31))}
             );
             $dbh->commit;
@@ -108,6 +108,14 @@ sub startup {
         my $self = shift;
         my $u = $self->stash('user');
         $self->render_plaintext(join(":",$u->roles()));
+    });
+    $auth->get('/my-email-confirm-token' => sub {
+        my $self = shift;
+        my $rv = $self->app->db->selectrow_hashref(
+            "select token from confirmation_tokens where path='/confirm-email' ".
+            "and user_id=\$1", {}, 1
+        );
+        return $self->render_plaintext($rv->{token});
     });
 
     my $never = $auth->bridge->to('auth#allow_if', cond => sub {0});
