@@ -43,7 +43,16 @@ sub gadwall_setup {
         config => { file => "${name}.conf", default => { $app->config_defaults } }
     );
 
-    $app->secret($conf->{secret});
+    my $secrets = "secrets.conf";
+    if (-f $app->home->rel_file($secrets)) {
+        $conf = $app->plugin(
+            config => { file => $secrets }
+        );
+    }
+
+    if (exists $conf->{secret}) {
+        $app->secret($conf->{secret});
+    }
     $app->sessions->secure(1);
 
     (ref $app)->attr(
