@@ -52,18 +52,24 @@ sub gadwall_setup {
 
     if (exists $conf->{secret}) {
         $app->secret($conf->{secret});
+        delete $conf->{secret};
     }
     $app->sessions->secure(1);
 
-    (ref $app)->attr(
-        db => sub { new_dbh(@$conf{qw/db_name db_user db_pass/}) }
-    );
+    {
+        my ($db_name, $db_user, $db_pass) =
+            @$conf{qw/db_name db_user db_pass/};
+
+        (ref $app)->attr(
+            db => sub { new_dbh($db_name, $db_user, $db_pass) }
+        );
+
+        delete $conf->{db_user};
+    }
 
     (ref $app)->attr(
         cache => sub { new_cache(@$conf{qw/memcached_port memcached_namespace/}) }
     );
-
-    delete @$conf{qw/secret db_pass/};
 
     push @{$app->renderer->classes}, qw(Gadwall::Auth Gadwall::Users Gadwall::Confirm);
 
