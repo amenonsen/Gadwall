@@ -11,7 +11,7 @@ sub register {
     my ($self, $app, $opts) = @_;
 
     $app->hook(
-        after_static_dispatch => sub {
+        before_routes => sub {
             my ($c) = @_;
 
             return if $c->res->code;
