@@ -74,12 +74,12 @@ $t->get_ok('/users-only')
 my $token = $t->tx->res->dom('input[name="__token"]')->[0]->attrs->{value};
 ok($token, "CSRF token");
 
-$t->post_form_ok('/login', {__login => "dummy", __passwd => "user", __token => $token})
+$t->post_ok('/login' => form => {__login => "dummy", __passwd => "user", __token => $token})
     ->status_is(200)
     ->content_type_is("text/html;charset=UTF-8")
     ->text_like('#msg', qr/Incorrect username or password/);
 
-$t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __token => $token})
+$t->post_ok('/login' => form => {__login => "bar", __passwd => "s3kr1t", __token => $token})
     ->status_is(302)
     ->content_type_is("text/plain")
     ->content_is("Redirecting to /users-only");
@@ -112,7 +112,7 @@ $t->get_ok('/birdwatchers-only')
     ->content_type_is("text/plain")
     ->content_is("This is not a baz");
 
-$t->post_form_ok('/users/create', {
+$t->post_ok('/users/create' => form => {
         email => 'foo@example.org', pass1 => 's3kr1t', pass2 => 's3kr1t',
         is_admin => 1, is_backstabber => 1, __token => $token
     })
@@ -136,7 +136,7 @@ $t->get_ok('/users/list?user_id=2')
             }]
         });
 
-$t->post_form_ok('/su', {username => 'foo@example.org', __token => $token})
+$t->post_ok('/su' => form => {username => 'foo@example.org', __token => $token})
     ->status_is(302)
     ->content_type_is("text/plain")
     ->content_is("Redirecting to /");
@@ -156,7 +156,7 @@ $t->get_ok('/birdwatchers-only')
     ->content_type_is("text/plain")
     ->content_is("Permission denied");
 
-$t->post_form_ok('/logout', {__token => $token})
+$t->post_ok('/logout' => form => {__token => $token})
     ->status_is(302)
     ->content_type_is("text/plain")
     ->content_is("Redirecting to /");
@@ -181,7 +181,7 @@ $t->get_ok('/never')
     ->content_type_is("text/plain")
     ->content_is("Permission denied");
 
-$t->post_form_ok('/users/1/password', {
+$t->post_ok('/users/1/password' => form => {
         password => "s3kr1t", pass1 => "secret", pass2 => "secret",
         __token => $token
     })
@@ -189,7 +189,7 @@ $t->post_form_ok('/users/1/password', {
     ->content_type_is("application/json")
     ->json_content_is({status => "ok", message => "Password changed"});
 
-$t->post_form_ok('/users/2/password', {
+$t->post_ok('/users/2/password' => form => {
         password => "s3kr1t", pass1 => "secret", pass2 => "secret",
         __token => $token
     })
@@ -197,7 +197,7 @@ $t->post_form_ok('/users/2/password', {
     ->content_type_is('text/plain')
     ->content_is("Permission denied");
 
-$t->post_form_ok('/users/1/email', {
+$t->post_ok('/users/1/email' => form => {
         password => "secret", email => q{new@example.org},
         __token => $token
     })
@@ -229,7 +229,7 @@ $t->get_ok('/my-email')
     ->content_type_is("text/plain")
     ->content_is('new@example.org');
 
-$t->post_form_ok('/logout', {__token => $token})
+$t->post_ok('/logout' => form => {__token => $token})
     ->status_is(302)
     ->content_type_is("text/plain")
     ->content_is("Redirecting to /");
@@ -247,19 +247,19 @@ $t->get_ok('/users-only')
 $newtoken = $t->tx->res->dom('input[name="__token"]')->[0]->attrs->{value};
 ok($newtoken ne $token, "New CSRF token");
 
-$t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __token => $token})
+$t->post_ok('/login' => form => {__login => "bar", __passwd => "s3kr1t", __token => $token})
     ->status_is(403)
     ->content_type_is("text/plain")
     ->content_is("Permission denied");
 
 $token = $newtoken;
 
-$t->post_form_ok('/login', {__login => "bar", __passwd => "s3kr1t", __token => $token})
+$t->post_ok('/login' => form => {__login => "bar", __passwd => "s3kr1t", __token => $token})
     ->status_is(200)
     ->content_type_is("text/html;charset=UTF-8")
     ->text_like('#msg', qr/Incorrect username or password/);
 
-$t->post_form_ok('/login', {__login => "bar", __passwd => "secret", __token => $token})
+$t->post_ok('/login' => form => {__login => "bar", __passwd => "secret", __token => $token})
     ->status_is(302)
     ->content_type_is("text/plain")
     ->content_is("Redirecting to /users-only");
@@ -296,7 +296,7 @@ $t->get_ok('/sprockets/list?sprocket_id=1')
             ]
         });
 
-$t->post_form_ok('/sprockets/create', {sprocket_name => "d", colour => "red", teeth => 128, __token => $token})
+$t->post_ok('/sprockets/create' => form => {sprocket_name => "d", colour => "red", teeth => 128, __token => $token})
     ->status_is(200)
     ->content_type_is('application/json')
     ->content_is(qq!{"status":"ok","message":"Sprocket created"}!);
@@ -312,12 +312,12 @@ $t->get_ok('/sprockets/list?sprocket_id=4')
             ]
         });
 
-$t->post_form_ok('/sprockets/4/update', {sprocket_name => "q", colour => "black", __token => $token})
+$t->post_ok('/sprockets/4/update' => form => {sprocket_name => "q", colour => "black", __token => $token})
     ->status_is(200)
     ->content_type_is('application/json')
     ->content_is(qq!{"errors":{"colour":"This field is invalid"},"status":"error","message":"Please correct the following errors"}!);
 
-$t->post_form_ok('/sprockets/4/update', {sprocket_name => "e", colour => "blue", teeth => 128, __token => $token})
+$t->post_ok('/sprockets/4/update' => form => {sprocket_name => "e", colour => "blue", teeth => 128, __token => $token})
     ->status_is(200)
     ->content_type_is('application/json')
     ->content_is(qq!{"status":"ok","message":"Sprocket updated"}!);
@@ -345,7 +345,7 @@ $t->get_ok('/sprockets/list?p=2;n=2')
             ]
         });
 
-$t->post_form_ok('/sprockets/4/delete', {__token => $token})
+$t->post_ok('/sprockets/4/delete' => form => {__token => $token})
     ->status_is(200)
     ->content_type_is('application/json')
     ->content_is(qq!{"status":"ok","message":"Sprocket deleted"}!);
@@ -396,7 +396,7 @@ $t->get_ok('/forgot-password')
     ->element_exists('form')
     ->element_exists('form input[name=email]');
 
-$t->post_form_ok('/logout', {__token => $token})
+$t->post_ok('/logout' => form => {__token => $token})
     ->status_is(302)
     ->content_type_is("text/plain")
     ->content_is("Redirecting to /");
