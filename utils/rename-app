@@ -1,0 +1,29 @@
+#!/bin/bash
+
+App=$1
+if [ -z "$App" ];
+then
+    echo "You must specify a name for the application"
+    exit
+fi
+
+if [ ! -f app -o ! -f app.conf -o ! -f lib/App.pm ];
+then
+    echo "Can't find app, app.conf, and lib/App.pm"
+    exit
+fi
+
+app=$(echo $App|tr 'A-Z' 'a-z')
+
+git mv app.conf $app.conf
+
+sed -e "s/'App'/'$App'/" < app > $app
+chmod +x $app
+git rm app
+git add $app
+
+sed -e "s/package App;/package $App;/" < lib/App.pm > lib/$App.pm
+git rm lib/App.pm
+git add lib/$App.pm
+
+git commit -m "Rename App to $App"
