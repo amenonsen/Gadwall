@@ -7,4 +7,4 @@ git merge -s ours --no-commit gadwall/master
 git read-tree -m -u gadwall/master
 git reset HEAD README
 git checkout -f README
-git commit -m "Next, import a copy of Gadwall"
+git commit -m "Import a copy of Gadwall"
