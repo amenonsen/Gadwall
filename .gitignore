@@ -1,0 +1,4 @@
+stash/*
+Makefile
+hypnotoad.pid
+secrets.conf
