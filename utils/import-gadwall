@@ -1,0 +1,10 @@
+#!/bin/bash
+
+GADWALL=$(readlink -f $(dirname $0)/..)
+
+git remote add -f gadwall $GADWALL
+git merge -s ours --no-commit gadwall/master
+git read-tree -m -u gadwall/master
+git reset HEAD README
+git checkout -f README
+git commit -m "Next, import a copy of Gadwall"
