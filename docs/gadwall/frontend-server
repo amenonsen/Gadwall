@@ -1,0 +1,94 @@
+This is a brief explanation of how to deploy Gadwall applications behind
+a frontend web server (nginx or Apache).
+
+» Why?
+
+Hypnotoad can be run in production, but there are at least two good
+reasons to run it behind a frontend server:
+
+    1. IO::Socket::SSL is flaky enough that I don't like to make it
+       handle HTTPS.
+    2. A frontend server can handle caching transparently for us.
+
+I prefer nginx, but Apache is known to work, and it should be possible
+to use any server with mod_proxy-like functionality.
+
+» Why isn't it simple?
+
+The frontend server and the application must cooperate to handle both
+HTTP and HTTPS access transparently and securely. The basic principle
+is that all authenticated access from the login page onwards must be
+served only via HTTPS. (Alternatively, serve everything over HTTPS.)
+
+To achieve this, we set up two VirtualHosts (servers in nginx), one for
+HTTP and one for HTTPS, both proxying connections to the application via
+HTTP (only). The HTTPS server must set the X-Forwarded-HTTPS header to 1
+to tell the application that the connection is secure.
+
+See http://toroid.org/ams/etc/mixing-http-and-https for more.
+
+» nginx example
+
+http {
+    server {
+        listen 80;
+        server_name gadwall.example.org;
+
+        # rewrite ^/(.*)$ https://gadwall.example.org/$1 permanent;
+        # OR:
+
+        location {
+            proxy_pass http://127.0.0.1:3000;
+            proxy_set_header X-Forwarded-HTTPS 0;
+            proxy_set_header X-Forwarded-For $remote_addr;
+            proxy_redirect off;
+        }
+    }
+
+    server {
+        listen 443;
+        server_name gadwall.example.org;
+
+        ssl on;
+        ssl_certificate …;
+        ssl_certificate_key …;
+        # …other ssl parameters…
+
+        location {
+            proxy_pass http://127.0.0.1:3000;
+            proxy_set_header X-Forwarded-HTTPS 1;
+            proxy_set_header X-Forwarded-For $remote_addr;
+            proxy_redirect off;
+        }
+    }
+}
+
+» Apache example
+
+Listen a.b.c.d:443
+<VirtualHost a.b.c.d:443>
+    ServerName gadwall.example.org
+    SSLEngine on
+    SSLCertificateFile ...
+    SSLCertificateKeyFile ...
+    ProxyRequests off
+    ProxyPass / http://127.0.0.1:3000/
+    ProxyPassReverse / https://127.0.0.1:3000/
+    ProxyPassReverse / http://127.0.0.1:3000/
+    RequestHeader set X-Forwarded-HTTPS "1"
+</VirtualHost>
+
+Listen a.b.c.d:80
+<VirtualHost *:80>
+    ServerName gadwall.example.org
+    # Redirect permanent / https://gadwall.example.org
+    # OR:
+    ProxyRequests off
+    ProxyPass / http://127.0.0.1:3000/
+    ProxyPassReverse / http://127.0.0.1:3000/
+    ProxyPassReverse / https://127.0.0.1:3000/
+    RequestHeader unset X-Forwarded-HTTPS
+</VirtualHost>
+
+Make sure your frontend server will not pass through X-Forwarded-*
+headers from the client.
