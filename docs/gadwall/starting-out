@@ -1,0 +1,19 @@
+Starting out with Gadwall
+
+Here's a very brief outline of how to get started with a new web
+application using Gadwall:
+
+0. Pick a name for the application, say Foo
+
+1. git init foo && cd foo
+
+2. echo "This is the Foo management application" > README &&
+   git add README && git commit -m "Start with a README"
+
+3. /path/to/Gadwall/utils/import-gadwall
+
+4. utils/rename-app Foo
+
+Now you have a git repository for your application with its own copy of
+Gadwall (included via subtree merge). Gadwall changes can be integrated
+later using "git pull gadwall master".
