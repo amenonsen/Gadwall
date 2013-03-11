@@ -1,0 +1,17 @@
+Gadwall expects to run on a Unix system with:
+
+- Perl 5.12.3+
+- PostgreSQL 9.x
+- Perl modules: Mojolicious, DBD::Pg, and other modules listed in
+  Makefile.PL (use "cpanm ." to install dependencies).
+
+Mojolicious and associated modules are under active development, and new
+versions may not be backwards-compatible. If required, specific versions
+of these or any other modules can be distributed with the application by
+placing them in the top-level "deps" directory.
+
+Mojolicious applications can be run in various environments (standalone,
+CGI, FastCGI, etc.), but the recommended configuration for Gadwall apps
+(and the only one that is regularly tested) is to run behind a frontend
+server with proxied HTTP connections. See docs/gadwall/frontend-server
+for more details.

@@ -1,0 +1,20 @@
+Installation instructions
+
+To install a Gadwall-based application:
+
+- First, install Perl module dependencies with "cpanm ."
+  (See docs/gadwall/requirements for other dependencies.)
+
+- Set up the database by running utils/setup-schema as root.
+
+- Edit app.conf and set any relevant configuration variables,
+  e.g. the port to listen on (default: http://127.0.0.1:3000).
+
+- Create secrets.conf (outside version control) and define "secret"
+  (the HMAC secret key used to sign cookies), db_pass (if needed),
+  and any other deployment secrets.
+
+- Configure a front-end web server to proxy HTTP and HTTPS connections
+  to http://127.0.0.1:3000. See docs/gadwall/frontend-server for more.
+
+- Start the application with "hypnotoad ./app".
