@@ -220,11 +220,6 @@ sub _shadow_controllers {
         require "$class/$name.pm";
         push @done, $name;
     }
-
-    $app->log->debug(
-        "Created shadow classes under ${class}:: for Gadwall::".
-        join(", ", @done)
-    ) if @done;
 }
 
 1;
