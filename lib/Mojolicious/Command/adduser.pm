@@ -6,7 +6,7 @@ use Gadwall::Util 'bcrypt';
 
 has description => "Create an application user\n";
 has usage => <<"EOF";
-usage: $0 adduser <email> <full name> [login=name] [roles=r1,r2,r3,...]
+usage: $0 adduser <email> ["full name"] [login=name] [roles=r1,r2,r3,...]
 
     $0 adduser foo\@example.com "Foo Bar" login=foo roles=admin
 EOF
@@ -17,7 +17,10 @@ sub run {
     my %f;
 
     $f{email} = shift @args || die $self->usage;
-    $f{name}  = shift @args || die $self->usage;
+
+    if (@args && $args[0] !~ /=/) {
+        $f{name} = shift @args;
+    }
 
     while (@args) {
         my $w = shift @args;
