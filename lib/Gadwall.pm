@@ -17,6 +17,12 @@ sub development_mode {
     $app->log->path(undef);
 }
 
+sub production_mode {
+    my $app = shift;
+    my $name = lc ref $app;
+    $app->log->path("logs/${name}.log");
+}
+
 sub config_defaults {
     my $self = shift;
     my $name = lc ref $self;
