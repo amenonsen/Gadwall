@@ -5,10 +5,11 @@ use warnings;
 
 use Crypt::Eksblowfish::Bcrypt qw(en_base64);
 use MIME::Base64 qw(encode_base64);
+use Digest::MD5 'md5';
 use MIME::Lite;
 use Carp;
 
-our @EXPORTS = qw(bcrypt csrf_token mail);
+our @EXPORTS = qw(bcrypt hmac_md5_sum csrf_token mail);
 
 sub import {
     my $pkg = caller;
@@ -34,6 +35,18 @@ sub bcrypt {
     }
 
     return Crypt::Eksblowfish::Bcrypt::bcrypt($passwd, $settings);
+}
+
+# A replacement for Mojo::Util's (now-removed) hmac_md5_sum. Same code,
+# but no "Very insecure!" default secret.
+
+sub hmac_md5_sum {
+    my ($string, $secret) = @_;
+    $secret = md5($secret) if length $secret > 64;
+
+    my $ipad = $secret ^ (chr(0x36) x 64);
+    my $opad = $secret ^ (chr(0x5c) x 64);
+    return unpack 'H*', md5($opad . md5($ipad . $string));
 }
 
 # Returns a base64-encoded random 128-bit string for use as a CSRF
