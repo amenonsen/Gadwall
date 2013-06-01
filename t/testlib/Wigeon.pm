@@ -27,7 +27,7 @@ sub startup {
     my $r = $app->routes();
 
     $r->any('/' => sub {
-        shift->render_plaintext("Quack!");
+        shift->render_text("Quack!");
     });
 
     my $https = $r->bridge->to('auth#allow_secure');
@@ -78,7 +78,7 @@ sub startup {
             $dbh->rollback;
             die $@;
         }
-        $self->render_plaintext("Welcome!");
+        $self->render_text("Welcome!");
     });
 
     $r->route('/widgets/:action')->to(controller => 'widgets');
@@ -90,24 +90,24 @@ sub startup {
     $app->plugin('user');
     $auth->route('/my-token')->to(cb => sub {
         my $self = shift;
-        $self->render_plaintext($self->session('token'));
+        $self->render_text($self->session('token'));
     });
     $auth->route('/users-only')->to(cb => sub {
-        shift->render_plaintext("This is not a bar");
+        shift->render_text("This is not a bar");
     });
     my $bird = $auth->allow_roles("birdwatcher");
     $bird->route('/birdwatchers-only')->to(cb => sub {
-        shift->render_plaintext("This is not a baz");
+        shift->render_text("This is not a baz");
     });
     $bird->route('/su')->via('post')->to('auth#su');
     $auth->route('/my-email')->to(cb => sub {
         my $self = shift;
-        $self->render_plaintext($self->stash('user')->{email});
+        $self->render_text($self->stash('user')->{email});
     });
     $auth->get('/my-roles' => sub {
         my $self = shift;
         my $u = $self->stash('user');
-        $self->render_plaintext(join(":",$u->roles()));
+        $self->render_text(join(":",$u->roles()));
     });
     $auth->get('/my-email-confirm-token' => sub {
         my $self = shift;
@@ -115,11 +115,11 @@ sub startup {
             "select token from confirmation_tokens where path='/confirm-email' ".
             "and user_id=\$1", {}, 1
         );
-        return $self->render_plaintext($rv->{token});
+        return $self->render_text($rv->{token});
     });
 
     my $never = $auth->bridge->to('auth#allow_if', cond => sub {0});
-    $never->get('/never' => sub { shift->render_plaintext("Sometimes") });
+    $never->get('/never' => sub { shift->render_text("Sometimes") });
 
     $auth->route('/users/list')->via('get')->to('users#list');
     $auth->route('/users/create')->via('post')->to('users#create');
@@ -134,7 +134,7 @@ sub startup {
     my $sms = $auth->bridge->to('confirm#by_token');
     $sms->post('/p2' => sub {
         my $self = shift;
-        $self->render_plaintext("a is ".$self->param('a'));
+        $self->render_text("a is ".$self->param('a'));
     });
 
     # We have to connect as the admin in order to delete users.
@@ -144,14 +144,14 @@ sub startup {
         my $dbh = DBI->connect("dbi:Pg:database=gadwall", "mallard", "")||die $DBI::errstr;
         $dbh->do("delete from users");
         $dbh->do("alter sequence users_user_id_seq restart with 1");
-        $self->render_plaintext("Goodbye!");
+        $self->render_text("Goodbye!");
     });
 
     $r->any('/(*whatever)' => sub { shift->render_not_found });
 }
 
-sub Mojolicious::Controller::render_plaintext {
-    shift->render_text(shift, format => 'txt', @_);
+sub Mojolicious::Controller::render_text {
+    shift->render(format => 'txt', text => @_);
 }
 
 1;

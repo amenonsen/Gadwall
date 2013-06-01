@@ -32,7 +32,7 @@ sub register {
             local $stash->{$key} = delete $args{$key};
         goto LOCALIZE while keys %args;
 
-        return $self->render_partial("widgets/$file");
+        return $self->render("widgets/$file", partial => 1);
     });
 
     # The next few helpers are used to manage CSS and Javascript

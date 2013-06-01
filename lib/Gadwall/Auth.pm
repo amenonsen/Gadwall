@@ -18,7 +18,7 @@ sub allow_secure {
     unless ($self->req->is_secure) {
         my $url = $self->req->url->clone;
         $url->scheme('https')->authority($url->base->authority);
-        $self->render_plaintext("Redirecting to https");
+        $self->render_text("Redirecting to https");
         $self->redirect_to($url->to_abs);
         return 0;
     }

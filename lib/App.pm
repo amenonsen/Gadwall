@@ -20,7 +20,7 @@ sub startup {
 
     $r->any(
         '/' => sub {
-            shift->render_text("Hello world!", format => 'txt')
+            shift->render_text("Hello world!")
         }
     );
 }

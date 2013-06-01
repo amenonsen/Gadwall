@@ -70,15 +70,15 @@ sub canonical_url {
 
 # This function saves having to type "format => 'txt'" everywhere.
 
-sub render_plaintext {
-    shift->render_text(shift, format => 'txt', @_);
+sub render_text {
+    shift->render(format => 'txt', text => @_);
 }
 
 # This function may be used by any controller/action/bridge at any time
 # if it thinks something shady is going on.
 
 sub denied {
-    shift->render_plaintext("Permission denied", status => 403);
+    shift->render_text("Permission denied", status => 403);
     return 0;
 }
 
@@ -88,7 +88,7 @@ sub redirect {
     my $self = shift;
     my $url = $self->url_for(@_);
 
-    $self->redirect_to($url)->render_plaintext(
+    $self->redirect_to($url)->render_text(
         "Redirecting to $url"
     );
 }
@@ -102,11 +102,11 @@ sub json_fragment {
     my $self = shift;
     my $format = $self->stash('json_format');
     if ($format && $format eq 'textarea') {
-        my $json = $self->render_partial(json => { @_ });
-        $self->render_text("<textarea>$json</textarea>", format => 'html');
+        my $json = $self->render(json => { @_ }, partial => 1);
+        $self->render(text => "<textarea>$json</textarea>", format => 'html');
     }
     else {
-        $self->render_json({ @_ });
+        $self->render(json => { @_ });
     }
     return;
 }

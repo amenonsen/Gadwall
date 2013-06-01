@@ -98,7 +98,7 @@ sub list_json {
         };
     }
 
-    return $self->render_partial(json => $res);
+    return $self->render(json => $res, partial => 1);
 }
 
 # Subclasses should return a hash of column names and specifications
