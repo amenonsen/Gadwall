@@ -132,7 +132,7 @@ $t->get_ok('/users/list?user_id=2')
                 roles => [qw/Administrator backstabber/],
                 last_login=>undef, last_failed_login=>undef,
                 last_password_change=>undef, consecutive_failures=>0,
-                password_expired=>0, second_last_login=>undef
+                password_expired=>0, second_last_login=>undef, name => undef
             }]
         });
 
