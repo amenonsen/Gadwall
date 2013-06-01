@@ -121,7 +121,7 @@ sub setup_random_source {
                 );
             }
         );
-        $main::random_secret => encode_base64($main::prng->get_bits(128), ""),
+        $main::random_secret = encode_base64($main::prng->get_bits(128), "");
     }
 }
 
