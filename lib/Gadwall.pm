@@ -132,6 +132,7 @@ sub new_dbh {
     my $dbh = DBI->connect(
         "dbi:Pg:database=$db", $user, $pass, {RaiseError => 0}
     ) or die $DBI::errstr;
+    $dbh->{pg_enable_utf8} = 1;
     return $dbh;
 }
 
