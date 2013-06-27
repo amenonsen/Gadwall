@@ -14,7 +14,7 @@ sub config_defaults {
 sub startup {
     my $app = shift;
 
-    $app->gadwall_setup();
+    $app->setup();
 
     my $r = $app->routes;
 
@@ -23,6 +23,12 @@ sub startup {
             shift->render_text("Hello world!")
         }
     );
+}
+
+sub setup {
+    my $app = shift;
+
+    $app->gadwall_setup();
 }
 
 1;
