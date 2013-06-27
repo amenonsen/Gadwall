@@ -18,9 +18,17 @@ sub startup {
 
     my $r = $app->routes;
 
+    my $secure = $r->bridge->to('auth#allow_secure');
+    my $auth = $app->plugin('login');
+    $auth->any(
+        '/' => sub {
+            shift->render(text => "Hello user!")
+        }
+    );
+
     $r->any(
         '/' => sub {
-            shift->render_text("Hello world!")
+            shift->render(text => "Hello world!")
         }
     );
 }
