@@ -100,11 +100,12 @@ sub by_url {
 # that the above bridge will accept.
 
 sub generate_url {
-    my ($self, $path, $uid, $data, $validity, $times) = @_;
+    my ($self, $url, $uid, $data, $validity, $times) = @_;
 
     $validity //= 60;
     $times //= 1;
 
+    my $path = $url->path;
     my $dbh = $self->db;
 
     # We delete any tokens for this (path,uid) combination that are more
@@ -142,11 +143,11 @@ sub generate_url {
     }
     until defined $rv;
 
-    my $url = $self->canonical_url('https', $path);
+    my $link = $self->canonical_url('https', $path);
     $token .= ":".hmac_md5_sum($token, $self->app->secret);
-    $url->query->param(t => $token);
+    $link->query->param(t => $token);
 
-    return $url;
+    return $link;
 }
 
 # This bridge allows POST requests through only if they are accompanied
