@@ -14,25 +14,8 @@ sub log { shift->app->log }
 # Returns undef if neither is found.
 
 sub class_name {
-    my ($self, $name) = @_;
-
-    return unless defined $name;
-
-    my $class;
-    for my $p ("", ref $self->app, "Gadwall") {
-        my $s = $p ? "${p}::$name" : $name;
-        unless (my $e = Mojo::Loader->load($s)) {
-            $class = $s;
-            last;
-        }
-        else {
-            die $e if ref $e;
-        }
-    }
-
-    return $class;
+    shift->app->load(@_)
 }
-
 
 # Returns a new controller initialised with the app, stash, and tx of
 # the current controller. The controller to create may be identified by

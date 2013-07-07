@@ -183,6 +183,30 @@ sub new_cache {
     return $cache;
 }
 
+# Takes the name of a class, like Sprockets, and returns its full name,
+# like Wigeon::Sprockets (or Gadwall::Sprockets, if that is not found).
+# Returns undef if neither is found. If found, the module is loaded.
+
+sub load {
+    my ($self, $name) = @_;
+
+    return unless defined $name;
+
+    my $class;
+    for my $p ("", ref $self, "Gadwall") {
+        my $s = $p ? "${p}::$name" : $name;
+        unless (my $e = Mojo::Loader->load($s)) {
+            $class = $s;
+            last;
+        }
+        else {
+            die $e if ref $e;
+        }
+    }
+
+    return $class;
+}
+
 # This function takes a list of controller names (e.g. "Users", "Auth").
 # It looks for App::$name to see if any of them have been reimplemented
 # by the derived application. If not, it creates a dummy package in the
