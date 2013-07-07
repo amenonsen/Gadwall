@@ -2,7 +2,7 @@ package Gadwall::Users;
 
 use Mojo::Base 'Gadwall::Table';
 
-use Gadwall::Util qw(bcrypt mail);
+use Gadwall::Util qw(bcrypt enqueue_mail);
 
 sub columns {
     my $self = shift;
@@ -139,7 +139,8 @@ sub email {
     if ($url) {
         my $host = $self->canonical_url->host;
         my $from = $self->config("owner_email");
-        mail(
+        enqueue_mail(
+            $self->app,
             from => $from, to => $email,
             subject => "Confirm email address change at $host",
             text => $self->render(
@@ -215,7 +216,8 @@ sub forgot_password {
             my $host = $self->canonical_url->host;
             my $from = $self->config("owner_email");
             my $to = $user->{email};
-            mail(
+            enqueue_mail(
+                $self->app,
                 from => $from, to => $to,
                 subject => "Reset your password at $host",
                 text => $self->render(
