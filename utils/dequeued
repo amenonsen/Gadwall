@@ -83,7 +83,7 @@ sub process_notification {
         } or do {
             chomp(my $msg = $@);
 
-            $app->log->error("Job #$qid ($tag,'$data') failed: $msg");
+            $app->log->error("Job #$qid ($tag) failed: $msg");
         };
 
         # XXX We'll need to leave failed jobs on the queue to be retried
