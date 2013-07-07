@@ -66,27 +66,13 @@ sub csrf_token {
 sub mail {
     my (%opts) = @_;
 
-    my $to = delete $opts{to} or croak "No To address given";
-    my $from = delete $opts{from} or croak "No From address given";
-    my $subject = delete $opts{subject} or croak "No subject given";
-    my $text = delete $opts{text} or croak "No body text given";
-
-    if (ref $to eq 'ARRAY') {
-        $to = join ", ", @$to;
-    }
-
-    if (ref $text && ref $text ne 'ARRAY') {
-        unless ($text->can('to_string')) {
-            croak "Body text must be a string or arrayref";
-        }
-        $text = $text->to_string;
-    }
+    %opts = _prepare_mail(%opts);
 
     my $m = MIME::Lite->new(
-        To => $to,
-        From => $from,
-        Subject => $subject,
-        Data => $text,
+        To => delete $opts{to},
+        From => delete $opts{from},
+        Subject => delete $opts{subject},
+        Data => delete $opts{text},
         %opts
     );
 
@@ -105,6 +91,8 @@ sub mail {
 
 sub enqueue_mail {
     my ($app, %opts) = @_;
+
+    %opts = _prepare_mail(%opts);
 
     return enqueue_job($app, 'mail', \%opts);
 }
@@ -131,6 +119,41 @@ sub enqueue_job {
     };
 
     return 0;
+}
+
+# Helper functions
+
+sub _prepare_mail {
+    my (%opts) = @_;
+
+    unless ($opts{to}) {
+        croak "No To address given";
+    }
+    unless ($opts{from}) {
+        croak "No From address given";
+    }
+    unless ($opts{subject}) {
+        croak "No subject given";
+    }
+    unless ($opts{text}) {
+        croak "No body text given";
+    }
+
+    foreach my $f (qw(to cc)) {
+        if (ref $opts{$f} eq 'ARRAY') {
+            $opts{$f} = join ", ", @{$opts{$f}};
+        }
+    }
+
+    my $text = $opts{text};
+    if (ref $text && ref $text ne 'ARRAY') {
+        unless ($text->can('to_string')) {
+            croak "Body text must be a string or arrayref";
+        }
+        $opts{text} = $text->to_string;
+    }
+
+    return %opts;
 }
 
 1;
