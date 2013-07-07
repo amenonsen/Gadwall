@@ -1,0 +1,95 @@
+#!/usr/bin/env perl
+#
+# This daemon is meant to run all the time, listening for a signal to
+# rescan the queue table and process every job therein. It's a simple
+# way to send mail outside the HTTP request/response cycle; it has no
+# pretensions to being a high-performance queue manager.
+
+use 5.12.0;
+
+use Mojo::JSON;
+use Mojo::Server;
+
+my $script = shift @ARGV
+    or die "Usage: $0 /path/to/app\n";
+
+my $app = Mojo::Server->new->load_app($script);
+my $dbh = $app->db;
+
+my $SIGNAL = "queue";
+my $TIMEOUT = 30;
+
+my $mail = $app->load('Dequeue::Mail')
+    or die "Couldn't find ::Dequeue::Mail\n";
+
+$dbh->do(qq{LISTEN "$SIGNAL"})
+    or die "Couldn't listen: ", $dbh->errstr, "\n";
+
+$app->log->debug(qq{Started dequeued; listening for "$SIGNAL"});
+
+while (1) {
+    my $notify = $dbh->func('pg_notifies');
+
+    if (!$notify) {
+        my $fd = $dbh->func('getfd');
+        vec(my $rfds = "", $fd, 1) = 1;
+        select($rfds, undef, undef, $TIMEOUT);
+
+        $notify = $dbh->func('pg_notifies');
+    }
+
+    while ($notify) {
+        process_notification(@$notify);
+
+        $notify = $dbh->func('pg_notifies');
+    }
+}
+
+sub process_notification {
+    my ($name, $pid, $payload) = @_;
+
+    $app->log->debug(
+        qq{Received NOTIFY "$name", "$payload" from $pid}
+    );
+
+    # At the moment, each NOTIFY serves as a "sendmail -q", i.e. we wake
+    # up and scan the entire queue. We don't use the payload to restrict
+    # our efforts.
+
+    my $jobs = $dbh->selectall_arrayref(<<"    SQL", {Slice => {}});
+        select queue_id, queued_at, tag, data
+            from queue
+            order by queued_at asc
+    SQL
+
+    foreach my $job (@$jobs) {
+        my ($qid, $ts, $tag, $data) =
+            @$job{qw/queue_id queued_at tag data/};
+
+        $app->log->debug("Dequeued job #$qid: $tag/'$data'");
+
+        # We also don't try to do any dynamic dispatch for jobs yet.
+        # "Mail" is hardcoded, and can stay that way until there's a
+        # demonstrable need for something else.
+
+        my $handler;
+        eval {
+            unless ($tag eq "mail") {
+                die "Unrecognised job tag\n";
+            }
+            $handler = $mail->new(app => $app);
+            my $hash = Mojo::JSON->decode($data);
+            $handler->process($hash, $job);
+        } or do {
+            chomp(my $msg = $@);
+
+            $app->log->error("Job #$qid ($tag,'$data') failed: $msg");
+        };
+
+        # XXX We'll need to leave failed jobs on the queue to be retried
+        # soon enough, but let's keep it simple for now.
+
+        $dbh->do("delete from queue where queue_id=?", {}, $qid)
+            or $app->log->error("Job #$qid not removed: " . $dbh->errstr);
+    }
+}
