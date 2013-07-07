@@ -7,9 +7,13 @@ use Crypt::Eksblowfish::Bcrypt qw(en_base64);
 use MIME::Base64 qw(encode_base64);
 use Digest::MD5 'md5';
 use MIME::Lite;
+use Mojo::JSON;
 use Carp;
 
-our @EXPORTS = qw(bcrypt hmac_md5_sum csrf_token mail);
+our @EXPORTS = qw(
+    bcrypt hmac_md5_sum csrf_token
+    mail enqueue_mail enqueue_job
+);
 
 sub import {
     my $pkg = caller;
@@ -93,6 +97,40 @@ sub mail {
         }
     };
     return $m->last_send_successful;
+}
+
+# This function inserts a mail entry into the queue for processing by
+# utils/dequeued. The real work is done by enqueue_job below. Returns
+# 0 on success, or -1 on error.
+
+sub enqueue_mail {
+    my ($app, %opts) = @_;
+
+    return enqueue_job($app, 'mail', \%opts);
+}
+
+sub enqueue_job {
+    my ($app, $tag, $data) = @_;
+
+    my $dbh = $app->db;
+
+    $dbh->begin_work;
+    eval {
+        local $dbh->{RaiseError} = 1;
+        $dbh->do(
+            "insert into queue (tag, data) values (?, ?)",
+            {}, $tag, Mojo::JSON->encode($data)
+        );
+        $dbh->do(qq{notify "queue"});
+        $dbh->commit;
+    } or do {
+        my $msg = $@;
+        $dbh->rollback;
+        $app->log->error("Couldn't enqueue job $tag/'$data': $@");
+        return -1;
+    };
+
+    return 0;
 }
 
 1;
