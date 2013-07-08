@@ -194,6 +194,7 @@ sub confirm_email {
 
 sub forgot_password {
     my $self = shift;
+    my $table = $self->table;
 
     my $email;
     if ($self->req->method eq 'POST') {
@@ -205,7 +206,7 @@ sub forgot_password {
         return;
     }
 
-    my $user = $self->select_one({email => $email});
+    my $user = $table->select_one({email => $email});
 
     if ($user) {
         my $url = $self->new_controller('Confirm')->generate_url(
