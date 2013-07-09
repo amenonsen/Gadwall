@@ -256,6 +256,7 @@ sub forgot_password {
 
 sub reset_password {
     my $self = shift;
+    my $table = $self->table;
 
     my $uid = $self->stash('user_id');
     my %set;
@@ -269,7 +270,7 @@ sub reset_password {
         );
     }
 
-    unless (%set && $self->transaction(update => $uid, %set)) {
+    unless (%set && $table->transaction(update => $uid, %set)) {
         my %params;
         unless (%set) {
             # Unless there's a database error, keep regenerating the
@@ -286,7 +287,7 @@ sub reset_password {
         return;
     }
 
-    my $user = $self->select_by_key($uid);
+    my $user = $table->select_by_key($uid);
     $self->log->info(
         "Password reset by " . $user->username
     );
