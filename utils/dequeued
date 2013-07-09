@@ -27,6 +27,8 @@ $dbh->do(qq{LISTEN "$SIGNAL"})
 
 $app->log->debug(qq{Started dequeued; listening for "$SIGNAL"});
 
+run_queue();
+
 while (1) {
     my $notify = $dbh->func('pg_notifies');
 
@@ -56,6 +58,10 @@ sub process_notification {
     # up and scan the entire queue. We don't use the payload to restrict
     # our efforts.
 
+    run_queue();
+}
+
+sub run_queue {
     my $jobs = $dbh->selectall_arrayref(<<"    SQL", {Slice => {}});
         select queue_id, queued_at, tag, data
             from queue
