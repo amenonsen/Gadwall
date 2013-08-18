@@ -8,4 +8,6 @@ create table schema (
 );
 
 insert into schema (name, version) values
-    ('gadwall', 10);
+    ('gadwall', 10)
+-- ,('mallard', 1)
+;
