@@ -70,7 +70,7 @@ sub gadwall_setup {
             db => sub { new_dbh($db_name, $db_user, $db_pass) }
         );
 
-        delete $conf->{db_user};
+        delete $conf->{db_pass};
     }
 
     (ref $app)->attr(
