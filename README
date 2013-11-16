@@ -9,7 +9,7 @@ This code is under development, and there are no guarantees of backwards
 compatibility. The author uses it in production, but would be surprised
 if anyone else did so.
 
-See also: docs/INSTALL, docs/gadwall/*
+See also: docs/INSTALL, docs/LICENSE, docs/gadwall/*
 
 --
 Abhijit Menon-Sen <ams@toroid.org>
