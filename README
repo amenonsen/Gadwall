@@ -1,15 +1,1 @@
-Gadwall
-=======
-
-Gadwall is a foundation for building web applications based on the
-Mojolicious web framework. It is named after a handsome duck (Anas
-strepera) whose name does not resemble anything else on Github.
-
-This code is under development, and there are no guarantees of backwards
-compatibility. The author uses it in production, but would be surprised
-if anyone else did so.
-
-See also: docs/gadwall/* (INSTALL, LICENSE, …)
-
---
-Abhijit Menon-Sen <ams@toroid.org>
+docs/gadwall/README
