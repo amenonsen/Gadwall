@@ -3,7 +3,7 @@
 App=$1
 if [ -z "$App" ];
 then
-    echo "You must specify a name for the application"
+    echo "Please specify a package name, e.g. utils/rename-app Muscovy"
     exit
 fi
 
