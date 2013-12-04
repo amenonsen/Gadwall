@@ -1,4 +1,5 @@
 Starting out with Gadwall
+=========================
 
 Here's a very brief outline of how to get started with a new web
 application using Gadwall:
@@ -7,7 +8,7 @@ application using Gadwall:
 
 1. git init foo && cd foo
 
-2. echo "This is the Foo management application" > README &&
+2. echo "This is the Foo application" > README &&
    git add README && git commit -m "Start with a README"
 
 3. /path/to/Gadwall/utils/import-gadwall
@@ -17,3 +18,6 @@ application using Gadwall:
 Now you have a git repository for your application with its own copy of
 Gadwall (included via subtree merge). Gadwall changes can be integrated
 later using "git pull gadwall master".
+
+5. Edit schema/defs and add a ('foo', 1) line to schema/001-schema.sql.
+   See schema/README for more details about the schema layout.
