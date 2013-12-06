@@ -70,7 +70,8 @@ $t->get_ok('/die')
 $t->get_ok('/users-only')
     ->status_is(403)
     ->content_type_is("text/html;charset=UTF-8")
-    ->text_is('html body form label', 'Login:');
+    ->text_is('html body form label', 'Login:')
+    ->element_exists('input[name="__token"]');
 
 my $token = $t->tx->res->dom('input[name="__token"]')->[0]->attr('value');
 ok($token, "CSRF token");
