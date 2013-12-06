@@ -18,7 +18,7 @@ use_ok('Wigeon');
 
 $ENV{MOJO_MODE} = "testing";
 my $t = Test::Mojo->new("Wigeon");
-$t->ua->app_url('http');
+$t->ua->server->url('http');
 
 $t->get_ok('/nonesuch')
     ->status_is(404);
@@ -60,7 +60,7 @@ $t->get_ok('/users-only', {"X-Bypass-Security" => 1})
 $loc = $t->tx->res->headers->location();
 ok $loc =~ /^https:\/\//, 'redirected to ' . $loc;
 
-$t->ua->app_url('https');
+$t->ua->server->url('https');
 
 $t->get_ok('/die')
     ->status_is(500)
