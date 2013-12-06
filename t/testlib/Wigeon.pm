@@ -60,6 +60,9 @@ sub startup {
                 "set client_min_messages to 'error'"
             );
             $dbh->do(
+                "drop table if exists sprockets"
+            );
+            $dbh->do(
                 "create table sprockets (sprocket_id serial primary key, ".
                 "sprocket_name text, colour text, teeth integer)"
             );
