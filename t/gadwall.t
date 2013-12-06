@@ -72,7 +72,7 @@ $t->get_ok('/users-only')
     ->content_type_is("text/html;charset=UTF-8")
     ->text_is('html body form label', 'Login:');
 
-my $token = $t->tx->res->dom('input[name="__token"]')->[0]->attrs->{value};
+my $token = $t->tx->res->dom('input[name="__token"]')->[0]->attr('value');
 ok($token, "CSRF token");
 
 $t->post_ok('/login' => form => {__login => "dummy", __passwd => "user", __token => $token})
@@ -245,7 +245,7 @@ $t->get_ok('/users-only')
     ->content_type_is("text/html;charset=UTF-8")
     ->text_is('html body form label', 'Login:');
 
-$newtoken = $t->tx->res->dom('input[name="__token"]')->[0]->attrs->{value};
+$newtoken = $t->tx->res->dom('input[name="__token"]')->[0]->attr('value');
 ok($newtoken ne $token, "New CSRF token");
 
 $t->post_ok('/login' => form => {__login => "bar", __passwd => "s3kr1t", __token => $token})
