@@ -53,6 +53,13 @@ sub startup {
         my $self = shift;
         my $dbh = $self->app->db;
 
+        my $sdbh = DBI->connect("dbi:Pg:database=gadwall", "mallard", "")||die $DBI::errstr;
+        $sdbh->do("set client_min_messages to 'error'");
+        $sdbh->do("drop table if exists sprockets");
+        $sdbh->do("delete from users");
+        $sdbh->do("alter sequence users_user_id_seq restart with 1");
+        $sdbh->disconnect;
+
         $dbh->begin_work;
         eval {
             local $dbh->{RaiseError} = 1;
@@ -71,9 +78,9 @@ sub startup {
                 "values ('a','red',42), ('b','green',64), ('c','blue',256)"
             );
             $dbh->do(
-                "insert into users (login,email,password,roles) values ".
-                q{('bar', 'bar@example.org', '$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC', }.
-                q{B'0000000000000000000000001011000'::bit(31))}
+                "insert into users (login,email,roles,password) values ".
+                q{('bar', 'bar@example.org', B'0000000000000000000000001011000'::bit(31), }.
+                q{'$2a$08$Xk7taVTzcF/jXEXwX0fnYuc/ZRr9jDQSTpGKzJKDU2UsSE7emt3gC')}
             );
             $dbh->commit;
         };
