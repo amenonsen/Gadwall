@@ -303,7 +303,7 @@ __DATA__
 
 @@ users/passwords/select-email.html.ep
 % layout 'minimal', title => "Reset forgotten password";
-<%= post_form forgot_password => begin %>
+<%= form_for forgot_password => begin %>
 <label for=email>Enter your email address:</label><br>
 <%= text_field 'email' %><br>
 <%= submit_button 'Forgot password' %>
@@ -328,7 +328,7 @@ Please click on it to continue.
 
 @@ users/passwords/select-new.html.ep
 % layout 'minimal', title => "Reset forgotten password";
-<%= post_form reset_password => begin %>
+<%= form_for reset_password => begin %>
 Enter new password (twice):<br>
 <%= hidden_field t => $t || "" %>
 <%= password_field 'pass1' %><br>

@@ -283,7 +283,7 @@ __DATA__
 
 @@ auth/login.html.ep
 % layout 'minimal', title => "Login";
-<%= post_form login => (class => 'login') => begin %>
+<%= form_for login => (class => 'login') => begin %>
   <label for="__login">Login:</label><br>
   <%= text_field '__login', value => stash 'login' %><br>
   <label for="__passwd">Password:</label><br>
