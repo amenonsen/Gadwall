@@ -25,12 +25,12 @@ $t->get_ok('/nonesuch')
 
 $t->get_ok('/')
     ->status_is(200)
-    ->content_type_is('text/plain')
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("Quack!");
 
 $t->get_ok('/die')
     ->status_is(302)
-    ->content_type_is("text/plain")
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("Redirecting to https");
 
 my $loc = $t->tx->res->headers->location();
@@ -38,7 +38,7 @@ ok $loc =~ /^https:\/\//, 'redirected to ' . $loc;
 
 $t->get_ok('/startup')
     ->status_is(200)
-    ->content_type_is('text/plain')
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("Welcome!");
 
 $t->get_ok('/from-template')
@@ -54,7 +54,7 @@ $t->get_ok('/wrapped-json')
 
 $t->get_ok('/users-only', {"X-Bypass-Security" => 1})
     ->status_is(302)
-    ->content_type_is("text/plain")
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("Redirecting to https");
 
 $loc = $t->tx->res->headers->location();
@@ -82,12 +82,12 @@ $t->post_ok('/login' => form => {__login => "dummy", __passwd => "user", __token
 
 $t->post_ok('/login' => form => {__login => "bar", __passwd => "s3kr1t", __token => $token})
     ->status_is(302)
-    ->content_type_is("text/plain")
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("Redirecting to /users-only");
 
 $t->get_ok('/my-token')
     ->status_is(200)
-    ->content_type_is("text/plain");
+    ->content_type_is('text/plain;charset=UTF-8');
 
 my $newtoken = $t->tx->res->body;
 ok($newtoken ne $token, "CSRF token changed");
@@ -95,22 +95,22 @@ $token = $newtoken;
 
 $t->get_ok('/users-only')
     ->status_is(200)
-    ->content_type_is("text/plain")
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("This is not a bar");
 
 $t->get_ok('/my-email')
     ->status_is(200)
-    ->content_type_is("text/plain")
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is('bar@example.org');
 
 $t->get_ok('/my-roles')
     ->status_is(200)
-    ->content_type_is("text/plain")
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("birdwatcher:bearfighter:bitcounter");
 
 $t->get_ok('/birdwatchers-only')
     ->status_is(200)
-    ->content_type_is("text/plain")
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("This is not a baz");
 
 $t->post_ok('/users/create' => form => {
@@ -139,47 +139,47 @@ $t->get_ok('/users/list?user_id=2')
 
 $t->post_ok('/su' => form => {username => 'foo@example.org', __token => $token})
     ->status_is(302)
-    ->content_type_is("text/plain")
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("Redirecting to /");
 
 $t->get_ok('/my-email')
     ->status_is(200)
-    ->content_type_is("text/plain")
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is('foo@example.org');
 
 $t->get_ok('/my-roles')
     ->status_is(200)
-    ->content_type_is("text/plain")
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("admin:backstabber");
 
 $t->get_ok('/birdwatchers-only')
     ->status_is(403)
-    ->content_type_is("text/plain")
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("Permission denied");
 
 $t->post_ok('/logout' => form => {__token => $token})
     ->status_is(302)
-    ->content_type_is("text/plain")
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("Redirecting to /");
 
 $t->get_ok('/my-email')
     ->status_is(200)
-    ->content_type_is("text/plain")
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is('bar@example.org');
 
 $t->get_ok('/my-roles')
     ->status_is(200)
-    ->content_type_is("text/plain")
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("birdwatcher:bearfighter:bitcounter");
 
 $t->get_ok('/birdwatchers-only')
     ->status_is(200)
-    ->content_type_is("text/plain")
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("This is not a baz");
 
 $t->get_ok('/never')
     ->status_is(403)
-    ->content_type_is("text/plain")
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("Permission denied");
 
 $t->post_ok('/users/1/password' => form => {
@@ -195,7 +195,7 @@ $t->post_ok('/users/2/password' => form => {
         __token => $token
     })
     ->status_is(403)
-    ->content_type_is('text/plain')
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("Permission denied");
 
 $t->post_ok('/users/1/email' => form => {
@@ -208,12 +208,12 @@ $t->post_ok('/users/1/email' => form => {
 
 $t->get_ok('/confirm-email')
     ->status_is(403)
-    ->content_type_is('text/plain')
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("Permission denied");
 
 $t->get_ok('/my-email-confirm-token')
     ->status_is(200)
-    ->content_type_is("text/plain");
+    ->content_type_is('text/plain;charset=UTF-8');
 
 my $etoken = $t->tx->res->body;
 $etoken .= ":".hmac_md5_sum($etoken, $t->app->secret);
@@ -227,17 +227,17 @@ $t->get_ok($cnf)
 
 $t->get_ok('/my-email')
     ->status_is(200)
-    ->content_type_is("text/plain")
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is('new@example.org');
 
 $t->post_ok('/logout' => form => {__token => $token})
     ->status_is(302)
-    ->content_type_is("text/plain")
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("Redirecting to /");
 
 $t->get_ok('/')
     ->status_is(200)
-    ->content_type_is("text/plain")
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("Quack!");
 
 $t->get_ok('/users-only')
@@ -250,7 +250,7 @@ ok($newtoken ne $token, "New CSRF token");
 
 $t->post_ok('/login' => form => {__login => "bar", __passwd => "s3kr1t", __token => $token})
     ->status_is(403)
-    ->content_type_is("text/plain")
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("Permission denied");
 
 $token = $newtoken;
@@ -262,12 +262,12 @@ $t->post_ok('/login' => form => {__login => "bar", __passwd => "s3kr1t", __token
 
 $t->post_ok('/login' => form => {__login => "bar", __passwd => "secret", __token => $token})
     ->status_is(302)
-    ->content_type_is("text/plain")
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("Redirecting to /users-only");
 
 $t->get_ok('/my-token')
     ->status_is(200)
-    ->content_type_is("text/plain");
+    ->content_type_is('text/plain;charset=UTF-8');
 
 $newtoken = $t->tx->res->body;
 ok($newtoken ne $token, "CSRF token changed");
@@ -362,27 +362,27 @@ $t->get_ok('/sprockets/list?sprocket_id=4')
 
 $t->get_ok('/widgets/sprocket_colours')
     ->status_is(200)
-    ->content_type_is('text/plain')
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("red green");
 
 $t->get_ok('/sprockets/approximate_blueness?sprocket_id=1')
     ->status_is(200)
-    ->content_type_is('text/plain')
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("not blue");
 
 $t->get_ok('/sprockets/approximate_blueness?sprocket_id=2')
     ->status_is(200)
-    ->content_type_is('text/plain')
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("maybe blue");
 
 $t->get_ok('/widgets/sprocket_redness?sprocket_id=1')
     ->status_is(200)
-    ->content_type_is('text/plain')
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("red");
 
 $t->get_ok('/widgets/sprocket_redness?sprocket_id=2')
     ->status_is(200)
-    ->content_type_is('text/plain')
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("not red");
 
 $t->get_ok('/p1')
@@ -399,7 +399,7 @@ $t->get_ok('/forgot-password')
 
 $t->post_ok('/logout' => form => {__token => $token})
     ->status_is(302)
-    ->content_type_is("text/plain")
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("Redirecting to /");
 
 $t->get_ok('/users-only')
@@ -409,7 +409,7 @@ $t->get_ok('/users-only')
 
 $t->get_ok('/shutdown')
     ->status_is(200)
-    ->content_type_is('text/plain')
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("Goodbye!");
 
 done_testing();
