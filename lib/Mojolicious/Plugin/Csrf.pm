@@ -1,5 +1,5 @@
-# This plugin rejects POST requests without a valid CSRF token, and adds
-# a post_form helper to include CSRF tokens into forms.
+# This plugin changes form_for to include a CSRF token in POST forms,
+# and rejects POST requests without a valid CSRF token.
 
 package Mojolicious::Plugin::Csrf;
 
@@ -9,6 +9,70 @@ use Gadwall::Util;
 
 sub register {
     my ($self, $app, $opts) = @_;
+
+    # Adds a hidden CSRF __token field to forms that have method=POST.
+
+    $app->helper(form_for => sub {
+        my $c = shift;
+        my @url = (shift);
+        push @url, shift if ref $_[0] eq 'HASH';
+        my $cb = pop @_ if ref $_[-1] eq 'CODE';
+        my $content = @_ % 2 ? pop : undef;
+        my %attrs = @_;
+        my $post = 0;
+
+        my ($key) = grep { lc $_ eq 'method' } keys %attrs;
+        if ($key && uc $attrs{$key} eq 'POST') {
+            $post = 1;
+        }
+
+        my $r = $c->app->routes->lookup($url[0]);
+        if (!$post && $r) {
+            my %methods = (GET => 1, POST => 1);
+            do {
+                my @via = @{$r->via || []};
+                %methods = map { $_ => 1 } grep { $methods{$_} } @via if @via;
+            } while $r = $r->parent;
+
+            if ($methods{POST} && !$methods{GET}) {
+                unshift @_, (method => 'POST');
+                $post = 1;
+            }
+        }
+
+        if ($post) {
+            my $token = $c->session('token');
+            unless ($token) {
+                $token = Gadwall::Util->csrf_token();
+                $c->session(token => $token);
+            }
+
+            my $field = $c->hidden_field(__token => $token);
+
+            my $oldcb = $cb;
+            $cb = sub {
+                if ($oldcb) {
+                    return "\n". $field . $oldcb->();
+                }
+                else {
+                    return $field . $content;
+                }
+            };
+        }
+
+        push @_, $content if defined $content;
+        push @_, $cb if defined $cb;
+
+        return $c->tag('form', action => $c->url_for(@url), @_);
+    });
+
+    $app->helper(post_form => sub {
+        my $c = shift;
+        my @url = (shift);
+        push @url, shift if ref $_[0] eq 'HASH';
+
+        return $c->form_for(@url, method => 'POST', @_);
+    });
 
     $app->hook(
         before_routes => sub {
@@ -56,33 +120,6 @@ sub register {
             );
         }
     );
-
-    # post_form behaves like the built-in TagHelpers' form_for helper,
-    # but it always adds a hidden field with the session's CSRF token.
-
-    $app->helper(post_form => sub {
-        my $c = shift;
-        my @url = (shift);
-        push @url, shift if ref $_[0] eq 'HASH';
-
-        my $token = $c->session('token');
-        unless ($token) {
-            $c->session(token => Gadwall::Util->csrf_token());
-        }
-
-        if (ref $_[-1] eq 'CODE') {
-            my $cb = pop @_;
-            push @_, sub {
-                return "\n".
-                    $c->hidden_field(__token => $c->session('token')).
-                    $cb->();
-            };
-        }
-
-        return $c->tag(
-            'form', method => "post", action => $c->url_for(@url), @_
-        );
-    });
 }
 
 1;
