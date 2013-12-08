@@ -7,32 +7,28 @@ use Mojo::ByteStream 'b';
 sub register {
     my ($self, $app) = @_;
 
-    # widget is like "include", but it allows the included template to
-    # be wrapped around provided begin/end block of content. It also
-    # localises stash values for convenience.
+    # This helper includes a named template like "include" does, but it
+    # also takes some content (a string or a begin…end block) and makes
+    # it available as $content to the included template. This allows a
+    # template to be wrapped around caller-specified content.
 
     $app->helper(widget => sub {
-        my $self = shift;
+        my $c = shift;
         my $file = shift;
-        my $stash = $self->stash;
+        my $block = pop @_ if ref $_[-1] eq 'CODE';
+        my $content = pop @_ if @_ % 2;
 
-        if (ref $_[-1] && ref $_[-1] eq 'CODE') {
-            my $block = pop;
-            push @_, content => b($block->());
+        if ($block) {
+            $content = b($block->());
         }
-        else {
-            push @_, content => "";
-        }
+        push @_, (content => $content);
 
         my %args = @_;
+        delete @args{qw/extends layout/};
 
-        my $key;
-        LOCALIZE:
-            $key = (keys %args)[0];
-            local $stash->{$key} = delete $args{$key};
-        goto LOCALIZE while keys %args;
-
-        return $self->render("widgets/$file", partial => 1);
+        my @keys = keys %args;
+        local @{$c->stash}{@keys} = @args{@keys};
+        return $c->render("widgets/$file", partial => 1);
     });
 
     # The next few helpers are used to manage CSS and Javascript

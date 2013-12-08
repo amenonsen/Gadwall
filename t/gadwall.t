@@ -20,6 +20,10 @@ $ENV{MOJO_MODE} = "testing";
 my $t = Test::Mojo->new("Wigeon");
 $t->ua->server->url('http');
 
+push @{$t->app->renderer->paths}, "testlib/templates";
+is($t->app->widget('test' => (foo => 42) => sub { "foo" }),
+   "42 foo bar\n", "widget test failed");
+
 $t->get_ok('/nonesuch')
     ->status_is(404);
 
