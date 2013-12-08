@@ -91,7 +91,7 @@ $t->get_ok('/my-token')
     ->content_type_is('text/plain;charset=UTF-8');
 
 my $newtoken = $t->tx->res->body;
-ok($newtoken ne $token, "CSRF token changed");
+isnt($newtoken, $token, "CSRF token changed");
 $token = $newtoken;
 
 $t->get_ok('/users-only')
@@ -247,7 +247,7 @@ $t->get_ok('/users-only')
     ->text_is('html body form label', 'Login:');
 
 $newtoken = $t->tx->res->dom('input[name="__token"]')->[0]->attr('value');
-ok($newtoken ne $token, "New CSRF token");
+isnt($newtoken, $token, "New CSRF token");
 
 $t->post_ok('/login' => form => {__login => "bar", __passwd => "s3kr1t", __token => $token})
     ->status_is(403)
@@ -271,7 +271,7 @@ $t->get_ok('/my-token')
     ->content_type_is('text/plain;charset=UTF-8');
 
 $newtoken = $t->tx->res->body;
-ok($newtoken ne $token, "CSRF token changed");
+isnt($newtoken, $token, "CSRF token changed");
 $token = $newtoken;
 
 $t->get_ok('/sprockets')
