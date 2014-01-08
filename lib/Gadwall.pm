@@ -78,106 +78,6 @@ sub gadwall_setup {
     $app->plugin('gadwall_helpers');
 }
 
-# This function replaces the built-in Mojo::Log object with an App::Log
-# one (with Gadwall::Log providing a sane default).
-
-sub replace_log {
-    my $app = shift;
-
-    my $class = (ref $app)."::Log";
-    $app->log->unsubscribe('message');
-    $app->log($class->new($app->log));
-}
-
-# This function sets $main::prng to an AES CTR generator keyed with 256
-# bits of hard-earned entropy from /dev/random. It really should be run
-# only once per server, because the initial read may block for several
-# seconds. (For convenience, it uses /dev/urandom if we're not running
-# in production mode.)
-
-sub setup_random_source {
-    my $app = shift;
-
-    my $production = $app->mode eq 'production';
-    unless (defined $main::prng) {
-        $app->log->debug(
-            "Seeding ".($production ? "secure " : "")."PRNG..."
-        );
-        with_entropy_source(
-            Data::Entropy::Source->new(
-                Data::Entropy::RawSource::Local->new(
-                    $production ? "/dev/random" : "/dev/urandom"
-                ), "sysread"
-            ), sub {
-                $main::prng = Data::Entropy::Source->new(
-                    Data::Entropy::RawSource::CryptCounter->new(
-                        Crypt::Rijndael->new(entropy_source->get_bits(256))
-                    ), "sysread"
-                );
-            }
-        );
-        $main::random_secret = encode_base64($main::prng->get_bits(128), "");
-    }
-}
-
-# This function returns a new database handle.
-
-sub new_dbh {
-    my ($db, $user, $pass) = @_;
-    my $dbh = DBI->connect(
-        "dbi:Pg:database=$db", $user, $pass, {RaiseError => 0}
-    ) or die $DBI::errstr;
-    $dbh->{pg_enable_utf8} = 1;
-    return $dbh;
-}
-
-# This is a shortcut to help register a bunch of content types.
-
-sub register_types {
-    my ($app, %types) = @_;
-
-    foreach my $k (keys %types) {
-        $app->types->type($k => $types{$k});
-    }
-}
-
-# This function returns a Cache::Memcached-compatible object. Whether
-# this object actually talks to a running memcached depends on whether
-# memcached_port is set in the config file and whether Cache::Memcached
-# (or an equivalent) is available.
-
-sub new_cache {
-    my ($port, $namespace) = @_;
-
-    # Is caching explicitly disabled?
-    return if defined $port && $port == 0;
-
-    my @options = qw(
-        Cache::Memcached::libmemcached
-        Cache::Memcached
-    );
-
-    my $class;
-    foreach (@options) {
-        eval "require $_;";
-        unless ($@) {
-            $class = $_;
-            last;
-        }
-    }
-    unless ($class) {
-        die "Cache::Memcached::libmemcached (or equivalent) is not available\n";
-    }
-
-    # Create a cache object: real if port is specified, dummy otherwise
-    my $cache = $class->new({servers => [], namespace => "$namespace:"});
-    if ($port) {
-        $cache->set_servers(["127.0.0.1:$port"]);
-    }
-
-    return $cache;
-}
-
 # Takes the name of a class, like Sprockets, and returns its full name,
 # like Wigeon::Sprockets (or Gadwall::Sprockets, if that is not found).
 # Returns undef if neither is found. If found, the module is loaded.
@@ -239,6 +139,106 @@ sub _shadow_controllers {
 
         require "$class/$name.pm";
         push @done, $name;
+    }
+}
+
+# This function replaces the built-in Mojo::Log object with an App::Log
+# one (with Gadwall::Log providing a sane default).
+
+sub replace_log {
+    my $app = shift;
+
+    my $class = (ref $app)."::Log";
+    $app->log->unsubscribe('message');
+    $app->log($class->new($app->log));
+}
+
+# This function sets $main::prng to an AES CTR generator keyed with 256
+# bits of hard-earned entropy from /dev/random. It really should be run
+# only once per server, because the initial read may block for several
+# seconds. (For convenience, it uses /dev/urandom if we're not running
+# in production mode.)
+
+sub setup_random_source {
+    my $app = shift;
+
+    my $production = $app->mode eq 'production';
+    unless (defined $main::prng) {
+        $app->log->debug(
+            "Seeding ".($production ? "secure " : "")."PRNG..."
+        );
+        with_entropy_source(
+            Data::Entropy::Source->new(
+                Data::Entropy::RawSource::Local->new(
+                    $production ? "/dev/random" : "/dev/urandom"
+                ), "sysread"
+            ), sub {
+                $main::prng = Data::Entropy::Source->new(
+                    Data::Entropy::RawSource::CryptCounter->new(
+                        Crypt::Rijndael->new(entropy_source->get_bits(256))
+                    ), "sysread"
+                );
+            }
+        );
+        $main::random_secret = encode_base64($main::prng->get_bits(128), "");
+    }
+}
+
+# This function returns a new database handle.
+
+sub new_dbh {
+    my ($db, $user, $pass) = @_;
+    my $dbh = DBI->connect(
+        "dbi:Pg:database=$db", $user, $pass, {RaiseError => 0}
+    ) or die $DBI::errstr;
+    $dbh->{pg_enable_utf8} = 1;
+    return $dbh;
+}
+
+# This function returns a Cache::Memcached-compatible object. Whether
+# this object actually talks to a running memcached depends on whether
+# memcached_port is set in the config file and whether Cache::Memcached
+# (or an equivalent) is available.
+
+sub new_cache {
+    my ($port, $namespace) = @_;
+
+    # Is caching explicitly disabled?
+    return if defined $port && $port == 0;
+
+    my @options = qw(
+        Cache::Memcached::libmemcached
+        Cache::Memcached
+    );
+
+    my $class;
+    foreach (@options) {
+        eval "require $_;";
+        unless ($@) {
+            $class = $_;
+            last;
+        }
+    }
+    unless ($class) {
+        die "Cache::Memcached::libmemcached (or equivalent) is not available\n";
+    }
+
+    # Create a cache object: real if port is specified, dummy otherwise
+    my $cache = $class->new({servers => [], namespace => "$namespace:"});
+    if ($port) {
+        $cache->set_servers(["127.0.0.1:$port"]);
+    }
+
+    return $cache;
+}
+
+# This is a shortcut to help register a bunch of content types.
+
+sub register_types {
+    my ($app, %types) = @_;
+
+    foreach my $k (keys %types) {
+        $app->types->type($k => $types{$k});
     }
 }
 
