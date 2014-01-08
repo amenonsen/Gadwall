@@ -33,7 +33,7 @@ sub by_url {
     my $t = $self->param('t') || "";
     my ($tok, $sig) = split /:/, $t, 2;
     unless ($tok && $sig && $sig eq
-            hmac_md5_sum($tok, $self->app->secret))
+            hmac_md5_sum($tok, $self->app->secrets->[0]))
     {
         return $self->denied;
     }
@@ -144,7 +144,7 @@ sub generate_url {
     until defined $rv;
 
     my $link = $self->canonical_url('https', $path);
-    $token .= ":".hmac_md5_sum($token, $self->app->secret);
+    $token .= ":".hmac_md5_sum($token, $self->app->secrets->[0]);
     $link->query->param(t => $token);
 
     return $link;

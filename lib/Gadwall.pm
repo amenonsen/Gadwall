@@ -51,10 +51,15 @@ sub gadwall_setup {
         );
     }
 
-    if (exists $conf->{secret}) {
-        $app->secret($conf->{secret});
-        delete $conf->{secret};
+    my @secrets;
+    foreach my $skey ("secrets", "secret") {
+        if (exists $conf->{$skey}) {
+            my $v = delete $conf->{$skey};
+            push @secrets, (ref $v eq 'ARRAY' ? @$v : $v);
+            last;
+        }
     }
+    $app->secrets(\@secrets);
     $app->sessions->secure(1);
 
     {

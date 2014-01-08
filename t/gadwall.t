@@ -221,7 +221,7 @@ $t->get_ok('/my-email-confirm-token')
     ->content_type_is('text/plain;charset=UTF-8');
 
 my $etoken = $t->tx->res->body;
-$etoken .= ":".hmac_md5_sum($etoken, $t->app->secret);
+$etoken .= ":".hmac_md5_sum($etoken, $t->app->secrets->[0]);
 my $cnf = Mojo::URL->new('/confirm-email');
 $cnf->query->param(t => $etoken);
 
