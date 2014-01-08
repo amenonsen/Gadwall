@@ -2,10 +2,6 @@ package Wigeon;
 
 use Mojo::Base 'Gadwall';
 
-sub testing_mode {
-    shift->log->path(undef);
-}
-
 sub config_defaults {(
     shift->SUPER::config_defaults(),
     db_name => "gadwall", db_user => "gadwall"
@@ -16,6 +12,10 @@ sub startup {
     $app->log->level('debug');
     $app->gadwall_setup();
     push @{$app->renderer->classes}, __PACKAGE__;
+
+    if ($app->mode eq 'testing') {
+        $app->log->path(undef);
+    }
 
     $app->hook(
         before_dispatch => sub {

@@ -12,17 +12,6 @@ use Data::Entropy::RawSource::CryptCounter;
 use Data::Entropy::RawSource::Local;
 use Data::Entropy::Source;
 
-sub development_mode {
-    my $app = shift;
-    $app->log->path(undef);
-}
-
-sub production_mode {
-    my $app = shift;
-    my $name = lc ref $app;
-    $app->log->path("logs/${name}.log");
-}
-
 sub config_defaults {
     my $self = shift;
     my $name = lc ref $self;
@@ -37,14 +26,20 @@ sub config_defaults {
 
 sub gadwall_setup {
     my $app = shift;
+    my $name = lc ref $app;
 
     $app->_shadow_controllers(qw(Log Auth Users Confirm));
 
     $app->replace_log();
 
+    my $path = undef;
+    if ($app->mode eq 'production') {
+        $path = "logs/${name}.log";
+    }
+    $app->log->path($path);
+
     $app->setup_random_source;
 
-    my $name = lc ref $app;
     my $conf = $app->plugin(
         config => { file => "${name}.conf", default => { $app->config_defaults } }
     );
