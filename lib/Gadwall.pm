@@ -21,6 +21,7 @@ sub config_defaults {
         memcached_namespace => $name,
         owner_email => q{admin@localhost},
         secret => $main::random_secret,
+        static_expiry_seconds => 60*60*24*365,
     );
 }
 
@@ -78,6 +79,8 @@ sub gadwall_setup {
     );
 
     push @{$app->renderer->classes}, qw(Gadwall::Auth Gadwall::Users Gadwall::Confirm);
+
+    $app->allow_static_caching;
 
     $app->plugin('csrf');
     $app->plugin('gadwall_helpers');
@@ -235,6 +238,30 @@ sub new_cache {
     }
 
     return $cache;
+}
+
+# This function causes static responses to be served with cache-friendly
+# Expires and Cache-Control headers. The static_expiry_seconds parameter
+# controls expiration; if set to undef, no changes are made to static
+# responses.
+
+sub allow_static_caching
+{
+    my $app = shift;
+    $app->hook(after_static => sub {
+        my $c = shift;
+        my $tx = $c->tx;
+
+        my $s = $c->config('static_expiry_seconds');
+        return unless defined $s;
+
+        my $e = Mojo::Date->new(time+$s);
+
+        $tx->res->headers->remove('Set-Cookie');
+        $tx->res->headers->remove('Cache-Control');
+        $tx->res->headers->header('Cache-Control' => "public");
+        $tx->res->headers->header('Expires' => $e);
+    });
 }
 
 # This is a shortcut to help register a bunch of content types.

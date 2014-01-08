@@ -20,12 +20,19 @@ $ENV{MOJO_MODE} = "testing";
 my $t = Test::Mojo->new("Wigeon");
 $t->ua->server->url('http');
 
+push @{$t->app->static->paths}, "testlib/public";
 push @{$t->app->renderer->paths}, "testlib/templates";
 is($t->app->widget('test' => (foo => 42) => sub { "foo" }),
    "42 foo bar\n", "widget test failed");
 
 $t->get_ok('/nonesuch')
     ->status_is(404);
+
+$t->get_ok('/file.txt')
+    ->status_is(200)
+    ->header_is('Cache-Control', 'public')
+    ->content_type_is('text/plain;charset=UTF-8')
+    ->content_is("The quick brown fox jumps over the lazy dog.\n");
 
 $t->get_ok('/')
     ->status_is(200)
