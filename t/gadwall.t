@@ -120,7 +120,8 @@ $t->get_ok('/t/1')
     ->status_is(200)
     ->content_type_is('text/html;charset=UTF-8')
     ->element_exists('html head link[rel=stylesheet]')
-    ->element_exists('html body script');
+    ->element_exists('html body script')
+    ->element_exists('html head style');
 
 my $ss = $t->tx->res->dom
     ->find('html head link[rel=stylesheet]')
@@ -130,8 +131,9 @@ ok($ss->[1] =~ /\?[0-9]+$/, "no cache-busting timestamp on /file.css");
 
 my $script = $t->tx->res->dom
     ->find('html body script')
-    ->[0]->attr('src');
-ok($script =~ /\?[0-9]+$/, "no cache-busting timestamp on /file.js");
+    ->attr('src');
+ok($script->[0] =~ /\?[0-9]+$/, "no cache-busting timestamp on /file.js");
+is($script->[1], "", "src on inline script block");
 
 $t->get_ok('/my-email')
     ->status_is(200)

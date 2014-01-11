@@ -108,7 +108,7 @@ sub register {
         }
         if ($stash->{_g_css}) {
             push @styles,
-                qq{<style>}. $stash->{_g_css} .qq{</style>};
+                qq{<style>\n}. $stash->{_g_css} .qq{</style>};
         }
 
         return unless @styles;
@@ -140,12 +140,12 @@ sub register {
             if ($stash->{_g_js_ready}) {
                 $stash->{_g_js} ||= "\n";
                 $stash->{_g_js} .=
-                    q#$(document).ready(function () {#.
+                    qq#\$(document).ready(function () {\n#.
                         $stash->{_g_js_ready}.
                     qq#});\n#
             }
             push @scripts,
-                qq{<script>}. $stash->{_g_js} .qq{</script>};
+                qq{<script>\n}. $stash->{_g_js} .qq{</script>};
         }
 
         return unless @scripts;

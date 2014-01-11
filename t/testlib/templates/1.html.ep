@@ -1,2 +1,14 @@
 % layout 'elaborate', title => "template 1";
 % requires '/file.css', '/file.js';
+
+% css begin
+p { color: red }
+% end
+
+% js begin
+function foo() { alert('foo'); }
+% end
+
+% ready begin
+    alert('bar');
+% end
