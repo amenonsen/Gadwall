@@ -99,8 +99,9 @@ sub register {
             return;
         }
 
+        my $default = timestamped_filename($app, '/default.css');
         my @styles = (
-            qq{<link rel=stylesheet href="/default.css">}
+            qq{<link rel=stylesheet href="$default">}
         );
         if ($stash->{_g_stylesheets}) {
             push @styles, @{$stash->{_g_stylesheets}};

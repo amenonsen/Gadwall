@@ -124,13 +124,14 @@ $t->get_ok('/t/1')
 
 my $ss = $t->tx->res->dom
     ->find('html head link[rel=stylesheet]')
-    ->[1]->attr('href');
-ok($ss =~ /\?[0-9]+$/, "no cache-busting timestamp on /file.css");
+    ->attr('href');
+ok($ss->[0] !~ /\?[0-9]+$/, "cache-busting timestamp on nonexistant /default.css");
+ok($ss->[1] =~ /\?[0-9]+$/, "no cache-busting timestamp on /file.css");
 
 my $script = $t->tx->res->dom
     ->find('html body script')
     ->[0]->attr('src');
-ok($ss =~ /\?[0-9]+$/, "no cache-busting timestamp on /file.js");
+ok($script =~ /\?[0-9]+$/, "no cache-busting timestamp on /file.js");
 
 $t->get_ok('/my-email')
     ->status_is(200)
