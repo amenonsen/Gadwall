@@ -62,11 +62,11 @@ sub register {
             next if exists $stash->{_g_deps_seen}{$url};
             if ($type eq 'css') {
                 push @{$stash->{_g_stylesheets}},
-                    qq{<link rel=stylesheet type="text/css" href="$url">};
+                    qq{<link rel=stylesheet href="$url">};
             }
             elsif ($type eq 'js') {
                 push @{$stash->{_g_scripts}},
-                    qq{<script type="text/javascript" src="$url"></script>};
+                    qq{<script src="$url"></script>};
             }
             $stash->{_g_deps_seen}{$url}++;
         }
@@ -94,16 +94,14 @@ sub register {
         }
 
         my @styles = (
-            qq{<link rel=stylesheet type="text/css" href="/default.css">}
+            qq{<link rel=stylesheet href="/default.css">}
         );
         if ($stash->{_g_stylesheets}) {
             push @styles, @{$stash->{_g_stylesheets}};
         }
         if ($stash->{_g_css}) {
             push @styles,
-                qq{<style type="text/css">}.
-                    $stash->{_g_css}.
-                qq{</style>};
+                qq{<style>}. $stash->{_g_css} .qq{</style>};
         }
 
         return unless @styles;
@@ -140,9 +138,7 @@ sub register {
                     qq#});\n#
             }
             push @scripts,
-                qq{<script type="text/javascript">}.
-                    $stash->{_g_js}.
-                qq{</script>};
+                qq{<script>}. $stash->{_g_js} .qq{</script>};
         }
 
         return unless @scripts;
