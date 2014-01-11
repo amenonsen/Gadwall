@@ -1,0 +1,2 @@
+% layout 'elaborate', title => "template 1";
+% requires '/file.css', '/file.js';

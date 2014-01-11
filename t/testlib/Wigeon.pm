@@ -30,6 +30,10 @@ sub startup {
         shift->render_text("Quack!");
     });
 
+    $r->get('/t/1' => sub {
+        return shift->render("1");
+    });
+
     my $https = $r->bridge->to('auth#allow_secure');
     $https->any('/die' => sub { die "ouch\n" });
 

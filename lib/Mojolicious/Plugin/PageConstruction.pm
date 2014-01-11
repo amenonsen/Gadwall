@@ -60,13 +60,19 @@ sub register {
         foreach (@deps) {
             my ($type, $url) = @$_{qw/type url/};
             next if exists $stash->{_g_deps_seen}{$url};
+
+            my $src = $url;
+            if ($url =~ m#^/#) {
+                $src = timestamped_filename($app, $src);
+            }
+
             if ($type eq 'css') {
                 push @{$stash->{_g_stylesheets}},
-                    qq{<link rel=stylesheet href="$url">};
+                    qq{<link rel=stylesheet href="$src">};
             }
             elsif ($type eq 'js') {
                 push @{$stash->{_g_scripts}},
-                    qq{<script src="$url"></script>};
+                    qq{<script src="$src"></script>};
             }
             $stash->{_g_deps_seen}{$url}++;
         }
@@ -159,6 +165,24 @@ sub register {
 
         return;
     });
+}
+
+# Takes /foo.css, returns /foo.css?1389469626 if possible.
+
+sub timestamped_filename {
+    my ($app, $filename) = @_;
+
+    # XXX In theory, the file may be somewhere other than under public/.
+    # We could use $app->static->file("$filename")->path to find it, but
+    # that represents a larger number of hoops than we ever want to jump
+    # through in practice.
+
+    my $path = $app->home->rel_file("public/$filename");
+    if (-r $path) {
+        $filename .= "?" . (stat(_))[9]
+    }
+
+    return $filename;
 }
 
 1;

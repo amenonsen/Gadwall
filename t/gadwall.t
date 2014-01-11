@@ -116,6 +116,22 @@ $t->get_ok('/file.txt')
     ok(Mojo::Date->new($exp)->epoch > time);
 }
 
+$t->get_ok('/t/1')
+    ->status_is(200)
+    ->content_type_is('text/html;charset=UTF-8')
+    ->element_exists('html head link[rel=stylesheet]')
+    ->element_exists('html body script');
+
+my $ss = $t->tx->res->dom
+    ->find('html head link[rel=stylesheet]')
+    ->[1]->attr('href');
+ok($ss =~ /\?[0-9]+$/, "no cache-busting timestamp on /file.css");
+
+my $script = $t->tx->res->dom
+    ->find('html body script')
+    ->[0]->attr('src');
+ok($ss =~ /\?[0-9]+$/, "no cache-busting timestamp on /file.js");
+
 $t->get_ok('/my-email')
     ->status_is(200)
     ->header_is('Cache-Control', "max-age=1, no-cache")
