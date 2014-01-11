@@ -45,6 +45,10 @@ sub gadwall_setup {
         config => { file => "${name}.conf", default => { $app->config_defaults } }
     );
 
+    # We expect secrets.conf to contain configuration data that ought
+    # not to be in version control (e.g. the cookie signing secret, or
+    # database password).
+
     my $secrets = "secrets.conf";
     if (-f $app->home->rel_file($secrets)) {
         $conf = $app->plugin(
@@ -61,7 +65,6 @@ sub gadwall_setup {
         }
     }
     $app->secrets(\@secrets);
-    $app->sessions->secure(1);
 
     {
         my ($db_name, $db_user, $db_pass) =
@@ -78,13 +81,15 @@ sub gadwall_setup {
         cache => sub { new_cache(@$conf{qw/memcached_port memcached_namespace/}) }
     );
 
-    push @{$app->renderer->classes}, qw(Gadwall::Auth Gadwall::Users Gadwall::Confirm);
-
+    $app->sessions->secure(1);
     $app->allow_static_caching;
     $app->disallow_dynamic_caching;
 
     $app->plugin('csrf');
     $app->plugin('gadwall_helpers');
+
+    push @{$app->renderer->classes},
+        map { "Gadwall::$_" } qw(Auth Users Confirm);
 }
 
 # Takes the name of a class, like Sprockets, and returns its full name,
@@ -152,7 +157,8 @@ sub resolve_controllers {
 }
 
 # This function replaces the built-in Mojo::Log object with an App::Log
-# one (with Gadwall::Log providing a sane default).
+# one (with Gadwall::Log providing a sane default). This is done mainly
+# so that we can have compact timestamps in logfiles.
 
 sub replace_log {
     my $app = shift;
