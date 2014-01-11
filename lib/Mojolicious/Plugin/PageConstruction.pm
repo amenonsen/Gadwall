@@ -1,4 +1,8 @@
-package Mojolicious::Plugin::GadwallHelpers;
+# This plugin defines helpers for the construction of HTML pages, such
+# as reusable components and ways to manage CSS and Javascript content.
+# For more details, see docs/gadwall/page-construction.
+
+package Mojolicious::Plugin::PageConstruction;
 
 use Mojo::Base 'Mojolicious::Plugin';
 
@@ -31,9 +35,6 @@ sub register {
         return $c->render("widgets/$file", partial => 1);
     });
 
-    # The next few helpers are used to manage CSS and Javascript
-    # dependencies for the current page.
-    #
     # "requires" declares that we need an external stylesheet or script.
     # (Redundant/repeated requires are safe; any given URL will only be
     # referenced once in the final page.)
@@ -79,7 +80,7 @@ sub register {
     # external stylesheet references).
     #
     # <% css begin %>
-    #  body { font-size: 85%; }
+    #     body { font-size: 85%; }
     # <% end %>
 
     $app->helper(css => sub {

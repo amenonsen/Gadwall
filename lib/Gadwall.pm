@@ -86,7 +86,7 @@ sub gadwall_setup {
     $app->disallow_dynamic_caching;
 
     $app->plugin('csrf');
-    $app->plugin('gadwall_helpers');
+    $app->plugin('page_construction');
 
     push @{$app->renderer->classes},
         map { "Gadwall::$_" } qw(Auth Users Confirm);

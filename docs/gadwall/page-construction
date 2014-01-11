@@ -1,0 +1,51 @@
+Constructing HTML pages
+=======================
+
+Gadwall's default Mojolicious::Plugin::PageConstruction provides helpers
+for the construction of HTML pages. Here's an overview of the available
+facilities (which serve to supplement Mojo's normal template mechanisms,
+as explained in Mojolicious::Guides::Rendering).
+
+» Page structure
+
+An HTML page probably has some CSS near the top and some Javascript near
+the end. In special cases, it might have Javascript in other places too.
+If you want, you can move things around. Gadwall doesn't really care. 
+
+» Widgets
+
+…
+
+» Inline CSS and Javascript
+
+You can sprinkle inline CSS throughout your templates using the built-in
+"stylesheet" helper, but you can also arrange to have it coalesced into
+a single block in the document's head.
+
+Put this in the templates:
+
+    % css begin
+        p { color: red; }
+    % end
+
+And this in the layout:
+
+    %= css
+
+This will assemble the provided snippets into a single <style> tag.
+
+Same idea with the "js" helper and inline javascript.
+
+» External dependencies
+
+In order to include external stylesheets or scripts, a template may
+contain something like the following:
+
+    % requires '/js/jquery-ui.js', '/css/jquery-ui.css';
+
+The appropriate <link> and <script> tags will be added before the inline
+content in the "%= css" and "%= js" output above.
+
+» Asynchronous loading
+
+…
