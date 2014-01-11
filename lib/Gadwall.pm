@@ -29,7 +29,7 @@ sub gadwall_setup {
     my $app = shift;
     my $name = lc ref $app;
 
-    $app->_shadow_controllers(qw(Log Auth Users Confirm));
+    $app->resolve_controllers(qw(Log Auth Users Confirm));
 
     $app->replace_log();
 
@@ -111,19 +111,19 @@ sub load {
     return $class;
 }
 
-# This function takes a list of controller names (e.g. "Users", "Auth").
-# It looks for App::$name to see if any of them have been reimplemented
-# by the derived application. If not, it creates a dummy package in the
-# App:: namespace that inherits from the Gadwall:: module. All this is
-# so that one can refer to foo#bar in routes, no matter whether foo is
-# App::Foo or Gadwall::Foo.
+# This function allows routes to refer to 'users#email', for example,
+# regardless of whether Users refers to Gadwall::Users or App::Users
+# (the latter being an application-defined subclass of the former).
 #
-# This is a hack because it depends on the derived class names being the
-# same as the native ones. But given that people who derive into another
-# class on purpose are unlikely to write routes using the native name,
-# its convenience outweighs the hackishness.
+# It takes a list of class names and creates App::$classname packages
+# that inherit from Gadwall::$classname for any application subclasses
+# that do not already exist. This is a hack, both because of how these
+# packages are created, and because it depends on the derived classes
+# having the same name as their parents (save the Gadwall:: prefix).
+#
+# Nevertheless, its convenience outweighs is strictly limited ugliness.
 
-sub _shadow_controllers {
+sub resolve_controllers {
     my ($app, @names) = @_;
     my @done;
 
