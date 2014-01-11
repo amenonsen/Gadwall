@@ -49,16 +49,6 @@ sub register {
             if ($_ eq 'js' || $_ eq 'css') {
                 push @deps, {type => $_, url => shift};
             }
-            elsif ($_ =~ /^jquery(-ui)?$/) {
-                push @deps, {
-                    type => 'js',
-                    url => "https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"
-                };
-                push @deps, {
-                    type => 'js',
-                    url => "https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.min.js"
-                } if /-ui/;
-            }
             elsif (/\.(js|css)$/) {
                 push @deps, {type => $1, url => $_};
             }
