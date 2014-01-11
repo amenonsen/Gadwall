@@ -28,12 +28,6 @@ is($t->app->widget('test' => (foo => 42) => sub { "foo" }),
 $t->get_ok('/nonesuch')
     ->status_is(404);
 
-$t->get_ok('/file.txt')
-    ->status_is(200)
-    ->header_is('Cache-Control', 'public')
-    ->content_type_is('text/plain;charset=UTF-8')
-    ->content_is("The quick brown fox jumps over the lazy dog.\n");
-
 $t->get_ok('/')
     ->status_is(200)
     ->content_type_is('text/plain;charset=UTF-8')
@@ -110,10 +104,30 @@ $t->get_ok('/users-only')
     ->content_type_is('text/plain;charset=UTF-8')
     ->content_is("This is not a bar");
 
-$t->get_ok('/my-email')
+$t->get_ok('/file.txt')
     ->status_is(200)
     ->content_type_is('text/plain;charset=UTF-8')
+    ->content_is("The quick brown fox jumps over the lazy dog.\n");
+
+{
+    is($t->tx->res->headers->header('Set-Cookie'), undef);
+    is($t->tx->res->headers->header('Cache-Control'), 'public');
+    isnt(my $exp = $t->tx->res->headers->header('Expires'), undef);
+    ok(Mojo::Date->new($exp)->epoch > time);
+}
+
+$t->get_ok('/my-email')
+    ->status_is(200)
+    ->header_is('Cache-Control', "max-age=1, no-cache")
+    ->content_type_is('text/plain;charset=UTF-8')
     ->content_is('bar@example.org');
+
+{
+    isnt($t->tx->res->headers->header('Set-Cookie'), undef);
+    isnt(my $exp = $t->tx->res->headers->header('Expires'), undef);
+    is($t->tx->res->headers->header('Cache-Control'), 'max-age=1, no-cache');
+    ok(Mojo::Date->new($exp)->epoch < time);
+}
 
 $t->get_ok('/my-roles')
     ->status_is(200)

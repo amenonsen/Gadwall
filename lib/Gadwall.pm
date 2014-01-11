@@ -81,6 +81,7 @@ sub gadwall_setup {
     push @{$app->renderer->classes}, qw(Gadwall::Auth Gadwall::Users Gadwall::Confirm);
 
     $app->allow_static_caching;
+    $app->disallow_dynamic_caching;
 
     $app->plugin('csrf');
     $app->plugin('gadwall_helpers');
@@ -261,6 +262,26 @@ sub allow_static_caching
         $tx->res->headers->remove('Cache-Control');
         $tx->res->headers->header('Cache-Control' => "public");
         $tx->res->headers->header('Expires' => $e);
+    });
+}
+
+# This function sets an Expiry time in the past and cache-unfriendly
+# headers on outgoing responses (unless an Expiry time is defined in
+# the response already).
+
+sub disallow_dynamic_caching
+{
+    my $app = shift;
+    $app->hook(after_dispatch => sub {
+        my $tx = shift;
+
+        return if $tx->res->headers->header('Expires');
+        $tx->res->headers->header(
+            Expires => Mojo::Date->new(time-365*86400)
+        );
+        $tx->res->headers->header(
+            'Cache-Control' => "max-age=1, no-cache"
+        );
     });
 }
 
