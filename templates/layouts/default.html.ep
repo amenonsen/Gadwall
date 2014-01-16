@@ -1,6 +1,6 @@
 <!doctype html>
-<html><head>
-<title><%= $title %></title>
-</head><body>
+
+<meta charset=utf-8>
+<title><%= title %></title>
+
 <%= content %>
-</body></html>
