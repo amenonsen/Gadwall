@@ -115,10 +115,10 @@ sub enqueue_job {
         my $msg = $@;
         $dbh->rollback;
         $app->log->error("Couldn't enqueue job $tag/'$data': $@");
-        return -1;
+        return 0;
     };
 
-    return 0;
+    return 1;
 }
 
 # Helper functions
