@@ -99,7 +99,7 @@ sub register {
             return;
         }
 
-        my $default = timestamped_filename($app, '/default.css');
+        my $default = timestamped_filename($app, '/css/default.css');
         my @styles = (
             qq{<link rel=stylesheet href="$default">}
         );
