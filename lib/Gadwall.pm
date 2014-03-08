@@ -168,25 +168,17 @@ sub replace_log {
     $app->log($class->new($app->log));
 }
 
-# This function sets $main::prng to an AES CTR generator keyed with 256
-# bits of hard-earned entropy from /dev/random. It really should be run
-# only once per server, because the initial read may block for several
-# seconds. (For convenience, it uses /dev/urandom if we're not running
-# in production mode.)
+# This function sets $main::prng to an AES CTR generator keyed
+# with 256 bits of randomness from /dev/urandom.
 
 sub setup_random_source {
     my $app = shift;
 
-    my $production = $app->mode eq 'production';
     unless (defined $main::prng) {
-        $app->log->debug(
-            "Seeding ".($production ? "secure " : "")."PRNG..."
-        );
         with_entropy_source(
             Data::Entropy::Source->new(
-                Data::Entropy::RawSource::Local->new(
-                    $production ? "/dev/random" : "/dev/urandom"
-                ), "sysread"
+                Data::Entropy::RawSource::Local->new("/dev/urandom"),
+                "sysread"
             ), sub {
                 $main::prng = Data::Entropy::Source->new(
                     Data::Entropy::RawSource::CryptCounter->new(
