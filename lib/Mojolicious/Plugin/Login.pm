@@ -22,7 +22,10 @@ sub register {
 
     # Everything that requires authentication also requires HTTPS.
 
-    my $secure = $r->bridge->to('auth#allow_secure')->name('secure');
+    my $secure = $r->find('secure');
+    unless ($secure) {
+        $secure = $r->bridge->to('auth#allow_secure')->name('secure');
+    }
 
     # We establish a route only to handle the actual login request. If a
     # separate route is needed to display the login form (as opposed to

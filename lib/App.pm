@@ -18,7 +18,6 @@ sub startup {
 
     my $r = $app->routes;
 
-    my $secure = $r->bridge->to('auth#allow_secure');
     my $auth = $app->plugin('login');
     $auth->any(
         '/' => sub {
