@@ -71,7 +71,7 @@ sub gadwall_setup {
             @$conf{qw/db_name db_user db_pass/};
 
         (ref $app)->attr(
-            db => sub { new_dbh($db_name, $db_user, $db_pass) }
+            db => sub { $app->dbh($db_name, $db_user, $db_pass) }
         );
 
         delete $conf->{db_pass};
@@ -193,12 +193,15 @@ sub setup_random_source {
 
 # This function returns a new database handle.
 
-sub new_dbh {
+sub dbh {
+    my $self = shift;
     my ($db, $user, $pass) = @_;
+
     my $dbh = DBI->connect(
         "dbi:Pg:database=$db", $user, $pass, {RaiseError => 0}
     ) or die $DBI::errstr;
     $dbh->{pg_enable_utf8} = 1;
+
     return $dbh;
 }
 
