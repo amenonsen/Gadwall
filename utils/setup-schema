@@ -3,7 +3,7 @@
 source schema/defs || exit
 PSQL=${PSQL:-psql}
 
-SQL=schema/*.sql
+SQL="schema/*.sql $@"
 set -- $SQL
 shift
 
