@@ -16,7 +16,6 @@ CREATE USER $ADMIN;
 CREATE DATABASE $DB WITH OWNER $ADMIN;
 \c $DB
 \set user $USER
-SET client_min_messages TO 'error';
 CREATE OR REPLACE LANGUAGE plpgsql;
 \i schema/000-extensions.sql
 SET SESSION AUTHORIZATION $ADMIN;
