@@ -1,6 +1,9 @@
 package Gadwall;
 
-BEGIN { $ENV{MOJO_REVERSE_PROXY} = 1; }
+BEGIN {
+    $ENV{MOJO_REVERSE_PROXY} = 1;
+    $ENV{MOJO_MODE} ||= "production";
+}
 
 use Mojo::Base 'Mojolicious';
 
