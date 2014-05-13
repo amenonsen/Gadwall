@@ -10,41 +10,67 @@ use 5.12.0;
 use Mojo::JSON;
 use Mojo::Server;
 
+my $SIGNAL = "queue";
+my $TIMEOUT = 30;
+
 my $script = shift @ARGV
     or die "Usage: $0 /path/to/app\n";
 
-$ENV{MOJO_MODE} ||= "production";
 my $app = Mojo::Server->new->load_app($script);
-my $dbh = $app->db;
-
-my $SIGNAL = "queue";
-my $TIMEOUT = 30;
 
 my $mail = $app->load('Dequeue::Mail')
     or die "Couldn't find ::Dequeue::Mail\n";
 
+my $dbh = $app->db;
 $dbh->do(qq{LISTEN "$SIGNAL"})
     or die "Couldn't listen: ", $dbh->errstr, "\n";
 
-$app->log->debug(qq{Started dequeued; listening for "$SIGNAL"});
+$app->log->debug(qq{dequeued: started, listening for "$SIGNAL"});
 
 run_queue();
 
 while (1) {
-    my $notify = $dbh->func('pg_notifies');
+    my $notify = $dbh->pg_notifies;
 
     if (!$notify) {
-        my $fd = $dbh->func('getfd');
-        vec(my $rfds = "", $fd, 1) = 1;
-        select($rfds, undef, undef, $TIMEOUT);
+        my $fd = $dbh->{pg_socket};
+        if ($fd > 0) {
+            vec(my $rfds = "", $fd, 1) = 1;
+            select($rfds, undef, undef, $TIMEOUT);
+        }
 
-        $notify = $dbh->func('pg_notifies');
+        eval {
+            local $dbh->{RaiseError} = 1;
+
+            $notify = $dbh->pg_notifies;
+        };
+        if ($@) {
+            chomp( my $err = $@ );
+
+            $dbh->disconnect;
+            $app->log->info("dequeued: lost database handle: $err");
+            sleep($TIMEOUT);
+
+            eval {
+                $dbh = $app->db;
+                local $dbh->{RaiseError} = 1;
+                $dbh->do(qq{LISTEN "$SIGNAL"});
+                $notify = $dbh->pg_notifies;
+            };
+            if ($@) {
+                chomp( my $err = $@ );
+                $app->log->error("dequeued: reconnect failed; exiting: $err");
+                exit;
+            }
+            $app->log->info("dequeued: reconnected; running queue");
+            run_queue();
+        }
     }
 
     while ($notify) {
         process_notification(@$notify);
 
-        $notify = $dbh->func('pg_notifies');
+        $notify = $dbh->pg_notifies;
     }
 }
 
