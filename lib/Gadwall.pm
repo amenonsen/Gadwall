@@ -212,7 +212,7 @@ sub dbh {
     my ($db, $user, $pass) = @_;
 
     my $dbh = DBI->connect("dbi:Pg:database=$db", $user, $pass, {
-        AutoCommit => 1, RaiseError => 0,
+        AutoCommit => 1, RaiseError => 0, PrintError => 0,
         pg_enable_utf8 => 1
     }) or die $DBI::errstr;
 
