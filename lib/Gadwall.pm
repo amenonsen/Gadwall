@@ -67,6 +67,7 @@ sub gadwall_setup {
             last;
         }
     }
+    delete @$conf{qw/secrets secret/};
     $app->secrets(\@secrets);
 
     {
@@ -91,8 +92,6 @@ sub gadwall_setup {
 
     push @{$app->renderer->classes},
         map { "Gadwall::$_" } qw(Auth Users Confirm);
-
-    delete @$conf{qw/db_pass secrets secret/};
 }
 
 # Takes the name of a class, like Sprockets, and returns its full name,
