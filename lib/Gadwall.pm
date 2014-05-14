@@ -70,14 +70,9 @@ sub gadwall_setup {
     delete @$conf{qw/secrets secret/};
     $app->secrets(\@secrets);
 
-    {
-        my ($db_name, $db_user, $db_pass) =
-            @$conf{qw/db_name db_user db_pass/};
-
-        (ref $app)->attr(
-            db => sub { $app->dbh($db_name, $db_user, $db_pass) }
-        );
-    }
+    (ref $app)->attr(database => sub {
+        $app->dbh(map $app->config($_), qw(db_user db_name db_pass))
+    });
 
     (ref $app)->attr(
         cache => sub { new_cache(@$conf{qw/memcached_port memcached_namespace/}) }
@@ -193,16 +188,33 @@ sub setup_random_source {
     }
 }
 
-# This function returns a new database handle.
+# This function returns a database handle. It pings the server to find
+# out if the current database handle is usable; and if not, replaces it
+# with a new connection.
+
+sub db {
+    my $app = shift;
+
+    unless ($app->database->ping) {
+        $app->database($app->dbh(
+            map $app->config($_), qw(db_user db_name db_pass)
+        ));
+    }
+
+    return $app->database;
+}
+
+# This function returns a database handle created using the supplied
+# database, username, and password, or dies if it cannot create one.
 
 sub dbh {
     my $self = shift;
     my ($db, $user, $pass) = @_;
 
-    my $dbh = DBI->connect(
-        "dbi:Pg:database=$db", $user, $pass, {RaiseError => 0}
-    ) or die $DBI::errstr;
-    $dbh->{pg_enable_utf8} = 1;
+    my $dbh = DBI->connect("dbi:Pg:database=$db", $user, $pass, {
+        AutoCommit => 1, RaiseError => 0,
+        pg_enable_utf8 => 1
+    }) or die $DBI::errstr;
 
     return $dbh;
 }
