@@ -209,12 +209,15 @@ sub db {
 
 sub dbh {
     my $self = shift;
-    my ($db, $user, $pass) = @_;
+    my ($db, $user, $pass, $attrs) = @_;
 
-    my $dbh = DBI->connect("dbi:Pg:database=$db", $user, $pass, {
-        AutoCommit => 1, RaiseError => 0, PrintError => 0,
-        pg_enable_utf8 => 1
-    }) or die $DBI::errstr;
+    $attrs ||= {
+        AutoCommit => 1, RaiseError => 0, PrintError => 0
+    };
+    $attrs->{pg_enable_utf8} = 1;
+
+    my $dbh = DBI->connect("dbi:Pg:database=$db", $user, $pass, $attrs)
+        or die $DBI::errstr;
 
     return $dbh;
 }
