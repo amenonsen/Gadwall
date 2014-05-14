@@ -87,7 +87,7 @@ sub process_notification {
     my ($name, $pid, $payload) = @_;
 
     $app->log->debug(
-        qq{Received NOTIFY "$name", "$payload" from $pid}
+        qq{dequeued: Received NOTIFY "$name", "$payload" from $pid}
     );
 
     # At the moment, each NOTIFY serves as a "sendmail -q", i.e. we wake
@@ -104,11 +104,16 @@ sub run_queue {
             order by queued_at asc
     SQL
 
+    unless (defined $jobs) {
+        $app->log->error("dequeued: Couldn't read queue: " . $dbh->errstr);
+        return;
+    }
+
     foreach my $job (@$jobs) {
         my ($qid, $ts, $tag, $data) =
             @$job{qw/queue_id queued_at tag data/};
 
-        $app->log->debug("Dequeued job #$qid: $tag/'$data'");
+        $app->log->debug("dequeued: Starting job #$qid: $tag/'$data'");
 
         # We also don't try to do any dynamic dispatch for jobs yet.
         # "Mail" is hardcoded, and can stay that way until there's a
@@ -125,13 +130,15 @@ sub run_queue {
         } or do {
             chomp(my $msg = $@);
 
-            $app->log->error("Job #$qid ($tag) failed: $msg");
+            $app->log->error("dequeued: Job #$qid ($tag) failed: $msg");
         };
 
         # XXX We'll need to leave failed jobs on the queue to be retried
         # soon enough, but let's keep it simple for now.
 
         $dbh->do("delete from queue where queue_id=?", {}, $qid)
-            or $app->log->error("Job #$qid not removed: " . $dbh->errstr);
+            or $app->log->error(
+                "dequeued: Job #$qid not removed: " . $dbh->errstr
+            );
     }
 }
