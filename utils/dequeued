@@ -55,7 +55,7 @@ sub wait_for_notify {
 
         if ($@) {
             chomp(my $err = $@);
-            $app->log->info("dequeued: lost database handle: $err");
+            $app->log->info("dequeued: lost database connection");
             sleep($TIMEOUT);
         }
         else {
