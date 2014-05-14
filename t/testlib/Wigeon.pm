@@ -57,7 +57,7 @@ sub startup {
         my $self = shift;
         my $dbh = $self->app->db;
 
-        my $sdbh = DBI->connect("dbi:Pg:database=gadwall", "mallard", "")||die $DBI::errstr;
+        my $sdbh = $self->app->dbh("gadwall", "mallard")||die $DBI::errstr;
         $sdbh->do("set client_min_messages to 'error'");
         $sdbh->do("delete from users");
         $sdbh->do("alter sequence users_user_id_seq restart with 1");
@@ -154,7 +154,7 @@ sub startup {
     $r->any('/shutdown' => sub {
         my $self = shift;
         $self->app->db->do("drop table sprockets");
-        my $dbh = DBI->connect("dbi:Pg:database=gadwall", "mallard", "")||die $DBI::errstr;
+        my $dbh = $self->app->dbh("gadwall", "mallard")||die $DBI::errstr;
         $dbh->do("delete from users");
         $dbh->do("alter sequence users_user_id_seq restart with 1");
         $self->render_text("Goodbye!");
