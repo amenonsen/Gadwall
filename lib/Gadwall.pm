@@ -62,7 +62,7 @@ sub gadwall_setup {
     my @secrets;
     foreach my $skey ("secrets", "secret") {
         if (exists $conf->{$skey}) {
-            my $v = delete $conf->{$skey};
+            my $v = $conf->{$skey};
             push @secrets, (ref $v eq 'ARRAY' ? @$v : $v);
             last;
         }
@@ -76,8 +76,6 @@ sub gadwall_setup {
         (ref $app)->attr(
             db => sub { $app->dbh($db_name, $db_user, $db_pass) }
         );
-
-        delete $conf->{db_pass};
     }
 
     (ref $app)->attr(
@@ -93,6 +91,8 @@ sub gadwall_setup {
 
     push @{$app->renderer->classes},
         map { "Gadwall::$_" } qw(Auth Users Confirm);
+
+    delete @$conf{qw/db_pass secrets secret/};
 }
 
 # Takes the name of a class, like Sprockets, and returns its full name,
