@@ -30,48 +30,57 @@ $app->log->debug(qq{dequeued: started, listening for "$SIGNAL"});
 run_queue();
 
 while (1) {
-    my $notify = $dbh->pg_notifies;
+    my $notify = wait_for_notify();
 
-    if (!$notify) {
-        my $fd = $dbh->{pg_socket};
-        if ($fd > 0) {
-            vec(my $rfds = "", $fd, 1) = 1;
-            select($rfds, undef, undef, $TIMEOUT);
-        }
+    process_notification(@$notify);
+}
 
+sub wait_for_notify {
+    my $notify;
+
+    while (1) {
         eval {
             local $dbh->{RaiseError} = 1;
 
-            $notify = $dbh->pg_notifies;
+            do {
+                $notify = $dbh->pg_notifies;
+                if (!$notify) {
+                    my $fd = $dbh->{pg_socket};
+                    vec(my $rfds = "", $fd, 1) = 1;
+                    select($rfds, undef, undef, $TIMEOUT);
+                }
+            }
+            while (!$notify);
         };
-        if ($@) {
-            chomp( my $err = $@ );
 
-            $dbh->disconnect;
+        if ($@) {
+            chomp(my $err = $@);
             $app->log->info("dequeued: lost database handle: $err");
             sleep($TIMEOUT);
+        }
+        else {
+            last;
+        }
 
-            eval {
-                $dbh = $app->db;
-                local $dbh->{RaiseError} = 1;
-                $dbh->do(qq{LISTEN "$SIGNAL"});
-                $notify = $dbh->pg_notifies;
-            };
-            if ($@) {
-                chomp( my $err = $@ );
-                $app->log->error("dequeued: reconnect failed; exiting: $err");
-                exit;
-            }
+        eval {
+            $dbh->disconnect;
+            $dbh = $app->db;
+            local $dbh->{RaiseError} = 1;
+            $dbh->do(qq{LISTEN "$SIGNAL"});
+        };
+
+        if ($@) {
+            chomp(my $err = $@);
+            $app->log->error("dequeued: reconnect failed; exiting: $err");
+            exit;
+        }
+        else {
             $app->log->info("dequeued: reconnected; running queue");
             run_queue();
         }
     }
 
-    while ($notify) {
-        process_notification(@$notify);
-
-        $notify = $dbh->pg_notifies;
-    }
+    return $notify;
 }
 
 sub process_notification {
