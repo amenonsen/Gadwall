@@ -157,11 +157,12 @@ sub generate_url {
 
 sub by_token {
     my $self = shift;
+    my $dbh = $self->db;
 
     # Do we have a valid token for this request?
     my $t = $self->param('t');
     if ($t) {
-        my $row = $self->db->selectrow_hashref(
+        my $row = $dbh->selectrow_hashref(
             "delete from confirmation_tokens where token=? returning *, ".
             "age(current_timestamp,issued_at)>interval '15 minutes' as ".
             "expired", {}, $t
@@ -180,7 +181,7 @@ sub by_token {
     my $token = $self->generate_token;
     if ($token && !$self->send_token($token)) {
         if ($token) {
-            $self->db->do(
+            $dbh->do(
                 "delete from confirmation_tokens where token=?", {}, $token
             );
         }
