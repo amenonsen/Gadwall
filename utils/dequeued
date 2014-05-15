@@ -101,6 +101,7 @@ sub process_notification {
 }
 
 sub run_queue {
+    my $json = Mojo::JSON->new;
     my $jobs = $dbh->selectall_arrayref(<<"    SQL", {Slice => {}});
         select queue_id, queued_at, tag, data
             from queue
@@ -116,7 +117,7 @@ sub run_queue {
         my ($qid, $ts, $tag, $data) =
             @$job{qw/queue_id queued_at tag data/};
 
-        $app->log->debug("dequeued: Starting job #$qid: $tag/'$data'");
+        $app->log->debug("dequeued: Processing job #$qid: $tag/'$data'");
 
         # We also don't try to do any dynamic dispatch for jobs yet.
         # "Mail" is hardcoded, and can stay that way until there's a
@@ -128,7 +129,7 @@ sub run_queue {
                 die "Unrecognised job tag\n";
             }
             $handler = $mail->new(app => $app);
-            my $hash = Mojo::JSON->decode($data);
+            my $hash = $json->decode($data);
             $handler->process($hash, $job);
         } or do {
             chomp(my $msg = $@);
