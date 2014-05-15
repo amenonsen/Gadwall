@@ -21,6 +21,7 @@ sub config_defaults {
 
     return (
         db_name => $name, db_user => $name, db_pass => "",
+        dequeued_name => $name,
         memcached_namespace => $name,
         owner_email => q{admin@localhost},
         secret => $main::random_secret,

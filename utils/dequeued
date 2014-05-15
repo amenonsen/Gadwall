@@ -10,7 +10,6 @@ use 5.12.0;
 use Mojo::JSON;
 use Mojo::Server;
 
-my $SIGNAL = "queue";
 my $TIMEOUT = 30;
 
 my $script = shift @ARGV
@@ -21,11 +20,13 @@ my $app = Mojo::Server->new->load_app($script);
 my $mail = $app->load('Dequeue::Mail')
     or die "Couldn't find ::Dequeue::Mail\n";
 
+my $signal = $app->config('dequeued_name');
+
 my $dbh = $app->db;
-$dbh->do(qq{LISTEN "$SIGNAL"})
+$dbh->do(qq{LISTEN "$signal"})
     or die "Couldn't listen: ", $dbh->errstr, "\n";
 
-$app->log->debug(qq{dequeued: started, listening for "$SIGNAL"});
+$app->log->debug(qq{dequeued: started, listening for "$signal"});
 
 run_queue();
 
@@ -66,7 +67,7 @@ sub wait_for_notify {
             $dbh->disconnect;
             $dbh = $app->db;
             local $dbh->{RaiseError} = 1;
-            $dbh->do(qq{LISTEN "$SIGNAL"});
+            $dbh->do(qq{LISTEN "$signal"});
         };
 
         if ($@) {

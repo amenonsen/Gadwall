@@ -101,6 +101,7 @@ sub enqueue_job {
     my ($app, $tag, $data) = @_;
 
     my $dbh = $app->db;
+    my $signal = $app->config('dequeued_name');
 
     $dbh->begin_work;
     eval {
@@ -109,7 +110,7 @@ sub enqueue_job {
             "insert into queue (tag, data) values (?, ?)",
             {}, $tag, Mojo::JSON->encode($data)
         );
-        $dbh->do(qq{notify "queue"});
+        $dbh->do(qq{NOTIFY "$signal"});
         $dbh->commit;
     } or do {
         my $msg = $@;
