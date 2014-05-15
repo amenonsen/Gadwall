@@ -47,8 +47,10 @@ sub wait_for_notify {
                 $notify = $dbh->pg_notifies;
                 if (!$notify) {
                     my $fd = $dbh->{pg_socket};
-                    vec(my $rfds = "", $fd, 1) = 1;
-                    select($rfds, undef, undef, $TIMEOUT);
+                    if ($fd > 0) {
+                        vec(my $rfds = "", $fd, 1) = 1;
+                        select($rfds, undef, undef, $TIMEOUT);
+                    }
                 }
             }
             while (!$notify);
