@@ -112,7 +112,9 @@ sub enqueue_job {
         );
         $dbh->do(qq{NOTIFY "$signal"});
         $dbh->commit;
-    } or do {
+    };
+
+    if ($@) {
         my $msg = $@;
         $dbh->rollback;
         $app->log->error("Couldn't enqueue job $tag/'$data': $@");

@@ -131,7 +131,9 @@ sub run_queue {
             $handler = $mail->new(app => $app);
             my $hash = $json->decode($data);
             $handler->process($hash, $job);
-        } or do {
+        };
+
+        if ($@) {
             chomp(my $msg = $@);
 
             $app->log->error("dequeued: Job #$qid ($tag) failed: $msg");

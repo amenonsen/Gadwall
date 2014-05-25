@@ -12,7 +12,9 @@ sub process {
         unless (mail(%$data)) {
             die $@;
         }
-    } or do {
+    };
+
+    if ($@) {
         $self->app->log->error("Mail job #$qid failed: $@");
     }
 }
