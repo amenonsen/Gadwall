@@ -72,7 +72,7 @@ sub gadwall_setup {
     $app->secrets(\@secrets);
 
     (ref $app)->attr(database => sub {
-        $app->dbh(map $app->config($_), qw(db_user db_name db_pass))
+        $app->dbh(map $app->config($_), qw(db_name db_user db_pass))
     });
 
     (ref $app)->attr(
