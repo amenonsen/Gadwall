@@ -23,10 +23,14 @@ my $mail = $app->load('Dequeue::Mail')
 my $signal = $app->config('dequeued_name');
 
 my $dbh = $app->db;
+
+$dbh->do(qq{NOTIFY "$signal", 'restart'})
+    or die "Couldn't send restart: ", $dbh->errstr, "\n";
+
 $dbh->do(qq{LISTEN "$signal"})
     or die "Couldn't listen: ", $dbh->errstr, "\n";
 
-$app->log->debug(qq{dequeued: started, listening for "$signal"});
+$app->log->debug(qq{dequeued[$$]: started, listening for "$signal"});
 
 run_queue();
 
@@ -92,6 +96,15 @@ sub process_notification {
     $app->log->debug(
         qq{dequeued: Received NOTIFY "$name", "$payload" from $pid}
     );
+
+    # If we receive a restart message, we assume it's from a dequeued
+    # that's starting up, and politely quit. (Since we send the NOTIFY
+    # before we LISTEN, we should never receive our own signal.)
+
+    if ($payload eq "restart") {
+        $app->log->info("dequeued[$$]: Exiting due to restart signal.");
+        exit;
+    }
 
     # At the moment, each NOTIFY serves as a "sendmail -q", i.e. we wake
     # up and scan the entire queue. We don't use the payload to restrict
