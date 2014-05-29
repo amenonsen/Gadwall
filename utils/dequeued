@@ -30,7 +30,7 @@ $dbh->do(qq{NOTIFY "$signal", 'restart'})
 $dbh->do(qq{LISTEN "$signal"})
     or die "Couldn't listen: ", $dbh->errstr, "\n";
 
-$app->log->debug(qq{dequeued[$$]: started, listening for "$signal"});
+$app->log->info(qq{dequeued[$$]: started, listening for "$signal"});
 
 run_queue();
 
