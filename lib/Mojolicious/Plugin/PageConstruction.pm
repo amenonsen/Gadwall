@@ -32,7 +32,7 @@ sub register {
 
         my @keys = keys %args;
         local @{$c->stash}{@keys} = @args{@keys};
-        return $c->render("widgets/$file", partial => 1);
+        return $c->include("widgets/$file");
     });
 
     # "requires" declares that we need an external stylesheet or script.

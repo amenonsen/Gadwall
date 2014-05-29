@@ -143,10 +143,10 @@ sub email {
             $self->app,
             from => $from, to => $email,
             subject => "Confirm email address change at $host",
-            text => $self->render(
+            text => $self->render_to_string(
                 template => "users/email/confirm-mail",
                 from => $from, to => $email, host => $host, url => $url,
-                format => 'txt', partial => 1
+                format => 'txt'
             )
         );
 
@@ -221,10 +221,10 @@ sub forgot_password {
                 $self->app,
                 from => $from, to => $to,
                 subject => "Reset your password at $host",
-                text => $self->render(
+                text => $self->render_to_string(
                     template => "users/passwords/reset-mail",
                     from => $from, to => $to, host => $host, url => $url,
-                    format => 'txt', partial => 1
+                    format => 'txt'
                 )
             );
 

@@ -277,10 +277,10 @@ sub send_token {
         $self->app,
         from => $from, to => $to,
         subject => "Confirmation code for $host: $token",
-        text => $self->render(
+        text => $self->render_to_string(
             template => "confirm/token-mail",
             from => $from, to => $to, host => $host, token => $token,
-            format => 'txt', partial => 1
+            format => 'txt'
         )
     );
 
