@@ -82,6 +82,7 @@ sub gadwall_setup {
     $app->sessions->secure(1);
     $app->allow_static_caching;
     $app->disallow_dynamic_caching;
+    $app->detect_forwarded_https;
 
     $app->plugin('csrf');
     $app->plugin('page_construction');
@@ -265,8 +266,7 @@ sub new_cache {
 # controls expiration; if set to undef, no changes are made to static
 # responses.
 
-sub allow_static_caching
-{
+sub allow_static_caching {
     my $app = shift;
     $app->hook(after_static => sub {
         my $c = shift;
@@ -288,8 +288,7 @@ sub allow_static_caching
 # headers on outgoing responses (unless an Expiry time is defined in
 # the response already).
 
-sub disallow_dynamic_caching
-{
+sub disallow_dynamic_caching {
     my $app = shift;
     $app->hook(after_dispatch => sub {
         my $tx = shift;
@@ -301,6 +300,25 @@ sub disallow_dynamic_caching
         $tx->res->headers->header(
             'Cache-Control' => "max-age=1, no-cache"
         );
+    });
+}
+
+# This function installs a hook to set the scheme of the request's base
+# URL to https if X-Forwarded-HTTPS is set to 1 or X-Forwarded-Proto is
+# set to https. (Recent versions of Mojolicious prefer the latter, but
+# we accept both for compatibility with deployed applications.)
+
+sub detect_forwarded_https {
+    my $app = shift;
+    $app->hook(before_dispatch => sub {
+        my $c = shift;
+        my $h = $c->req->headers;
+
+        if (($h->header('X-Forwarded-HTTPS') // '') eq "1" ||
+            lc($h->header('X-Forwarded-Proto') // '') eq "https")
+        {
+            $c->req->url->base->scheme('https');
+        }
     });
 }
 
