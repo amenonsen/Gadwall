@@ -62,7 +62,7 @@ sub wait_for_notify {
 
         if ($@) {
             chomp(my $err = $@);
-            $app->log->info("dequeued: lost database connection");
+            $app->log->info("dequeued[$$]: lost database connection");
             sleep($TIMEOUT);
         }
         else {
@@ -78,11 +78,11 @@ sub wait_for_notify {
 
         if ($@) {
             chomp(my $err = $@);
-            $app->log->error("dequeued: reconnect failed; exiting: $err");
+            $app->log->error("dequeued[$$]: reconnect failed; exiting: $err");
             exit;
         }
         else {
-            $app->log->info("dequeued: reconnected; running queue");
+            $app->log->info("dequeued[$$]: reconnected; running queue");
             run_queue();
         }
     }
@@ -94,7 +94,7 @@ sub process_notification {
     my ($name, $pid, $payload) = @_;
 
     $app->log->debug(
-        qq{dequeued: Received NOTIFY "$name", "$payload" from $pid}
+        qq{dequeued[$$]: Received NOTIFY "$name", "$payload" from $pid}
     );
 
     # If we receive a restart message, we assume it's from a dequeued
@@ -122,7 +122,7 @@ sub run_queue {
     SQL
 
     unless (defined $jobs) {
-        $app->log->error("dequeued: Couldn't read queue: " . $dbh->errstr);
+        $app->log->error("dequeued[$$]: Couldn't read queue: " . $dbh->errstr);
         return;
     }
 
@@ -130,7 +130,7 @@ sub run_queue {
         my ($qid, $ts, $tag, $data) =
             @$job{qw/queue_id queued_at tag data/};
 
-        $app->log->debug("dequeued: Processing job #$qid: $tag/'$data'");
+        $app->log->debug("dequeued[$$]: Processing job #$qid: $tag/'$data'");
 
         # We also don't try to do any dynamic dispatch for jobs yet.
         # "Mail" is hardcoded, and can stay that way until there's a
@@ -149,7 +149,7 @@ sub run_queue {
         if ($@) {
             chomp(my $msg = $@);
 
-            $app->log->error("dequeued: Job #$qid ($tag) failed: $msg");
+            $app->log->error("dequeued[$$]: Job #$qid ($tag) failed: $msg");
         };
 
         # XXX We'll need to leave failed jobs on the queue to be retried
@@ -157,7 +157,7 @@ sub run_queue {
 
         $dbh->do("delete from queue where queue_id=?", {}, $qid)
             or $app->log->error(
-                "dequeued: Job #$qid not removed: " . $dbh->errstr
+                "dequeued[$$]: Job #$qid not removed: " . $dbh->errstr
             );
     }
 }
