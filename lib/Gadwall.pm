@@ -14,6 +14,7 @@ use Data::Entropy qw(with_entropy_source entropy_source);
 use Data::Entropy::RawSource::CryptCounter;
 use Data::Entropy::RawSource::Local;
 use Data::Entropy::Source;
+use POSIX "strftime";
 
 sub config_defaults {
     my $self = shift;
@@ -33,9 +34,13 @@ sub gadwall_setup {
     my $app = shift;
     my $name = lc ref $app;
 
-    $app->resolve_controllers(qw(Log Auth Users Confirm));
+    # Format log messages with compact [YYYY-MM-DD HH:MM:SS] timestamps.
+    $app->log->format(sub {
+        '['. strftime('%Y-%m-%d %H:%M:%S', localtime(shift)) .']'.
+        ' ['. shift .'] '. join("\n", @_, '');
+    });
 
-    $app->replace_log();
+    $app->resolve_controllers(qw(Auth Users Confirm));
 
     my $path = undef;
     if ($app->mode eq 'production') {
@@ -153,18 +158,6 @@ sub resolve_controllers {
         require "$class/$name.pm";
         push @done, $name;
     }
-}
-
-# This function replaces the built-in Mojo::Log object with an App::Log
-# one (with Gadwall::Log providing a sane default). This is done mainly
-# so that we can have compact timestamps in logfiles.
-
-sub replace_log {
-    my $app = shift;
-
-    my $class = (ref $app)."::Log";
-    $app->log->unsubscribe('message');
-    $app->log($class->new($app->log));
 }
 
 # This function sets $main::prng to an AES CTR generator keyed
