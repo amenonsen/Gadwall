@@ -379,7 +379,7 @@ $t->get_ok('/sprockets/list?sprocket_id=4')
             ]
         });
 
-$t->get_ok('/sprockets/list?p=2;n=2')
+$t->get_ok('/sprockets/list?p=2&n=2')
     ->status_is(200)
     ->content_type_is('application/json')
     ->json_is({
