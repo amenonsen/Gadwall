@@ -9,7 +9,7 @@ use File::Basename 'dirname';
 use File::Spec::Functions 'splitdir';
 
 use lib join '/', splitdir(dirname(__FILE__)), 'lib';
-use lib join '/', splitdir(dirname(__FILE__)), 'deps';
+use lib join '/', splitdir(dirname(__FILE__)), 'local/lib/perl5';
 
 require Mojolicious::Commands;
 Mojolicious::Commands->start_app('App');
