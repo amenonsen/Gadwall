@@ -1,10 +1,8 @@
 The application's SQL schema lives in this directory, split up into as
 many files as needed for a logical arrangement.
 
-- "defs" defines DB, USER, and ADMIN
-
-- 000-extensions.sql should contain "CREATE EXTENSION" statements for
-  any required extensions; Gadwall itself uses only citext.
+- 000-extensions.sql should contain "CREATE EXTENSION IF NOT EXISTS"
+  commands for any required extensions; Gadwall itself uses only citext.
 
 - 001-schema.sql creates a schema (name,version) table, which is used to
   keep track of schema deployments and upgrades. Gadwall itself uses the
@@ -19,8 +17,8 @@ many files as needed for a logical arrangement.
 - upgrades/$name/N-to-M.sql are scripts that upgrade a component named
   $name from version N to version M.
 
-utils/setup-schema creates the database and users defined in defs and
+"app schema install" creates the database and users defined in defs and
 loads NNN-*.sql in lexicographical order using psql.
 
-utils/upgrade-schema loads any outstanding upgrades, each in its own
+"app schema upgrade" loads any outstanding upgrades, each in its own
 transaction.

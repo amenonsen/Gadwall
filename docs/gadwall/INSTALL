@@ -4,9 +4,9 @@ Installation instructions
 To install a Gadwall-based application:
 
 - First, install Perl module dependencies with "cpanm ."
-  (Gadwall requires a recent version of Perl: 5.12.3+)
+  (Gadwall requires a recent version of Perl: 5.14.2+)
 
-- Set up the database by running utils/setup-schema as root.
+- Set up the database by running "app schema install" as root.
   (Gadwall requires a recent version of Postgres: 9.2.x+)
 
 - Edit app.conf and set any relevant configuration variables,
