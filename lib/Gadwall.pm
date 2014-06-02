@@ -22,6 +22,7 @@ sub config_defaults {
 
     return (
         db_name => $name, db_user => $name, db_pass => "",
+        db_owner => "${name}admin", db_owner_pass => "",
         dequeued_name => $name,
         memcached_namespace => $name,
         owner_email => q{admin@localhost},
