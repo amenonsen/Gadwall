@@ -3,15 +3,12 @@ package Mojolicious::Command::schema;
 use Mojo::Base 'Mojolicious::Command';
 
 use IPC::Run3 'run3';
+use Getopt::Long qw(GetOptionsFromArray :config no_auto_abbrev);
 
-has description => "Install or upgrade the application's database schema\n";
-has usage => <<"EOF";
-usage: $0 schema <install|upgrade> [options]
+has description => "Install or upgrade the application's database schema.";
+has usage => sub { shift->extract_usage };
 
-    $0 schema install
-EOF
-
-my $psql = "psql";
+my $psql;
 
 sub run {
     my ($self, @args) = @_;
@@ -22,6 +19,15 @@ sub run {
     }
 
     chdir($self->app->home);
+
+    GetOptionsFromArray(\@args,
+        'psql=s' => \$psql,
+    );
+
+    if ($psql && ! -x $psql) {
+        die "$0: Can't execute psql command: $psql\n";
+    }
+    $psql ||= "psql";
 
     $self->$cmd(@args);
 }
@@ -106,8 +112,10 @@ Gadwall::Command::schema - Install or upgrade the application's database schema
 
 =head1 SYNOPSIS
 
-    app schema install
-    app schema upgrade
+    Usage: ./app schema <install|upgrade> [options]
+
+    Options:
+        --psql <path>           Specify path to psql executable
 
 =head1 DESCRIPTION
 
