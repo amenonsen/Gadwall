@@ -17,7 +17,7 @@ sub run {
     my ($self, @args) = @_;
 
     my $cmd = shift @args || die $self->usage;
-    unless ($cmd eq "install") {
+    unless ($cmd eq "install" || $cmd eq "upgrade") {
         die $self->usage;
     }
 
@@ -57,6 +57,45 @@ sub install {
 
     say "Creating users, database, and schema...";
     run3 [qw[su -m postgres -c], $psql], \$CMD;
+}
+
+sub upgrade {
+    my ($self, @args) = @_;
+
+    my $app = $self->app;
+
+    my ($database, $owner, $user) =
+        @{$app->config}{qw/db_name db_owner db_user/};
+
+    my $dbh = $app->dbh($app->config('db_name'), $app->config('db_owner'));
+
+    my $tags = $dbh->selectall_arrayref(
+        "select name, version from schema", {Slice => {}}
+    );
+
+    (my $template = <<"    CMD") =~ s/^\s*//;
+        \\set user $user
+        \\set ON_ERROR_STOP
+        SET client_min_messages TO 'error';
+        UPDATE schema SET version='%d' WHERE name='%s';
+        \\i %s
+    CMD
+
+    foreach my $tag (@$tags) {
+        my $name = $tag->{name};
+        my $version = $tag->{version};
+        my $next = $version+1;
+
+        while (-f (my $file = "schema/upgrades/$name/${version}-to-${next}.sql")) {
+            say ">>> $name: $file";
+
+            my $CMD = sprintf $template, $next, $name, $file;
+            run3 [$psql, '-q1f', '-', $database, $owner], \$CMD;
+            exit if $?;
+
+            $next = 1 + ++$version;
+        }
+    }
 }
 
 1;
