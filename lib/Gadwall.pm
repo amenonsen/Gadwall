@@ -193,7 +193,7 @@ sub db {
 
     unless ($app->database->ping) {
         $app->database($app->dbh(
-            map $app->config($_), qw(db_user db_name db_pass)
+            map $app->config($_), qw(db_name db_user db_pass)
         ));
     }
 
