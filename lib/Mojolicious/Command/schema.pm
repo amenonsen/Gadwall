@@ -55,7 +55,6 @@ sub install {
         \\c $database
         \\set user $user
         SET client_min_messages TO 'error';
-        CREATE OR REPLACE LANGUAGE plpgsql;
         $extensions;
 
         SET SESSION AUTHORIZATION $owner;
