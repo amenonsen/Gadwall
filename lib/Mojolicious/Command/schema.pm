@@ -9,6 +9,7 @@ has description => "Install or upgrade the application's database schema.";
 has usage => sub { shift->extract_usage };
 
 my $psql;
+my $schema;
 
 sub run {
     my ($self, @args) = @_;
@@ -22,6 +23,7 @@ sub run {
 
     GetOptionsFromArray(\@args,
         'psql=s' => \$psql,
+        's|schema=s' => \$schema,
     );
 
     if ($psql && ! -x $psql) {
@@ -42,24 +44,43 @@ sub install {
 
     my @files = map {"\\i $_\n"} <schema/*.sql>, @args;
 
-    my $extensions = shift @files;
+    my $create_extensions = shift @files;
 
-    (my $script = <<"    CMD") =~ s/^\s*//;
-        \\set ON_ERROR_STOP
-        SET client_min_messages TO 'error';
-
+    my $create_users = <<"    USERS";
         CREATE USER $user;
         CREATE USER $owner;
         CREATE DATABASE $database WITH OWNER $owner;
+    USERS
+
+    my $create_schema = "";
+    if ($schema) {
+        $create_schema = <<"        SCHEMA";
+            CREATE SCHEMA $schema;
+            GRANT USAGE ON SCHEMA $schema TO $user;
+            SET search_path TO $schema, public;
+        SCHEMA
+        $create_users .= <<"        USERS";
+            ALTER USER $user SET search_path TO $schema, public;
+            ALTER USER $owner SET search_path TO $schema, public;
+        USERS
+    }
+
+    (my $script = <<"    CMD") =~ s/^\s*//;
+        \\set user $user
+        \\set ON_ERROR_STOP
+        SET client_min_messages TO 'error';
+
+        $create_users
 
         \\c $database
-        \\set user $user
         SET client_min_messages TO 'error';
-        $extensions;
+
+        $create_extensions
 
         SET SESSION AUTHORIZATION $owner;
         BEGIN;
-        @files
+            $create_schema
+            @files
         COMMIT;
     CMD
 
@@ -121,11 +142,12 @@ Gadwall::Command::schema - Install or upgrade the application's database schema
 
     Usage: ./app schema <install|upgrade> [options]
 
-        sudo ./app schema install
+        sudo [-u postgres] ./app schema install
         ./app schema upgrade
 
     Options:
-        --psql <path>           Specify path to psql executable
+        --psql <path>           Specify path to psql executable (default: "psql")
+        -s, --schema <name>     First create a schema and add it to search_path
 
 =head1 DESCRIPTION
 
