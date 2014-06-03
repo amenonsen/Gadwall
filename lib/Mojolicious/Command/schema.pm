@@ -19,7 +19,12 @@ sub run {
         die $self->usage;
     }
 
-    chdir($self->app->home);
+    unless (-d "schema") {
+        chdir($self->app->home);
+        unless (-d "schema") {
+            die "$0: Can't find schema directory\n";
+        }
+    }
 
     GetOptionsFromArray(\@args,
         'psql=s' => \$psql,

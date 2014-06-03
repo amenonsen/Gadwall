@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use lib 'lib', 't/testlib';
+use lib 'lib', 'local/lib/perl5', 't/testlib';
 
 require Mojolicious::Commands;
 Mojolicious::Commands->start_app('Wigeon');

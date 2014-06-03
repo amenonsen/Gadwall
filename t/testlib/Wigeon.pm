@@ -2,11 +2,6 @@ package Wigeon;
 
 use Mojo::Base 'Gadwall';
 
-sub config_defaults {(
-    shift->SUPER::config_defaults(),
-    db_name => "gadwall", db_user => "gadwall"
-)}
-
 sub startup {
     my $app = shift;
     $app->log->level('debug');
@@ -55,19 +50,23 @@ sub startup {
 
     $r->any('/startup' => sub {
         my $self = shift;
-        my $dbh = $self->app->db;
 
-        my $sdbh = $self->app->dbh("gadwall", "mallard")||die $DBI::errstr;
-        $sdbh->do("set client_min_messages to 'error'");
-        $sdbh->do("delete from users");
-        $sdbh->do("alter sequence users_user_id_seq restart with 1");
-        $sdbh->disconnect;
+        my $app = $self->app;
+        my $dbh = $app->dbh(
+            $app->config('db_name'), $app->config('db_owner')
+        );
 
         $dbh->begin_work;
         eval {
             local $dbh->{RaiseError} = 1;
             $dbh->do(
                 "set client_min_messages to 'error'"
+            );
+            $dbh->do(
+                "delete from users"
+            );
+            $dbh->do(
+                "alter sequence users_user_id_seq restart with 1"
             );
             $dbh->do(
                 "drop table if exists sprockets"
@@ -79,6 +78,12 @@ sub startup {
             $dbh->do(
                 "insert into sprockets (sprocket_name, colour, teeth) ".
                 "values ('a','red',42), ('b','green',64), ('c','blue',256)"
+            );
+            $dbh->do(
+                "grant all privileges on sprockets to ". $app->config('db_user')
+            );
+            $dbh->do(
+                "grant all privileges on sprockets_sprocket_id_seq to ". $app->config('db_user')
             );
             $dbh->do(
                 "insert into users (login,email,roles,password) values ".
@@ -153,10 +158,25 @@ sub startup {
     # We have to connect as the admin in order to delete users.
     $r->any('/shutdown' => sub {
         my $self = shift;
-        $self->app->db->do("drop table sprockets");
-        my $dbh = $self->app->dbh("gadwall", "mallard")||die $DBI::errstr;
-        $dbh->do("delete from users");
-        $dbh->do("alter sequence users_user_id_seq restart with 1");
+
+        my $app = $self->app;
+        my $dbh = $app->dbh(
+            $app->config('db_name'), $app->config('db_owner')
+        );
+
+        $dbh->begin_work;
+        eval {
+            local $dbh->{RaiseError} = 1;
+            $dbh->do("drop table if exists sprockets");
+            $dbh->do("delete from users");
+            $dbh->do("alter sequence users_user_id_seq restart with 1");
+            $dbh->commit;
+        };
+        if ($@) {
+            $dbh->rollback;
+            die $@;
+        }
+
         $self->render_text("Goodbye!");
     });
 
