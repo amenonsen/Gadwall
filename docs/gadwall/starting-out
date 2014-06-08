@@ -19,5 +19,5 @@ Now you have a git repository for your application with its own copy of
 Gadwall (included via subtree merge). Gadwall changes can be integrated
 later using "git pull gadwall master".
 
-5. Edit schema/defs and add a ('foo', 1) line to schema/001-schema.sql.
+5. Add a ('foo', 1) line to schema/001-schema.sql.
    See schema/README for more details about the schema layout.

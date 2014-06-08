@@ -3,7 +3,8 @@ Installation instructions
 
 To install a Gadwall-based application:
 
-- First, install Perl module dependencies with "cpanm ."
+- First, install Perl module dependencies with
+  "vendor/bin/carton install --cached --deployment"
   (Gadwall requires a recent version of Perl: 5.14.2+)
 
 - Set up the database by running "app schema install" as root.
